@@ -1,18 +1,13 @@
 import { ArrowRight, Sparkles, Database, Zap, MessageCircle, Search, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import heroImage from "@assets/generated_images/AI_tech_hero_background_bd0d47ef.png";
 
 export default function Hero() {
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background">
-        <img 
-          src={heroImage} 
-          alt="AI Technology" 
-          className="w-full h-full object-cover opacity-20"
-        />
+        <div className="w-full h-full bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-green-600/10 opacity-30" />
       </div>
       
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
