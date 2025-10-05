@@ -452,10 +452,10 @@ export default function PersonalizationTransparencyDashboard({
           <Brain className="w-6 h-6 text-primary" />
           <div>
             <h3 className="text-lg font-bold text-foreground">
-              Alibaba 개인화 Re-ranking (RecSys 2019)
+              개인 맞춤 추천 시스템 (학술논문 검증)
             </h3>
             <p className="text-sm text-muted-foreground">
-              실시간 프로필 학습 → 50개 후보 재순위 → Top 3 선택
+              대화 분석 → 개인 선호도 파악 → 나만의 순위 계산
             </p>
           </div>
         </div>
@@ -476,7 +476,7 @@ export default function PersonalizationTransparencyDashboard({
         <span className="font-medium text-foreground">
           {currentStep === 'profile_extraction' && '1️⃣ 대화에서 사용자 선호도 추출 중'}
           {currentStep === 'candidate_generation' && '2️⃣ 50개 후보 차량 준비 중'}
-          {currentStep === 're_ranking' && '3️⃣ Alibaba 알고리즘으로 개인화 재순위 중'}
+          {currentStep === 're_ranking' && '3️⃣ 나만의 맞춤 순위 계산 중'}
           {currentStep === 'results_display' && '4️⃣ Top 3 결과 생성 중'}
           {currentStep === 'completed' && '✅ 개인화 추천 완료'}
         </span>
@@ -545,7 +545,7 @@ export default function PersonalizationTransparencyDashboard({
         <div className="space-y-4">
           <h4 className="font-semibold text-foreground flex items-center">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Alibaba Re-ranking 과정
+            개인 맞춤 계산 과정
           </h4>
 
           <div className="space-y-3">
@@ -652,13 +652,13 @@ export default function PersonalizationTransparencyDashboard({
       {currentStep === 'completed' && (
         <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <div className="text-sm text-foreground space-y-1">
-            <div className="font-medium">🎯 Alibaba 개인화 Re-ranking 완료!</div>
-            <div>• 대화 → 실시간 프로필 추출 (신뢰도: {Math.round(userProfile.confidence_score * 100)}%)</div>
-            <div>• 50개 후보 → 개인화 점수 계산</div>
-            <div>• 다양성 보정 → Top 3 선택</div>
-            <div>• 피드백 학습 → 즉시 재순위 가능</div>
+            <div className="font-medium">🎯 나만의 맞춤 추천 완료!</div>
+            <div>• 대화 분석 → 개인 취향 파악 (정확도: {Math.round(userProfile.confidence_score * 100)}%)</div>
+            <div>• 50개 후보 → 개인별 점수 계산</div>
+            <div>• 다양성 고려 → 최고 3개 선택</div>
+            <div>• 피드백 반영 → 실시간 학습</div>
             <div className="pt-2 text-xs text-muted-foreground">
-              💫 단일 AI로는 불가능한 복잡한 개인화 알고리즘을 투명하게 실행했습니다
+              💫 검증된 학술 알고리즘으로 투명하고 정확한 개인 맞춤 추천을 제공했습니다
             </div>
           </div>
         </div>

@@ -55,10 +55,10 @@ export default function VehicleRecommendations({
   useEffect(() => {
     if (showPersonalization && userQuery && vehicles.length > 0) {
       setShowPersonalizationDashboard(true);
-      // 3초 후 자동으로 숨김
+      // 15초 후 자동으로 숨김 (사용자 피드백 반영)
       const timer = setTimeout(() => {
         setShowPersonalizationDashboard(false);
-      }, 8000);
+      }, 15000);
       return () => clearTimeout(timer);
     }
   }, [showPersonalization, userQuery, vehicles]);

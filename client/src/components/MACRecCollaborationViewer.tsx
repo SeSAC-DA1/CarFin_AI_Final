@@ -138,10 +138,10 @@ export default function MACRecCollaborationViewer({
     // Phase 4: Reflector 검증 (시뮬레이션)
     await simulateReflection();
 
-    // 완료
-    setTimeout(() => {
-      onComplete();
-    }, 1000);
+    // 완료 - 사용자 피드백: 협업 과정을 계속 표시
+    // setTimeout(() => {
+    //   onComplete();
+    // }, 1000);
   };
 
   const simulateTaskDecomposition = async () => {

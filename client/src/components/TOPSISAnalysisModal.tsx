@@ -227,23 +227,23 @@ export default function TOPSISAnalysisModal({
     switch (stepId) {
       case 'normalization':
         result = '6개 기준 × 18개 동급 차량 정규화 완료';
-        calculation = 'rij = xij / √(Σxij²)';
+        calculation = '모든 기준을 동일한 척도(0~1)로 변환';
         break;
       case 'weighting':
         result = 'AHP 가중치 벡터 적용 완료';
-        calculation = 'vij = wj × rij';
+        calculation = '각 기준의 중요도를 반영한 점수 계산';
         break;
       case 'ideal_solutions':
         result = '이상해(A+) 및 부정이상해(A-) 결정';
-        calculation = 'A+ = {max(vij) for benefit, min(vij) for cost}';
+        calculation = '가장 좋은 조건과 가장 나쁜 조건 기준점 설정';
         break;
       case 'distance_calculation':
         result = '유클리드 거리 계산 완료';
-        calculation = 'Si+ = √Σ(vij - vj+)², Si- = √Σ(vij - vj-)²';
+        calculation = '이상적 조건과 현실 차량 간 차이 측정';
         break;
       case 'closeness_coefficient':
         result = 'TOPSIS 최종 점수 도출';
-        calculation = 'CCi = Si- / (Si+ + Si-)';
+        calculation = '좋은 조건에 가까울수록 높은 점수 부여';
         break;
     }
 
@@ -463,7 +463,7 @@ export default function TOPSISAnalysisModal({
 
                       {step.calculation && (
                         <div className="p-3 bg-muted/50 rounded-lg border border-dashed border-border">
-                          <div className="text-xs text-muted-foreground mb-1">수학적 공식:</div>
+                          <div className="text-xs text-muted-foreground mb-1">계산 방법:</div>
                           <code className="text-sm font-mono text-primary">{step.calculation}</code>
                         </div>
                       )}
