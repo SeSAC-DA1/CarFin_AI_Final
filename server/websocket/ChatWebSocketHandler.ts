@@ -465,15 +465,8 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
   sendMessage(session.ws, {
     type: 'progress',
     step: 'completed',
-    message: '추천이 완료되었습니다!',
+    message: '✅ 추천이 완료되었습니다!',
   });
-  } catch (error) {
-    console.error('❌ 메시지 처리 에러:', error);
-    sendMessage(session.ws, {
-      type: 'error',
-      content: '죄송합니다. 메시지 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
-    });
-  }
 }
 
 async function handleGetInsights(sessionId: string, vehicleId: string) {
