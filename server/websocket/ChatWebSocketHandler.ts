@@ -12,6 +12,14 @@ import { extractOptionsFromMessage, matchOptions } from "../lib/utils/OptionMatc
 import { analyzeDamage } from "../lib/utils/DamageCalculator";
 import { cacheService } from "../lib/cache/CacheService";
 
+// 🎓 논문 3개 기반 통합 시스템 import
+import {
+  generatePaperBasedRecommendations,
+  type PaperBasedRecommendationRequest,
+  type PaperBasedRecommendationResult
+} from "../lib/integration/PaperBasedRecommendationEngine";
+import { MultiAgentSystem } from "../lib/agents/MultiAgentSystem";
+
 // 브랜드별 대표 이미지 매핑
 const BRAND_IMAGES = {
   "현대": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=300&fit=crop",
@@ -103,14 +111,6 @@ async function handleUserMessage(sessionId: string, userMessage: string) {
 
   session.conversationHistory.push(`사용자: ${userMessage}`);
 
-  // 🎯 1. 사용자 피드백 추출 (Alibaba Personalized Re-ranking)
-  const newFeedback = extractUserFeedbackFromMessage(userMessage);
-  Object.assign(session.userFeedback, newFeedback);
-
-  // 🎯 2. 원하는 옵션 추출
-  const newOptions = extractOptionsFromMessage(userMessage);
-  session.desiredOptions.push(...newOptions);
-
   // 사용자 메시지 에코
   sendMessage(session.ws, {
     type: 'user_message',
@@ -119,19 +119,111 @@ async function handleUserMessage(sessionId: string, userMessage: string) {
   });
 
   try {
-    // 진행 상태 표시
-    sendMessage(session.ws, {
-      type: 'progress',
-      step: 'analyzing_needs',
-      message: 'AI가 요구사항을 분석중입니다...',
-    });
+    console.log('🎓 논문 3개 기반 통합 추천 시스템 시작');
+
+    // 📊 논문 기반 추천 시스템 사용 (MACRec + Alibaba + AHP-TOPSIS)
+    await handlePaperBasedRecommendation(session, userMessage);
+
+  } catch (error) {
+    console.error('논문 기반 시스템 오류:', error);
+
+    // 🔄 Fallback: 기존 시스템 사용
+    console.log('🔄 기존 시스템으로 fallback');
+    await handleLegacyRecommendation(session, userMessage);
+  }
+}
+
+/**
+ * 🎓 논문 3개 기반 통합 추천 시스템
+ */
+async function handlePaperBasedRecommendation(session: ChatSession, userMessage: string) {
+  // 진행 상태 표시
+  sendMessage(session.ws, {
+    type: 'progress',
+    step: 'analyzing_needs',
+    message: '🎓 논문 기반 AI 시스템이 분석중입니다...',
+  });
+
+  // 🎯 전체 차량 데이터 로드 (논문 시스템에 필요)
+  const allVehicles = await storage.searchVehicles({ limit: 1000, offset: 0 });
+  console.log(`📊 전체 차량 데이터 로드: ${allVehicles.length}개`);
+
+  // 🤖 멀티에이전트 시스템 생성
+  const multiAgentSystem = new MultiAgentSystem(process.env.GOOGLE_API_KEY!);
+
+  // 🔄 실시간 스트리밍으로 멀티에이전트 협업 과정 표시
+  const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles);
+
+  for await (const step of collaborationStream) {
+    console.log(`🤖 ${step.agent}: ${step.type}`);
+
+    if (step.type === 'agent_working') {
+      sendMessage(session.ws, {
+        type: 'progress',
+        step: step.agent,
+        message: step.content,
+      });
+    } else if (step.type === 'agent_response') {
+      sendMessage(session.ws, {
+        type: 'agent_message',
+        agent: step.agent,
+        content: step.content,
+        timestamp: new Date(),
+      });
+    } else if (step.type === 'recommendations' && step.data) {
+      // 🎯 최종 추천 결과 전송
+      const vehicles = step.data.map((rec: any) => ({
+        ...rec.vehicle,
+        image: getVehicleImage(rec.vehicle.manufacturer, rec.vehicle.photo),
+        topsisScore: rec.topsisScore,
+        matchingScore: rec.matchingScore,
+        reason: rec.reason,
+        pros: rec.pros,
+        cons: rec.cons
+      }));
+
+      sendMessage(session.ws, {
+        type: 'vehicles',
+        vehicles: vehicles,
+        timestamp: new Date(),
+      });
+
+      sendMessage(session.ws, {
+        type: 'progress',
+        step: 'completed',
+        message: '🎉 논문 기반 추천 완료!',
+      });
+
+      return; // 성공적으로 완료
+    }
+  }
+}
+
+/**
+ * 🔄 기존 시스템 (Fallback용)
+ */
+async function handleLegacyRecommendation(session: ChatSession, userMessage: string) {
+  // 🎯 1. 사용자 피드백 추출 (Alibaba Personalized Re-ranking)
+  const newFeedback = extractUserFeedbackFromMessage(userMessage);
+  Object.assign(session.userFeedback, newFeedback);
+
+  // 🎯 2. 원하는 옵션 추출
+  const newOptions = extractOptionsFromMessage(userMessage);
+  session.desiredOptions.push(...newOptions);
+
+  // 진행 상태 표시
+  sendMessage(session.ws, {
+    type: 'progress',
+    step: 'analyzing_needs',
+    message: 'AI가 요구사항을 분석중입니다...',
+  });
 
   // 1. Needs Analyst 분석
   const needsAnalysis = await geminiService.analyzeUserNeeds(
     userMessage,
     session.conversationHistory
   );
-  
+
   sendMessage(session.ws, {
     type: 'agent_message',
     agent: needsAnalysis.agentId,
