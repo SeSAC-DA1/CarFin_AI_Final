@@ -169,7 +169,7 @@ export default function VehicleRecommendations({
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    TOPSIS 분석
+                    상세 분석
                   </Button>
                   {vehicle.detailUrl && (
                     <Button

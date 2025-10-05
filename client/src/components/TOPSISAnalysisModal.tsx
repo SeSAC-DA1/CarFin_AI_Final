@@ -343,10 +343,10 @@ export default function TOPSISAnalysisModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">
-                AHP-TOPSIS 다기준 분석
+                차량 분석 대시보드
               </h2>
               <p className="text-sm text-muted-foreground">
-                {vehicle.manufacturer} {vehicle.model} ({vehicle.year}년) • 학술적 차량 평가
+                {vehicle.manufacturer} {vehicle.model} ({vehicle.year}년) • 6가지 기준 종합 평가
               </p>
             </div>
           </div>
@@ -361,7 +361,7 @@ export default function TOPSISAnalysisModal({
         {/* 탭 네비게이션 */}
         <div className="flex border-b border-border">
           {[
-            { id: 'process', label: 'TOPSIS 과정', icon: <Calculator className="w-4 h-4" /> },
+            { id: 'process', label: '평가 과정', icon: <Calculator className="w-4 h-4" /> },
             { id: 'results', label: '분석 결과', icon: <BarChart3 className="w-4 h-4" /> },
             { id: 'comparison', label: '동급 비교', icon: <Trophy className="w-4 h-4" /> }
           ].map((tab) => (
