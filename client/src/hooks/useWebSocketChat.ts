@@ -11,6 +11,8 @@ export interface Vehicle {
   id: string;
   rank: number;
   name: string;
+  manufacturer: string;
+  model: string;
   year: number;
   price: number;
   mileage: number;
@@ -18,6 +20,11 @@ export interface Vehicle {
   image: string;
   topsisScore: number;
   matchScore: number;
+  reason?: string;
+  pros?: string[];
+  cons?: string[];
+  location?: string;
+  detailUrl?: string;
 }
 
 export interface ProgressUpdate {
@@ -74,7 +81,8 @@ export function useWebSocketChat() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      
+      console.log('📨 WebSocket 메시지 수신:', data.type, data);
+
       if (data.type === 'user_message' || data.type === 'agent_message') {
         setMessages(prev => [...prev, {
           type: data.type,
@@ -82,8 +90,29 @@ export function useWebSocketChat() {
           content: data.content,
           timestamp: new Date(data.timestamp),
         }]);
-      } else if (data.type === 'vehicles_recommended') {
-        setVehicles(data.vehicles);
+      } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended') {
+        // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환
+        const formattedVehicles = data.vehicles.map((vehicle: any) => ({
+          id: vehicle.id || vehicle.vehicleId || vehicle.rank?.toString(),
+          rank: vehicle.rank || 1,
+          name: vehicle.name || `${vehicle.manufacturer || vehicle.brand} ${vehicle.model}`,
+          manufacturer: vehicle.manufacturer || vehicle.brand,
+          model: vehicle.model,
+          year: vehicle.year || vehicle.modelYear,
+          price: vehicle.price,
+          mileage: vehicle.mileage || vehicle.distance,
+          fuel: vehicle.fuel || vehicle.fuelType,
+          image: vehicle.image,
+          topsisScore: vehicle.topsisScore || vehicle.matchingScore || 0,
+          matchScore: vehicle.matchScore || vehicle.topsisScore || 0,
+          reason: vehicle.reason,
+          pros: vehicle.pros,
+          cons: vehicle.cons,
+          location: vehicle.location,
+          detailUrl: vehicle.detailUrl
+        }));
+        console.log('🚗 차량 데이터 변환 완료:', formattedVehicles.length);
+        setVehicles(formattedVehicles);
         setProgress(null);
       } else if (data.type === 'progress') {
         setProgress({

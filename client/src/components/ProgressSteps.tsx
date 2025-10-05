@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Check, Brain, Database, Award, MessageCircle } from "lucide-react";
+import { Check, Brain, Database, Award, MessageCircle, Users, RotateCcw, BarChart } from "lucide-react";
 
 interface Step {
   id: string;
@@ -7,22 +7,39 @@ interface Step {
   status: "completed" | "active" | "pending";
   detail?: string;
   agent?: string;
+  paper?: string; // 논문 정보 추가
 }
 
 interface ProgressStepsProps {
   steps: Step[];
 }
 
-const getAgentIcon = (agent?: string) => {
-  switch (agent) {
-    case "니즈 분석 AI":
-      return Brain;
-    case "검색 AI":
-      return Database;
-    case "평가 AI":
-      return Award;
-    default:
+// 논문 기반 아이콘 매핑
+const getStepIcon = (stepId: string, agent?: string) => {
+  switch (stepId) {
+    case "greeting":
       return MessageCircle;
+    case "macrec":
+      return Users; // 멀티에이전트 협업
+    case "reranking":
+      return RotateCcw; // 재정렬
+    case "topsis":
+      return BarChart; // 분석
+    default:
+      // 레거시 지원
+      switch (agent) {
+        case "니즈 분석 AI":
+        case "Manager + User Analyst + Searcher":
+          return Brain;
+        case "검색 AI":
+        case "Personalized Re-ranking Engine":
+          return Database;
+        case "평가 AI":
+        case "TOPSIS Evaluation Engine":
+          return Award;
+        default:
+          return MessageCircle;
+      }
   }
 };
 
@@ -46,13 +63,16 @@ export default function ProgressSteps({ steps }: ProgressStepsProps) {
                 >
                   {step.status === "completed" ? (
                     <Check className="w-5 h-5" />
-                  ) : step.status === "active" && step.agent ? (
+                  ) : step.status === "active" ? (
                     (() => {
-                      const IconComponent = getAgentIcon(step.agent);
+                      const IconComponent = getStepIcon(step.id, step.agent);
                       return <IconComponent className="w-5 h-5" />;
                     })()
                   ) : (
-                    <span>{index + 1}</span>
+                    (() => {
+                      const IconComponent = getStepIcon(step.id, step.agent);
+                      return <IconComponent className="w-4 h-4 opacity-50" />;
+                    })()
                   )}
                 </div>
                 <div className="flex flex-col">
@@ -78,8 +98,13 @@ export default function ProgressSteps({ steps }: ProgressStepsProps) {
                       {step.detail}
                     </span>
                   )}
-                  {step.agent && step.status === "active" && (
+                  {step.paper && (
                     <span className="text-xs text-primary/60 mt-0.5 font-medium">
+                      {step.paper}
+                    </span>
+                  )}
+                  {step.agent && step.status === "active" && (
+                    <span className="text-xs text-primary/70 mt-0.5 font-medium">
                       {step.agent} 작업 중
                     </span>
                   )}

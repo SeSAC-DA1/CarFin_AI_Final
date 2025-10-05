@@ -97,7 +97,9 @@ export default function FeedbackSection({ vehicles, onRecommend, onSatisfied }: 
 
   const handleFeedbackSelect = (feedback: FeedbackOption) => {
     setSelectedFeedback(feedback.id);
-    onRecommend(`${feedback.label}: ${feedback.detail}`);
+    // 백엔드 MACRec Reflector + Alibaba Re-ranking에 맞는 피드백 형식
+    const feedbackMessage = `이전 추천에 대한 피드백: ${feedback.label}. ${feedback.detail} 이를 반영해서 다시 추천해주세요.`;
+    onRecommend(feedbackMessage);
   };
 
   if (vehicles.length === 0) return null;

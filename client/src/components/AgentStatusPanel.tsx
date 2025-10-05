@@ -2,6 +2,42 @@ import { useState, useEffect } from "react";
 import { Brain, Database, Award, CheckCircle, Clock, Loader2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// 백엔드 step에 따른 작업 메시지 매핑
+const getTaskForStep = (step: string): string => {
+  const taskMap: Record<string, string> = {
+    'analyzing_needs': '사용자 요구사항 분석 중',
+    'user_analyst': '프로필 추출 중',
+    'searching_vehicles': '15만대 데이터 검색 중',
+    'searcher': '조건 맞는 차량 탐색 중',
+    'final_recommendation': 'TOPSIS 정밀 평가 중',
+    'manager': '최종 추천 통합 중',
+    'completed': '협업 완료'
+  };
+  return taskMap[step] || '작업 중';
+};
+
+const getDetailForStep = (step: string, userQuery: string): string => {
+  const detailMap: Record<string, string> = {
+    'analyzing_needs': `"${userQuery.slice(0, 20)}..." 분석 중`,
+    'user_analyst': '예산, 용도, 선호도 파악 중',
+    'searching_vehicles': '조건에 맞는 차량 검색 중',
+    'searcher': 'MACRec 프로토콜 실행 중',
+    'final_recommendation': '6가지 기준 정밀 평가',
+    'manager': 'Alibaba Re-ranking 적용 중',
+    'completed': 'Top 3 차량 선별 완료'
+  };
+  return detailMap[step] || '처리 중';
+};
+
+const getCompletedTaskForAgent = (agentId: string): string => {
+  const completedTaskMap: Record<string, string> = {
+    'user_analyst': '사용자 분석 완료',
+    'searcher': '차량 검색 완료',
+    'manager': '평가 분석 완료'
+  };
+  return completedTaskMap[agentId] || '작업 완료';
+};
+
 interface Agent {
   id: string;
   name: string;
@@ -21,30 +57,34 @@ interface AgentStatusPanelProps {
   onComplete?: () => void;
 }
 
+// MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024)
 const agentDefinitions = [
   {
-    id: "needs",
-    name: "니즈 분석 AI",
+    id: "user_analyst",
+    name: "사용자 분석 AI",
     icon: Brain,
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-950/30",
-    borderColor: "border-blue-200 dark:border-blue-800"
+    borderColor: "border-blue-200 dark:border-blue-800",
+    steps: ["analyzing_needs", "user_analyst"]
   },
   {
-    id: "search",
-    name: "검색 AI",
+    id: "searcher",
+    name: "차량 검색 AI",
     icon: Database,
     color: "text-green-600",
     bgColor: "bg-green-50 dark:bg-green-950/30",
-    borderColor: "border-green-200 dark:border-green-800"
+    borderColor: "border-green-200 dark:border-green-800",
+    steps: ["searching_vehicles", "searcher"]
   },
   {
-    id: "evaluation",
-    name: "평가 AI",
+    id: "manager",
+    name: "통합 관리 AI",
     icon: Award,
     color: "text-purple-600",
     bgColor: "bg-purple-50 dark:bg-purple-950/30",
-    borderColor: "border-purple-200 dark:border-purple-800"
+    borderColor: "border-purple-200 dark:border-purple-800",
+    steps: ["final_recommendation", "manager", "completed"]
   }
 ];
 
@@ -63,123 +103,71 @@ export default function AgentStatusPanel({
     }))
   );
 
-  // 시뮬레이션: 실제 멀티에이전트 협업 과정
+  // 실제 백엔드 progress와 연동
   useEffect(() => {
-    if (!isActive || !userQuery) return;
+    if (!currentStep) {
+      // 초기 상태로 리셋
+      setAgents(agentDefinitions.map(def => ({
+        ...def,
+        status: 'waiting' as const,
+        task: '대기 중',
+        progress: 0
+      })));
+      return;
+    }
 
-    const simulateCollaboration = async () => {
-      // 1단계: 니즈 분석 AI 시작
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'needs'
-          ? {
-              ...agent,
-              status: 'active',
-              task: '사용자 요구사항 분석 중',
-              detail: `"${userQuery.slice(0, 20)}..." 분석 중`,
-              progress: 0
-            }
-          : agent
-      ));
+    // 백엔드 step에 따라 에이전트 상태 업데이트
+    setAgents(prev => prev.map(agent => {
+      // 현재 스텝에 해당하는 에이전트 찾기
+      const isCurrentAgent = (agent as any).steps?.includes(currentStep);
 
-      // 니즈 분석 진행
-      for (let i = 0; i <= 100; i += 20) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setAgents(prev => prev.map(agent =>
-          agent.id === 'needs' ? { ...agent, progress: i } : agent
-        ));
+      if (isCurrentAgent) {
+        // 현재 활성 에이전트
+        return {
+          ...agent,
+          status: 'active' as const,
+          task: getTaskForStep(currentStep),
+          detail: getDetailForStep(currentStep, userQuery),
+          progress: 50 // 진행 중 표시
+        };
+      } else {
+        // 이전에 완료된 에이전트인지 확인
+        const stepOrder = ['analyzing_needs', 'searching_vehicles', 'final_recommendation', 'completed'];
+        const currentStepIndex = stepOrder.indexOf(currentStep);
+        const agentStepIndex = Math.min(...(agent as any).steps.map((s: string) => stepOrder.indexOf(s)).filter((i: number) => i >= 0));
+
+        if (agentStepIndex < currentStepIndex) {
+          // 이미 완료된 에이전트
+          return {
+            ...agent,
+            status: 'completed' as const,
+            task: getCompletedTaskForAgent(agent.id),
+            progress: 100
+          };
+        } else {
+          // 대기 중인 에이전트
+          return {
+            ...agent,
+            status: 'waiting' as const,
+            task: '대기 중',
+            progress: 0
+          };
+        }
       }
+    }));
 
-      // 니즈 분석 완료
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'needs'
-          ? {
-              ...agent,
-              status: 'completed',
-              task: '요구사항 분석 완료',
-              detail: '예산, 용도, 선호도 파악 완료',
-              progress: 100
-            }
-          : agent
-      ));
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 2단계: 검색 AI 시작
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'search'
-          ? {
-              ...agent,
-              status: 'active',
-              task: '15만대 데이터 검색 중',
-              detail: '조건에 맞는 차량 검색 중',
-              progress: 0
-            }
-          : agent
-      ));
-
-      // 검색 진행 (빠르게)
-      for (let i = 0; i <= 100; i += 25) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setAgents(prev => prev.map(agent =>
-          agent.id === 'search' ? { ...agent, progress: i } : agent
-        ));
-      }
-
-      // 검색 완료
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'search'
-          ? {
-              ...agent,
-              status: 'completed',
-              task: '차량 검색 완료',
-              detail: '387대 후보 차량 발견',
-              progress: 100
-            }
-          : agent
-      ));
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 3단계: 평가 AI 시작
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'evaluation'
-          ? {
-              ...agent,
-              status: 'active',
-              task: 'TOPSIS 알고리즘 분석 중',
-              detail: '6가지 기준으로 정밀 평가',
-              progress: 0
-            }
-          : agent
-      ));
-
-      // 평가 진행
-      for (let i = 0; i <= 100; i += 15) {
-        await new Promise(resolve => setTimeout(resolve, 400));
-        setAgents(prev => prev.map(agent =>
-          agent.id === 'evaluation' ? { ...agent, progress: i } : agent
-        ));
-      }
-
-      // 평가 완료
-      setAgents(prev => prev.map(agent =>
-        agent.id === 'evaluation'
-          ? {
-              ...agent,
-              status: 'completed',
-              task: '평가 분석 완료',
-              detail: 'Top 3 차량 선별 완료',
-              progress: 100
-            }
-          : agent
-      ));
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onComplete?.();
-    };
-
-    simulateCollaboration();
-  }, [isActive, userQuery, onComplete]);
+    // completed 상태일 때 모든 에이전트 완료 처리
+    if (currentStep === 'completed') {
+      setTimeout(() => {
+        setAgents(prev => prev.map(agent => ({
+          ...agent,
+          status: 'completed' as const,
+          progress: 100
+        })));
+        onComplete?.();
+      }, 1000);
+    }
+  }, [currentStep, userQuery, onComplete]);
 
   const getStatusIcon = (agent: Agent) => {
     const IconComponent = agent.icon;
@@ -204,9 +192,9 @@ export default function AgentStatusPanel({
         <div
           className={cn(
             "h-1.5 rounded-full transition-all duration-300",
-            agent.id === 'needs' && "bg-blue-500",
-            agent.id === 'search' && "bg-green-500",
-            agent.id === 'evaluation' && "bg-purple-500"
+            agent.id === 'user_analyst' && "bg-blue-500",
+            agent.id === 'searcher' && "bg-green-500",
+            agent.id === 'manager' && "bg-purple-500"
           )}
           style={{ width: `${agent.progress || 0}%` }}
         />
@@ -266,9 +254,9 @@ export default function AgentStatusPanel({
               agent.bgColor,
               agent.borderColor || "border-border",
               agent.status === 'active' && "ring-2 ring-offset-1",
-              agent.status === 'active' && agent.id === 'needs' && "ring-blue-200 dark:ring-blue-800",
-              agent.status === 'active' && agent.id === 'search' && "ring-green-200 dark:ring-green-800",
-              agent.status === 'active' && agent.id === 'evaluation' && "ring-purple-200 dark:ring-purple-800"
+              agent.status === 'active' && agent.id === 'user_analyst' && "ring-blue-200 dark:ring-blue-800",
+              agent.status === 'active' && agent.id === 'searcher' && "ring-green-200 dark:ring-green-800",
+              agent.status === 'active' && agent.id === 'manager' && "ring-purple-200 dark:ring-purple-800"
             )}
             style={{
               animationDelay: `${index * 200}ms`,
