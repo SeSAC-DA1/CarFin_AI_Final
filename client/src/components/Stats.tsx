@@ -1,8 +1,8 @@
 const stats = [
-  { value: "15만대+", label: "실제 매물", sublabel: "엔카·차차차" },
-  { value: "3명의 AI", label: "멀티 에이전트", sublabel: "실시간 협업" },
-  { value: "6가지", label: "평가 기준", sublabel: "종합 분석" },
-  { value: "3개 논문", label: "검증된 시스템", sublabel: "SIGIR·RecSys" }
+  { value: "3분안에", label: "완벽한 추천", sublabel: "빠른 분석" },
+  { value: "15만대 중에서", label: "딱 맞는 차량", sublabel: "실제 매물" },
+  { value: "3개 논문", label: "학술 검증", sublabel: "SIGIR·RecSys" },
+  { value: "3명의 AI", label: "멀티에이전트", sublabel: "실시간 협업" }
 ];
 
 export default function Stats() {

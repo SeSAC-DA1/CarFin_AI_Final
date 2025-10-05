@@ -6,6 +6,7 @@ import VehicleRecommendations from "./VehicleRecommendations";
 import QuickReplyButtons from "./QuickReplyButtons";
 import ProgressSteps from "./ProgressSteps";
 import MACRecCollaborationViewer from "./MACRecCollaborationViewer";
+import WelcomeFlow from "./WelcomeFlow";
 import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
 
 const quickReplies = [
@@ -20,6 +21,7 @@ export default function ChatInterface() {
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [showMACRecCollaboration, setShowMACRecCollaboration] = useState(false);
   const [currentUserQuery, setCurrentUserQuery] = useState<string>('');
+  const [showWelcome, setShowWelcome] = useState(messages.length === 0);
 
   const steps = useMemo(() => {
     if (!progress) {
@@ -54,6 +56,7 @@ export default function ChatInterface() {
     sendMessage(value);
     setShowQuickReplies(false);
     setCurrentUserQuery(value);
+    setShowWelcome(false);
     // MACRec 협업 시뮬레이션 시작
     setShowMACRecCollaboration(true);
   };
@@ -62,8 +65,17 @@ export default function ChatInterface() {
     sendMessage(message);
     setShowQuickReplies(false);
     setCurrentUserQuery(message);
+    setShowWelcome(false);
     // MACRec 협업 시뮬레이션 시작
     setShowMACRecCollaboration(true);
+  };
+
+  const handleWelcomeStart = () => {
+    setShowWelcome(false);
+  };
+
+  const handleWelcomeQuickStart = (message: string) => {
+    handleSendMessage(message);
   };
 
   const handleMACRecComplete = () => {
@@ -110,40 +122,54 @@ export default function ChatInterface() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 bg-background/50 backdrop-blur-sm space-y-4">
-            {messages.map((message, index) => (
-              <MessageBubble key={index} {...message} />
-            ))}
-
-            {/* MACRec 멀티에이전트 협업 뷰어 */}
-            {showMACRecCollaboration && currentUserQuery && (
-              <div className="animate-slide-up" data-testid="macrec-collaboration">
-                <MACRecCollaborationViewer
-                  query={currentUserQuery}
-                  isActive={showMACRecCollaboration}
-                  onComplete={handleMACRecComplete}
-                  className="mb-4"
+            {/* Welcome Flow - 처음 진입 시에만 표시 */}
+            {showWelcome && (
+              <div className="animate-fade-in">
+                <WelcomeFlow
+                  onStart={handleWelcomeStart}
+                  onQuickStart={handleWelcomeQuickStart}
                 />
               </div>
             )}
 
-            {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
-              <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20 animate-pulse">
-                <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                <p className="text-sm text-muted-foreground">{progress.message}</p>
-              </div>
-            )}
+            {!showWelcome && (
+              <>
+                {messages.map((message, index) => (
+                  <MessageBubble key={index} {...message} />
+                ))}
 
-            {vehicles.length > 0 && (
-              <div className="animate-slide-up" data-testid="vehicles-container">
-                <VehicleRecommendations vehicles={vehicles} />
-              </div>
-            )}
+                {/* MACRec 멀티에이전트 협업 뷰어 */}
+                {showMACRecCollaboration && currentUserQuery && (
+                  <div className="animate-slide-up" data-testid="macrec-collaboration">
+                    <MACRecCollaborationViewer
+                      query={currentUserQuery}
+                      isActive={showMACRecCollaboration}
+                      onComplete={handleMACRecComplete}
+                      className="mb-4"
+                    />
+                  </div>
+                )}
 
-            {showQuickReplies && messages.length > 0 && (
-              <div className="animate-fade-in">
-                <p className="text-xs text-muted-foreground mb-2 px-2">빠른 선택</p>
-                <QuickReplyButtons options={quickReplies} onSelect={handleQuickReply} />
-              </div>
+                {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
+                  <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20 animate-pulse">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                    <p className="text-sm text-muted-foreground">{progress.message}</p>
+                  </div>
+                )}
+
+                {vehicles.length > 0 && (
+                  <div className="animate-slide-up" data-testid="vehicles-container">
+                    <VehicleRecommendations vehicles={vehicles} />
+                  </div>
+                )}
+
+                {showQuickReplies && messages.length > 0 && (
+                  <div className="animate-fade-in">
+                    <p className="text-xs text-muted-foreground mb-2 px-2">빠른 선택</p>
+                    <QuickReplyButtons options={quickReplies} onSelect={handleQuickReply} />
+                  </div>
+                )}
+              </>
             )}
           </div>
 

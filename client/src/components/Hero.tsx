@@ -18,38 +18,38 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">학술 논문 기반 추천 시스템</span>
+              <span className="text-sm font-medium text-primary">3분만에 완벽한 추천</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                복잡한 차량 선택을
+                차 고르는 고민,
               </span>
               <br />
-              <span className="text-foreground">더 쉽고 정확하게</span>
+              <span className="text-foreground">AI 3명이 대신 해드립니다</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                3명의 AI가 함께 분석합니다
+                15만대 → 3대, 3분만에
               </span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">학술 논문으로 검증된 멀티 에이전트 시스템</span>
+              <span className="text-foreground/90 font-medium">니 취향만 말해, 나머지는 내가 다 해줄게</span>
               <br />
-              <span className="text-muted-foreground">대화를 통해 니즈를 파악하고 15만대 데이터에서 맞춤 추천</span>
+              <span className="text-muted-foreground">3명의 AI가 동시에 15만대를 분석해서 딱 맞는 차 3대만 추천</span>
               <br />
-              <span className="text-primary font-medium">객관적 기준으로 정확한 분석을 제공합니다</span>
+              <span className="text-primary font-medium">복잡한 차량 선택을 단순하게</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 rounded-full shadow-lg hover:shadow-xl transition-shadow" data-testid="button-start-chat">
                 <Link href="/chat">
-                  차량 추천 시작하기
+                  AI 3명과 상담 시작
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-full border-2" data-testid="button-learn-more">
-                자세히 알아보기
+                3분 체험해보기
               </Button>
             </div>
 
