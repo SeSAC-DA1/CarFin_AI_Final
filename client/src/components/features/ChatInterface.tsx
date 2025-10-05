@@ -4,12 +4,12 @@ import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
 import QuickReplyButtons from "./QuickReplyButtons";
-import ProgressSteps from "./ProgressSteps";
-import MACRecCollaborationViewer from "./MACRecCollaborationViewer";
-import WelcomeFlow from "./WelcomeFlow";
-import AgentStatusPanel from "./AgentStatusPanel";
-import FeedbackSection from "./FeedbackSection";
-import LoadingSpinner from "./LoadingSpinner";
+import ProgressSteps from "@/components/ai/ProgressSteps";
+import MACRecCollaborationViewer from "@/components/ai/MACRecCollaborationViewer";
+import WelcomeFlow from "@/components/layout/WelcomeFlow";
+import AgentStatusPanel from "@/components/ai/AgentStatusPanel";
+import FeedbackSection from "@/components/layout/FeedbackSection";
+import LoadingSpinner from "@/components/ai/LoadingSpinner";
 import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
 
 const quickReplies = [

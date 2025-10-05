@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { cacheService } from "./lib/cache/CacheService";
+import { railwayRedisService } from "./lib/cache/RailwayRedisService";
+import { errorHandler, setupProcessErrorHandlers } from "./lib/middleware/ErrorHandler";
 import dotenv from "dotenv";
 
 // Load environment variables
 dotenv.config();
+
+// 프로세스 레벨 에러 핸들러 설정
+setupProcessErrorHandlers();
 
 const app = express();
 
@@ -22,7 +26,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.some(allowed =>
     allowed === origin ||
-    (allowed.includes('*') && origin?.includes('vercel.app'))
+    (allowed?.includes('*') && origin?.includes('vercel.app'))
   )) {
     res.setHeader('Access-Control-Allow-Origin', origin!);
   }
@@ -71,24 +75,22 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // 🎯 Redis 캐시 서비스 초기화 (성능 최적화)
-  log("🔥 Initializing Redis cache service...");
+  // 🎯 Railway Redis 서비스 초기화 (성능 최적화)
+  log("🔥 Initializing Railway Redis service...");
   try {
-    await cacheService.initialize();
-    log("✅ Redis cache service initialized successfully");
+    await railwayRedisService.initialize();
+    log("✅ Railway Redis service initialized successfully");
   } catch (error) {
-    log("⚠️ Redis cache initialization failed, running without cache:", error);
+    log("⚠️ Railway Redis initialization failed, running without cache:", String(error));
   }
 
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  // 향상된 에러 처리 미들웨어
+  app.use(errorHandler.requestTimeout(30000)); // 30초 타임아웃
+  app.use(errorHandler.handlePayloadTooLarge.bind(errorHandler));
+  app.use(errorHandler.handleError.bind(errorHandler));
+  app.use(errorHandler.handleNotFound.bind(errorHandler));
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

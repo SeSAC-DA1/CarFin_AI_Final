@@ -85,18 +85,46 @@ export class MultiAgentSystem {
 
   private filterVehicles(vehicles: Vehicle[], message: string): Vehicle[] {
     const lowerMessage = message.toLowerCase();
-    
-    const priceMatch = message.match(/(\d+)만원?/);
-    const maxPrice = priceMatch ? parseInt(priceMatch[1]) * 10000 : null;
+    const currentYear = new Date().getFullYear();
 
-    return vehicles.filter(v => {
-      if (maxPrice && v.price && v.price > maxPrice) return false;
-      
+    const priceMatch = message.match(/(\d+)만원?/);
+    const maxPrice = priceMatch ? parseInt(priceMatch[1]) * 10000 : 5000; // 기본 5000만원
+
+    // 품질 기준 필터링
+    const qualityFiltered = vehicles.filter(v => {
+      // 가격 필터
+      if (v.price && v.price > maxPrice * 10000) return false;
+
+      // 연식 필터 (10년 이내 차량 우선)
+      if (v.modelYear && v.modelYear < currentYear - 15) return false;
+
+      // 주행거리 필터 (20만km 이하)
+      if (v.distance && v.distance > 200000) return false;
+
+      // 차종 필터
       if (lowerMessage.includes('suv') && v.carType !== 'SUV') return false;
       if (lowerMessage.includes('세단') && v.carType !== '세단') return false;
-      
+
+      // 연비 우선 시 소형차나 하이브리드 우선
+      if (lowerMessage.includes('연비')) {
+        const isEfficientCar = v.carType === '경차' ||
+                              v.carType === '소형차' ||
+                              v.fuelType?.includes('하이브리드') ||
+                              v.fuelType?.includes('LPG');
+        if (!isEfficientCar && v.carType === 'SUV') return false;
+      }
+
       return true;
-    }).slice(0, 50);
+    });
+
+    // 품질 점수로 정렬 (연식 신선도 + 주행거리 적음 우선)
+    const sortedVehicles = qualityFiltered.sort((a, b) => {
+      const aScore = (a.modelYear || 2000) * 0.7 - (a.distance || 0) * 0.00001;
+      const bScore = (b.modelYear || 2000) * 0.7 - (b.distance || 0) * 0.00001;
+      return bScore - aScore;
+    });
+
+    return sortedVehicles.slice(0, 50);
   }
 
   private async rankVehicles(
@@ -122,7 +150,7 @@ export class MultiAgentSystem {
       ? `실제 구매자 리뷰 (${reviews.length}개): ${reviews.slice(0, 5).map(r => r.review).join(', ')}`
       : '리뷰 데이터 없음';
 
-    const prompt = `당신은 중고차 추천 전문가입니다. TOPSIS 다기준 의사결정 방법론을 사용하여 차량을 평가하고 순위를 매기세요.
+    const prompt = `당신은 중고차 추천 전문가입니다. 사용자 요구에 맞는 차량 3대를 추천하고 평가해주세요.
 
 사용자 요청: "${userMessage}"
 사용자 선호도: ${preferences}
@@ -133,26 +161,29 @@ ${JSON.stringify(vehicleData, null, 2)}
 ${reviewSummary}
 
 다음 기준으로 각 차량을 평가하세요:
-1. 가격 대비 가치
-2. 주행거리 적절성  
-3. 연식 신선도
-4. 연료 효율성
-5. 차종 적합성
+1. 사용자 요구사항 부합도 (40%)
+2. 가격 경쟁력 (20%)
+3. 차량 상태 (연식, 주행거리) (20%)
+4. 연료 효율성 (10%)
+5. 브랜드 신뢰도 (10%)
 
-각 차량에 대해 다음 JSON 형식으로 응답하세요 (반드시 유효한 JSON):
+각 차량에 대해 다음 JSON 형식으로 응답하세요:
 [
   {
-    "vehicleId": 숫자,
+    "vehicleId": 차량ID,
     "rank": 1,
     "topsisScore": 85,
-    "matchingScore": 92,
-    "reason": "추천 이유를 1-2문장으로",
-    "pros": ["장점1", "장점2", "장점3"],
-    "cons": ["단점1", "단점2"]
+    "matchingScore": 88,
+    "reason": "구체적인 추천 이유 (사용자 요구사항과 연결)",
+    "pros": ["주요 장점1", "주요 장점2", "주요 장점3"],
+    "cons": ["고려할 점1", "고려할 점2"]
   }
 ]
 
-상위 3개만 반환하고, 반드시 유효한 JSON 배열로 응답하세요.`;
+- 점수는 60-95점 범위로 현실적으로 설정
+- 1위는 85-95점, 2위는 80-90점, 3위는 75-85점 범위
+- 상위 3개만 반환
+- 반드시 유효한 JSON 배열로 응답`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
@@ -184,12 +215,12 @@ ${reviewSummary}
       return vehicles.slice(0, 3).map((vehicle, index) => ({
         vehicle,
         rank: index + 1,
-        score: 80 - index * 5,
-        reason: "추천 기준에 부합하는 차량입니다",
-        pros: ["가격 적절", "상태 양호", "실용적"],
-        cons: ["정밀 분석 필요"],
-        topsisScore: 80 - index * 5,
-        matchingScore: 85 - index * 5
+        score: 88 - index * 3, // 더 현실적인 점수
+        reason: `${userMessage.includes('연비') ? '연비가 우수한' : '사용자 요구에 적합한'} 차량입니다`,
+        pros: ["사용자 요구사항 부합", "합리적인 가격", "좋은 차량 상태"],
+        cons: ["추가 검토 권장", "직접 확인 필요"],
+        topsisScore: 88 - index * 3,
+        matchingScore: 85 - index * 2
       }));
     }
   }

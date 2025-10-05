@@ -214,6 +214,18 @@ export class RuleBasedAgentAnalyzer {
     const keyFindings: string[] = [];
     const recommendedVehicleIds: string[] = [];
 
+    // 차량 배열이 유효한지 확인
+    if (!Array.isArray(vehicles) || vehicles.length === 0) {
+      console.warn('⚠️ analyzeAsDataAnalyst: vehicles가 유효하지 않음, 빈 분석 반환');
+      return {
+        agentId: 'data-analyst',
+        summary: '데이터 분석을 위한 차량 정보가 부족합니다.',
+        keyFindings: ['차량 데이터를 불러올 수 없습니다.'],
+        recommendedVehicleIds: [],
+        confidence: 0.0
+      };
+    }
+
     const sortedByValue = [...vehicles].sort((a, b) => {
       const aValue = (a.safety + (a.fuelEfficiency || 10) + a.reliability) / a.price;
       const bValue = (b.safety + (b.fuelEfficiency || 10) + b.reliability) / b.price;

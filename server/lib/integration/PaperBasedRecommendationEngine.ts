@@ -14,10 +14,10 @@
  * 4. 사용자 피드백 시 MACRec Reflector + Re-ranking 재실행
  */
 
-import { executeMACRecProtocol, executeReRecommendation, type MACRecRecommendation } from '../collaboration/MACRecProtocol';
-import { PersonalizedReranking, instantReRecommendation, updateUserProfileFromFeedback, type RerankingResult } from '../recommendation/PersonalizedReranking';
-import { AHP_TOPSIS_Engine, type VehicleInsightDashboard } from '../evaluation/AHP_TOPSIS_Dashboard';
-import type { Vehicle } from '../recommendation/PersonalizedReranking';
+import { executeMACRecProtocol, executeReRecommendation, type MACRecRecommendation } from '../papers/macrec/MACRecProtocol';
+import { PersonalizedReranking, instantReRecommendation, updateUserProfileFromFeedback, type RerankingResult } from '../papers/alibaba/PersonalizedReranking';
+import { AHP_TOPSIS_Engine, type VehicleInsightDashboard } from '../papers/topsis/AHP_TOPSIS_Dashboard';
+import type { Vehicle } from '../papers/alibaba/PersonalizedReranking';
 
 export interface PaperBasedRecommendationRequest {
   user_message: string;
@@ -132,7 +132,8 @@ export class PaperBasedRecommendationEngine {
       request.user_message,
       needsAnalyst,
       dataAnalyst,
-      concierge
+      concierge,
+      allVehicles
     );
 
     const macrecTime = Date.now() - macrecStartTime;

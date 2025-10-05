@@ -43,13 +43,15 @@ export default function Hero() {
 
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 rounded-full shadow-lg hover:shadow-xl transition-shadow" data-testid="button-start-chat">
-                <Link href="/chat">
+                <Link href="/onboarding">
                   AI 3명과 상담 시작
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full border-2" data-testid="button-learn-more">
-                3분 체험해보기
+              <Button asChild size="lg" variant="outline" className="rounded-full border-2" data-testid="button-learn-more">
+                <Link href="/onboarding">
+                  3분 체험해보기
+                </Link>
               </Button>
             </div>
 

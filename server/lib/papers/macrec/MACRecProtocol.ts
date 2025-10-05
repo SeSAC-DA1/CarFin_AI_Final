@@ -157,7 +157,8 @@ export class MACRecProtocol {
     assignments: AgentAssignment[],
     userMessage: string,
     needsAnalyst: any,
-    dataAnalyst: any
+    dataAnalyst: any,
+    vehicles: any[] = []
   ): Promise<AgentResult[]> {
 
     const results: AgentResult[] = [];
@@ -187,12 +188,12 @@ export class MACRecProtocol {
       const startTime = Date.now();
 
       const userProfile = results.find(r => r.taskId === 'user_analysis')?.result;
-      const vehicles = await dataAnalyst.analyzeAsDataAnalyst(userMessage, userProfile);
+      const vehicleAnalysis = await dataAnalyst.analyzeAsDataAnalyst(userMessage, vehicles);
 
       results.push({
         taskId: searchTask.task.id,
         agentType: 'searcher',
-        result: vehicles,
+        result: vehicleAnalysis,
         confidence: 0.90,
         executionTime: Date.now() - startTime
       });
@@ -332,7 +333,8 @@ export async function executeMACRecProtocol(
   userMessage: string,
   needsAnalyst: any,
   dataAnalyst: any,
-  concierge: any
+  concierge: any,
+  vehicles: any[] = []
 ): Promise<MACRecRecommendation> {
 
   const protocol = new MACRecProtocol();
@@ -350,7 +352,8 @@ export async function executeMACRecProtocol(
     assignments,
     userMessage,
     needsAnalyst,
-    dataAnalyst
+    dataAnalyst,
+    vehicles
   );
   console.log('🔄 MACRec Step 3: 병렬 실행 완료', results.length);
 

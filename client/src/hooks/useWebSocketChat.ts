@@ -94,9 +94,19 @@ export function useWebSocketChat() {
         } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended') {
           try {
             // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환 (안전 처리)
-            const formattedVehicles = (data.vehicles || []).map((vehicle: any) => ({
-              id: vehicle.id || vehicle.vehicleId || vehicle.rank?.toString() || Math.random().toString(),
-              rank: vehicle.rank || 1,
+            const formattedVehicles = (data.vehicles || []).map((vehicle: any, index: number) => {
+              // TOPSIS 점수 정규화 (0-1 범위를 0-100으로 변환)
+              const normalizedTopsisScore = vehicle.topsisScore < 1
+                ? Math.round(vehicle.topsisScore * 100)
+                : vehicle.topsisScore;
+
+              const normalizedMatchScore = vehicle.matchScore < 1
+                ? Math.round(vehicle.matchScore * 100)
+                : vehicle.matchScore;
+
+              return {
+              id: vehicle.id || vehicle.vehicleId || `vehicle_${index}`,
+              rank: index + 1, // 실제 순서대로 순위 부여
               name: vehicle.name || `${vehicle.manufacturer || vehicle.brand || '브랜드 미상'} ${vehicle.model || '모델 미상'}`,
               manufacturer: vehicle.manufacturer || vehicle.brand || '브랜드 미상',
               model: vehicle.model || '모델 미상',
@@ -105,14 +115,15 @@ export function useWebSocketChat() {
               mileage: vehicle.mileage || vehicle.distance || 0,
               fuel: vehicle.fuel || vehicle.fuelType || '연료 미상',
               image: vehicle.image || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop',
-              topsisScore: vehicle.topsisScore || vehicle.matchingScore || 0,
-              matchScore: vehicle.matchScore || vehicle.topsisScore || 0,
+              topsisScore: normalizedTopsisScore,
+              matchScore: normalizedMatchScore,
               reason: vehicle.reason || '추천 이유',
               pros: vehicle.pros || [],
               cons: vehicle.cons || [],
               location: vehicle.location || '위치 미상',
               detailUrl: vehicle.detailUrl || ''
-            }));
+            };
+            });
 
             console.log('🚗 차량 데이터 변환 완료:', formattedVehicles.length);
             setVehicles(formattedVehicles);
@@ -194,9 +205,50 @@ export function useWebSocketChat() {
 
   const sendMessage = useCallback((content: string) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      // ProfileSetup에서 저장된 사용자 프로필 데이터 가져오기
+      const savedProfile = localStorage.getItem('carfin_user_profile');
+      let userProfile = null;
+
+      if (savedProfile) {
+        try {
+          const profileData = JSON.parse(savedProfile);
+          // ProfileSetup 데이터를 백엔드 UserPreferenceProfile 형식으로 변환
+          userProfile = {
+            priceWeight: profileData.importance?.price || 5,
+            fuelEfficiencyWeight: profileData.importance?.fuelEfficiency || 5,
+            safetyWeight: profileData.importance?.safety || 5,
+            designWeight: profileData.importance?.design || 5,
+            brandWeight: profileData.importance?.brand || 5,
+            // 예산 정보 추가
+            budget: {
+              min: profileData.budget?.[0] * 10000 || 1000000, // 만원 -> 원 단위 변환
+              max: profileData.budget?.[1] * 10000 || 30000000
+            },
+            // 기본 정보 추가
+            demographics: {
+              age: profileData.age,
+              location: profileData.location,
+              name: profileData.name
+            },
+            // 사용 용도 정보
+            usage: profileData.usage || [],
+            // 선호 정보
+            preferences: {
+              brands: profileData.preferredBrands || [],
+              vehicleTypes: profileData.vehicleTypes || [],
+              fuelType: profileData.fuelType,
+              transmission: profileData.transmission
+            }
+          };
+        } catch (error) {
+          console.warn('프로필 데이터 파싱 오류:', error);
+        }
+      }
+
       wsRef.current.send(JSON.stringify({
         type: 'user_message',
         content,
+        userProfile, // 프로필 데이터 포함
       }));
     }
   }, []);

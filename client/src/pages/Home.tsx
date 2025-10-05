@@ -1,10 +1,10 @@
-import Navigation from "@/components/Navigation";
-import Hero from "@/components/Hero";
-import Stats from "@/components/Stats";
-import Features from "@/components/Features";
-import Process from "@/components/Process";
-import PapersSection from "@/components/PapersSection";
-import Footer from "@/components/Footer";
+import Navigation from "@/components/layout/Navigation";
+import Hero from "@/components/layout/Hero";
+import Stats from "@/components/layout/Stats";
+import Features from "@/components/layout/Features";
+import Process from "@/components/layout/Process";
+import PapersSection from "@/components/layout/PapersSection";
+import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   return (

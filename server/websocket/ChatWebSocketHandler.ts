@@ -10,7 +10,7 @@ import {
 import type { UserPreferenceProfile } from "../lib/topsis/TOPSISEngine";
 import { extractOptionsFromMessage, matchOptions } from "../lib/utils/OptionMatcher";
 import { analyzeDamage } from "../lib/utils/DamageCalculator";
-import { cacheService } from "../lib/cache/CacheService";
+import { railwayRedisService } from "../lib/cache/RailwayRedisService";
 
 // 🎓 논문 3개 기반 통합 시스템 import
 import {
@@ -80,9 +80,9 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
   ws.on('message', async (data: string) => {
     try {
       const message = JSON.parse(data);
-      
+
       if (message.type === 'user_message') {
-        await handleUserMessage(sessionId, message.content);
+        await handleUserMessage(sessionId, message.content, message.userProfile);
       } else if (message.type === 'get_insights') {
         await handleGetInsights(sessionId, message.vehicleId);
       }
@@ -105,9 +105,34 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
   });
 }
 
-async function handleUserMessage(sessionId: string, userMessage: string) {
+async function handleUserMessage(sessionId: string, userMessage: string, userProfile?: any) {
   const session = sessions.get(sessionId);
   if (!session) return;
+
+  // 📊 프로필 데이터가 제공된 경우 세션에 저장
+  if (userProfile) {
+    console.log('👤 사용자 프로필 데이터 수신:', {
+      name: userProfile.demographics?.name,
+      age: userProfile.demographics?.age,
+      budget: userProfile.budget,
+      importance: {
+        price: userProfile.priceWeight,
+        fuelEfficiency: userProfile.fuelEfficiencyWeight,
+        safety: userProfile.safetyWeight,
+        design: userProfile.designWeight,
+        brand: userProfile.brandWeight
+      }
+    });
+
+    // ProfileSetup 형식을 TOPSIS UserPreferenceProfile 형식으로 변환
+    session.userProfile = {
+      priceWeight: (userProfile.priceWeight || 5) / 10, // 1-10 스케일을 0-1로 정규화
+      fuelEfficiencyWeight: (userProfile.fuelEfficiencyWeight || 5) / 10,
+      safetyWeight: (userProfile.safetyWeight || 5) / 10,
+      designWeight: (userProfile.designWeight || 5) / 10,
+      brandWeight: (userProfile.brandWeight || 5) / 10
+    };
+  }
 
   session.conversationHistory.push(`사용자: ${userMessage}`);
 
@@ -283,15 +308,24 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
 
   session.conversationHistory.push(`Needs Analyst: ${needsAnalysis.content}`);
 
-  // UserProfile 동적 추출
-  sendMessage(session.ws, {
-    type: 'progress',
-    step: 'extracting_profile',
-    message: '사용자 프로필을 추출중입니다...',
-  });
+  // UserProfile 처리 (ProfileSetup 데이터가 있으면 사용, 없으면 동적 추출)
+  if (!session.userProfile) {
+    sendMessage(session.ws, {
+      type: 'progress',
+      step: 'extracting_profile',
+      message: '사용자 프로필을 추출중입니다...',
+    });
 
-  const userProfile = await geminiService.extractUserProfile(session.conversationHistory);
-  session.userProfile = userProfile;
+    const userProfile = await geminiService.extractUserProfile(session.conversationHistory);
+    session.userProfile = userProfile;
+  } else {
+    sendMessage(session.ws, {
+      type: 'progress',
+      step: 'using_saved_profile',
+      message: '저장된 프로필을 사용합니다...',
+    });
+    console.log('📋 저장된 사용자 프로필 사용:', session.userProfile);
+  }
 
   // 2. 차량 검색 및 TOPSIS 랭킹
   sendMessage(session.ws, {
@@ -300,9 +334,19 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
     message: '15만대 매물에서 조건에 맞는 차량을 검색중입니다...',
   });
 
-  // 🔍 고급 필터 추출 (예산, 차종, 브랜드, 연료 등)
+  // 🔍 고급 필터 추출 (예산, 차종, 브랜드, 연료 등) + ProfileSetup 데이터 활용
   const budgetMatch = userMessage.match(/(\d+)(?:만원|만|백만)/);
-  const maxPrice = budgetMatch ? parseInt(budgetMatch[1]) : 5000;
+  let maxPrice = budgetMatch ? parseInt(budgetMatch[1]) : 5000;
+  let minPrice = 0;
+
+  // ProfileSetup 예산 데이터가 있으면 우선 사용
+  if (session.userProfile && userProfile?.budget) {
+    maxPrice = Math.floor(userProfile.budget.max / 10000); // 원 -> 만원 변환
+    minPrice = Math.floor(userProfile.budget.min / 10000);
+    console.log(`💰 ProfileSetup 예산 범위 사용: ${minPrice}-${maxPrice}만원`);
+  } else {
+    console.log(`💰 메시지 기반 예산 추출: ~${maxPrice}만원`);
+  }
 
   // 차종 키워드 매핑
   let carType = undefined;
@@ -350,6 +394,7 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
   const randomOffset = Math.floor(Math.random() * 1000);
 
   const searchParams = {
+    minPrice,
     maxPrice,
     carType,
     manufacturer,
@@ -361,11 +406,11 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
   console.log(`🔍 검색 파라미터:`, searchParams);
 
   // 🎯 캐시에서 차량 검색 결과 조회
-  let vehicles = await cacheService.getVehicleSearchResults(searchParams);
+  let vehicles = await railwayRedisService.getVehicleSearchResults(searchParams);
   if (!vehicles) {
     vehicles = await storage.searchVehicles(searchParams);
     // 검색 결과를 캐시에 저장 (5분)
-    await cacheService.setVehicleSearchResults(searchParams, vehicles);
+    await railwayRedisService.setVehicleSearchResults(searchParams, vehicles);
     console.log(`💾 차량 검색 결과 캐시 저장: ${vehicles.length}개`);
   } else {
     console.log(`🎯 차량 검색 캐시 HIT: ${vehicles.length}개`);
@@ -387,19 +432,23 @@ async function handleLegacyRecommendation(session: ChatSession, userMessage: str
     message: `${vehicles.length}개 차량을 정밀 분석중입니다...`,
   });
 
-  // 🎯 3. 개인화된 가중치 적용 (Alibaba Personalized Re-ranking)
-  let personalizedProfile = DEFAULT_USER_PROFILE;
+  // 🎯 3. 개인화된 가중치 적용 (ProfileSetup + Alibaba Personalized Re-ranking)
+  let personalizedProfile = session.userProfile || DEFAULT_USER_PROFILE;
+
+  // 추가 피드백이 있으면 ProfileSetup 기반 프로필을 더 세밀하게 조정
   if (Object.keys(session.userFeedback).length > 0) {
-    personalizedProfile = adjustWeightsFromFeedback(DEFAULT_USER_PROFILE, session.userFeedback);
-    console.log(`📊 개인화 가중치 적용:`, session.userFeedback);
+    personalizedProfile = adjustWeightsFromFeedback(personalizedProfile, session.userFeedback);
+    console.log(`📊 ProfileSetup + 피드백 기반 가중치 적용:`, session.userFeedback);
+  } else if (session.userProfile) {
+    console.log(`📊 ProfileSetup 기반 가중치 사용:`, personalizedProfile);
   }
 
   // 🎯 캐시에서 TOPSIS 랭킹 결과 조회
-  let topsisResult = await cacheService.getTopsisRanking(personalizedProfile, vehicles);
+  let topsisResult = await railwayRedisService.getTopsisRanking(personalizedProfile, vehicles);
   if (!topsisResult) {
     topsisResult = await rankVehiclesWithTOPSIS(vehicles, personalizedProfile);
     // TOPSIS 결과를 캐시에 저장 (10분)
-    await cacheService.setTopsisRanking(personalizedProfile, vehicles, topsisResult);
+    await railwayRedisService.setTopsisRanking(personalizedProfile, vehicles, topsisResult);
     console.log(`💾 TOPSIS 랭킹 결과 캐시 저장`);
   } else {
     console.log(`🎯 TOPSIS 랭킹 캐시 HIT`);

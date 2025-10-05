@@ -15,7 +15,7 @@
  * - Top 3 차량 선택 및 즉시 재추천 지원
  */
 
-import type { UserProfile } from '../collaboration/MACRecProtocol';
+import type { UserProfile } from '../macrec/MACRecProtocol';
 
 export interface Vehicle {
   id: number;
