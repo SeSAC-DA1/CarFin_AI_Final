@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Vehicle, HyundaiReview } from "@shared/schema";
 
 export interface AgentMessage {
