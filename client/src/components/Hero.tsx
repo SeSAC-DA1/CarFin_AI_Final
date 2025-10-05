@@ -34,7 +34,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">니 취향만 말해, 나머지는 내가 다 해줄게</span>
+              <span className="text-foreground/90 font-medium">학술 논문으로 검증된 멀티 에이전트 시스템</span>
               <br />
               <span className="text-muted-foreground">3명의 AI가 동시에 15만대를 분석해서 딱 맞는 차 3대만 추천</span>
               <br />
