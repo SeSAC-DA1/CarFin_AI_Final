@@ -120,8 +120,6 @@ export default function ChatInterface() {
     setShowQuickReplies(false);
     setCurrentUserQuery(value);
     setShowWelcome(false);
-    // MACRec 협업 시뮬레이션 시작
-    setShowMACRecCollaboration(true);
   };
 
   const handleSendMessage = (message: string) => {
@@ -129,8 +127,6 @@ export default function ChatInterface() {
     setShowQuickReplies(false);
     setCurrentUserQuery(message);
     setShowWelcome(false);
-    // MACRec 협업 시뮬레이션 시작
-    setShowMACRecCollaboration(true);
   };
 
   const handleWelcomeStart = () => {
@@ -161,6 +157,7 @@ export default function ChatInterface() {
     console.log('😊 사용자 만족');
     // 만족도 로깅 또는 분석을 위한 추가 처리
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
@@ -225,7 +222,8 @@ export default function ChatInterface() {
                   <MessageBubble key={index} {...message} />
                 ))}
 
-                {/* MACRec 멀티에이전트 협업 뷰어 */}
+
+                {/* MACRec 멀티에이전트 협업 뷰어 (기존) */}
                 {showMACRecCollaboration && currentUserQuery && (
                   <div className="animate-slide-up" data-testid="macrec-collaboration">
                     <MACRecCollaborationViewer
@@ -248,10 +246,28 @@ export default function ChatInterface() {
                 )}
 
                 {vehicles.length > 0 && (
-                  <div className="animate-slide-up" data-testid="vehicles-container">
-                    <VehicleRecommendations vehicles={vehicles} />
+                  <div className="animate-slide-up space-y-6" data-testid="vehicles-container">
+                    {/* 💬 AI 메시지 */}
+                    <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-card-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white font-bold">AI</span>
+                        </div>
+                        <span className="text-sm font-medium">CarFin AI</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        🎉 <strong>{currentUserQuery}</strong>에 맞는 최고의 차량 {vehicles.length}대를 찾았어요!
+                      </p>
+                    </div>
 
-                    {/* 피드백 섹션 - 추천 결과 후에 표시 */}
+                    {/* 🚗 차량 추천 카드 */}
+                    <VehicleRecommendations
+                      vehicles={vehicles}
+                      userQuery={currentUserQuery}
+                      showPersonalization={true}
+                    />
+
+                    {/* 피드백 섹션 - 분석 후에 표시 */}
                     <FeedbackSection
                       vehicles={vehicles}
                       onRecommend={handleFeedbackRecommend}

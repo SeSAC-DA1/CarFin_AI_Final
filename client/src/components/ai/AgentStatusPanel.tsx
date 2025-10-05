@@ -57,33 +57,39 @@ interface AgentStatusPanelProps {
   onComplete?: () => void;
 }
 
-// MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024)
+// MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024) - 사용자 맞춤 이름
 const agentDefinitions = [
   {
     id: "user_analyst",
-    name: "사용자 분석 AI",
+    name: "니즈 분석 에이전트",
+    role: "사용자의 구매 조건과 선호도를 분석합니다",
     icon: Brain,
     color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
+    bgColor: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20",
     borderColor: "border-blue-200 dark:border-blue-800",
+    glowColor: "shadow-blue-500/20",
     steps: ["analyzing_needs", "user_analyst"]
   },
   {
     id: "searcher",
-    name: "차량 검색 AI",
+    name: "데이터 분석 에이전트",
+    role: "15만대 매물에서 조건에 맞는 차량을 검색합니다",
     icon: Database,
     color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950/30",
+    bgColor: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
     borderColor: "border-green-200 dark:border-green-800",
+    glowColor: "shadow-green-500/20",
     steps: ["searching_vehicles", "searcher"]
   },
   {
     id: "manager",
-    name: "통합 관리 AI",
+    name: "매니저 에이전트",
+    role: "6가지 기준으로 차량을 종합 평가하고 최종 추천합니다",
     icon: Award,
     color: "text-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-950/30",
+    bgColor: "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20",
     borderColor: "border-purple-200 dark:border-purple-800",
+    glowColor: "shadow-purple-500/20",
     steps: ["final_recommendation", "manager", "completed"]
   }
 ];
@@ -219,11 +225,18 @@ export default function AgentStatusPanel({
           {agentDefinitions.map((agent) => {
             const IconComponent = agent.icon;
             return (
-              <div key={agent.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                <IconComponent className={cn("w-4 h-4", agent.color)} />
-                <span className="text-xs font-medium">{agent.name}</span>
-                <div className="ml-auto">
-                  <Clock className="w-3 h-3 text-muted-foreground" />
+              <div key={agent.id} className="p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-300">
+                <div className="flex items-start gap-3">
+                  <IconComponent className={cn("w-4 h-4 mt-1", agent.color)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold">{agent.name}</span>
+                      <Clock className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                    <p className="text-xs text-muted-foreground/80 leading-relaxed">
+                      {agent.role}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
@@ -250,17 +263,28 @@ export default function AgentStatusPanel({
           <div
             key={agent.id}
             className={cn(
-              "p-3 rounded-xl border transition-all duration-300",
+              "p-4 rounded-xl border transition-all duration-500",
               agent.bgColor,
               agent.borderColor || "border-border",
-              agent.status === 'active' && "ring-2 ring-offset-1",
-              agent.status === 'active' && agent.id === 'user_analyst' && "ring-blue-200 dark:ring-blue-800",
-              agent.status === 'active' && agent.id === 'searcher' && "ring-green-200 dark:ring-green-800",
-              agent.status === 'active' && agent.id === 'manager' && "ring-purple-200 dark:ring-purple-800"
+              "transform hover:scale-102",
+              // 활성 상태 강화된 비주얼 효과
+              agent.status === 'active' && [
+                "ring-2 ring-offset-2 animate-pulse",
+                "shadow-lg transform scale-105",
+                (agent as any).glowColor
+              ],
+              agent.status === 'active' && agent.id === 'user_analyst' && "ring-blue-400/60 dark:ring-blue-500/40",
+              agent.status === 'active' && agent.id === 'searcher' && "ring-green-400/60 dark:ring-green-500/40",
+              agent.status === 'active' && agent.id === 'manager' && "ring-purple-400/60 dark:ring-purple-500/40",
+              // 완료 상태 효과
+              agent.status === 'completed' && "shadow-md opacity-95",
+              // 대기 상태 효과
+              agent.status === 'waiting' && "opacity-60 grayscale hover:opacity-80 hover:grayscale-0"
             )}
             style={{
               animationDelay: `${index * 200}ms`,
-              opacity: agent.status === 'waiting' ? 0.6 : 1
+              animationDuration: '0.6s',
+              animationFillMode: 'both'
             }}
           >
             <div className="flex items-start gap-3">
@@ -269,14 +293,29 @@ export default function AgentStatusPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h4 className="font-medium text-sm">{agent.name}</h4>
+                  <h4 className="font-semibold text-sm">{agent.name}</h4>
                   {agent.status === 'active' && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs font-mono font-bold text-primary animate-pulse">
                       {agent.progress}%
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mb-1">{agent.task}</p>
+
+                {/* 에이전트 역할 설명 */}
+                <p className="text-xs text-muted-foreground/90 mb-2 leading-relaxed">
+                  {(agent as any).role}
+                </p>
+
+                {/* 현재 작업 상태 */}
+                <div className={cn(
+                  "text-xs font-medium mb-1",
+                  agent.status === 'active' && "text-primary font-bold",
+                  agent.status === 'completed' && "text-green-600 dark:text-green-400",
+                  agent.status === 'waiting' && "text-muted-foreground"
+                )}>
+                  {agent.task}
+                </div>
+
                 {agent.detail && (
                   <p className="text-xs text-muted-foreground/80 italic">
                     {agent.detail}

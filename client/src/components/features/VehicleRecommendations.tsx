@@ -5,7 +5,6 @@ import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sp
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
-import VehicleAnalysisDashboard from "./VehicleAnalysisDashboard";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -44,39 +43,15 @@ export default function VehicleRecommendations({
   const [showTOPSISModal, setShowTOPSISModal] = useState(false);
   const [selectedVehicleForTOPSIS, setSelectedVehicleForTOPSIS] = useState<Vehicle | null>(null);
   const [showPersonalizationDashboard, setShowPersonalizationDashboard] = useState(false);
-  const [showAnalysisDashboard, setShowAnalysisDashboard] = useState(false);
-  const [selectedVehicleForAnalysis, setSelectedVehicleForAnalysis] = useState<Vehicle | null>(null);
-  const [analysisData, setAnalysisData] = useState<any>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const { insights, requestInsights } = useWebSocketChat();
 
   const handleViewInsights = async (vehicle: Vehicle) => {
-    // 신뢰성 검증 대시보드 열기
-    setSelectedVehicleForAnalysis(vehicle);
+    // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
-
-    try {
-      // 신뢰성 검증 분석 API 호출
-      const response = await fetch(`/api/vehicles/${vehicle.id}/verification`);
-      const data = await response.json();
-
-      if (data.success) {
-        setAnalysisData(data.verification_result);
-        setShowAnalysisDashboard(true);
-      } else {
-        console.error('분석 실패:', data.error);
-        // 실패 시 기존 TOPSIS 모달로 fallback
-        setSelectedVehicleForTOPSIS(vehicle);
-        setShowTOPSISModal(true);
-      }
-    } catch (error) {
-      console.error('분석 요청 실패:', error);
-      // 에러 시 기존 TOPSIS 모달로 fallback
-      setSelectedVehicleForTOPSIS(vehicle);
-      setShowTOPSISModal(true);
-    } finally {
-      setIsLoadingAnalysis(false);
-    }
+    setSelectedVehicleForTOPSIS(vehicle);
+    setShowTOPSISModal(true);
+    setIsLoadingAnalysis(false);
   };
 
   // 개인화 대시보드 자동 표시
@@ -113,11 +88,27 @@ export default function VehicleRecommendations({
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative">
+          {/* 🎨 현대적 캐러셀 스타일 컨테이너 */}
+          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
           {vehicles.map((vehicle) => (
             <Card
               key={vehicle.id}
-              className="overflow-hidden hover-elevate border-card-border transition-all"
+              className={cn(
+                "flex-none w-80 overflow-hidden transition-all duration-500 snap-start",
+                "hover:scale-105 hover:shadow-xl hover:shadow-primary/20",
+                "border-card-border bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm",
+                // 순위별 특별 효과
+                vehicle.rank === 1 && "ring-2 ring-yellow-500/50 shadow-yellow-500/20",
+                vehicle.rank === 2 && "ring-2 ring-gray-400/50 shadow-gray-400/20",
+                vehicle.rank === 3 && "ring-2 ring-amber-600/50 shadow-amber-600/20"
+              )}
               data-testid={`vehicle-card-${vehicle.rank}`}
             >
               <div className="relative h-40">
@@ -129,16 +120,30 @@ export default function VehicleRecommendations({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 
                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                  <div className={cn("p-1.5 bg-background/90 backdrop-blur-sm rounded-full", rankColors[vehicle.rank - 1])}>
+                  <div className={cn(
+                    "p-1.5 backdrop-blur-sm rounded-full transition-all duration-300",
+                    vehicle.rank === 1 && "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900 animate-pulse shadow-lg shadow-yellow-500/50",
+                    vehicle.rank === 2 && "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-900 shadow-lg shadow-gray-400/50",
+                    vehicle.rank === 3 && "bg-gradient-to-br from-amber-400 to-amber-600 text-amber-900 shadow-lg shadow-amber-500/50"
+                  )}>
                     <Award className="w-4 h-4" />
                   </div>
-                  <Badge className="bg-background/90 backdrop-blur-sm text-xs">
+                  <Badge className={cn(
+                    "backdrop-blur-sm text-xs font-bold transition-all duration-300",
+                    vehicle.rank === 1 && "bg-gradient-to-r from-yellow-400/90 to-yellow-500/90 text-yellow-900 animate-pulse",
+                    vehicle.rank === 2 && "bg-gradient-to-r from-gray-300/90 to-gray-400/90 text-gray-900",
+                    vehicle.rank === 3 && "bg-gradient-to-r from-amber-400/90 to-amber-500/90 text-amber-900"
+                  )}>
                     {rankLabels[vehicle.rank - 1]}
                   </Badge>
                 </div>
 
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-primary text-primary-foreground font-mono text-xs">
+                  <Badge className={cn(
+                    "font-mono text-xs font-bold transition-all duration-300 animate-bounce-in",
+                    "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground",
+                    "shadow-lg shadow-primary/30 hover:scale-110"
+                  )}>
                     {vehicle.matchScore}%
                   </Badge>
                 </div>
@@ -198,7 +203,7 @@ export default function VehicleRecommendations({
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    {isLoadingAnalysis ? '분석 중...' : '신뢰성 검증'}
+{isLoadingAnalysis ? '분석 중...' : '차량 진단'}
                   </Button>
                   {vehicle.detailUrl && (
                     <Button
@@ -218,6 +223,20 @@ export default function VehicleRecommendations({
               </div>
             </Card>
           ))}
+          </div>
+
+          {/* 🎯 캐러셀 스크롤 인디케이터 */}
+          <div className="flex justify-center mt-4 gap-2">
+            {vehicles.map((_, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-300",
+                  index === 0 ? "bg-primary w-6" : "bg-primary/30"
+                )}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -232,25 +251,6 @@ export default function VehicleRecommendations({
         </div>
       )}
 
-      {/* 신뢰성 검증 분석 대시보드 */}
-      {showAnalysisDashboard && selectedVehicleForAnalysis && analysisData && (
-        <VehicleAnalysisDashboard
-          vehicle={{
-            id: selectedVehicleForAnalysis.id.toString(),
-            manufacturer: selectedVehicleForAnalysis.manufacturer || selectedVehicleForAnalysis.name.split(' ')[0],
-            model: selectedVehicleForAnalysis.model || selectedVehicleForAnalysis.name.split(' ')[1] || selectedVehicleForAnalysis.name,
-            modelYear: selectedVehicleForAnalysis.year,
-            price: selectedVehicleForAnalysis.price,
-            distance: selectedVehicleForAnalysis.mileage
-          }}
-          analysisData={analysisData}
-          onClose={() => {
-            setShowAnalysisDashboard(false);
-            setSelectedVehicleForAnalysis(null);
-            setAnalysisData(null);
-          }}
-        />
-      )}
 
       {/* TOPSIS 상세 분석 모달 (Fallback) */}
       {selectedVehicleForTOPSIS && (
