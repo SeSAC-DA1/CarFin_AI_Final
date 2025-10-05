@@ -15,13 +15,24 @@ class CacheService {
    */
   async initialize() {
     try {
+      // Railway에서 Redis가 없는 경우 graceful fallback
+      if (!process.env.REDIS_URL && process.env.NODE_ENV === 'production') {
+        console.log('🟡 Redis URL 없음 - 캐시 없이 동작 (메모리 캐시 사용)');
+        this.isConnected = false;
+        return;
+      }
+
       // 개발 환경에서는 로컬 Redis, 프로덕션에서는 Redis URL 사용
       const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
       this.client = createClient({
         url: redisUrl,
         socket: {
-          reconnectStrategy: (retries) => Math.min(retries * 50, 1000)
+          connectTimeout: 5000, // 5초 타임아웃
+          reconnectStrategy: (retries) => {
+            if (retries > 3) return false; // 3번 시도 후 포기
+            return Math.min(retries * 50, 1000);
+          }
         }
       });
 
