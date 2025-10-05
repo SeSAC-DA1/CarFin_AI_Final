@@ -50,11 +50,18 @@ export function useWebSocketChat() {
       // 환경변수가 있으면 사용 (Vercel 배포 시)
       wsUrl = backendUrl.replace(/^http/, 'ws') + '/ws/chat';
     } else {
-      // 환경변수가 없으면 현재 브라우저 기준 (로컬 개발)
+      // 환경변수가 없으면 현재 브라우저 기준
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname;
-      const port = window.location.port || '8000';
-      wsUrl = `${protocol}//${host}:${port}/ws/chat`;
+
+      // Railway/Vercel 등 배포 환경에서는 포트 제외, 로컬 개발에서만 포트 사용
+      if (host === 'localhost' || host === '127.0.0.1') {
+        const port = window.location.port || '8000';
+        wsUrl = `${protocol}//${host}:${port}/ws/chat`;
+      } else {
+        // 배포 환경에서는 포트 없이 연결
+        wsUrl = `${protocol}//${host}/ws/chat`;
+      }
     }
 
     console.log('🔌 WebSocket 연결 시도:', wsUrl);
