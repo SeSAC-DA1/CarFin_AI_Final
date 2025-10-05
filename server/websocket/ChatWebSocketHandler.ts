@@ -27,6 +27,10 @@ const BRAND_IMAGES = {
 function getVehicleImage(manufacturer: string, photo?: string | null): string {
   // 1순위: 실제 매물 사진 (엔카/차차차에서 가져온 실제 차량 이미지)
   if (photo && photo.trim() !== '') {
+    // 엔카 이미지 URL에 확장자가 없는 경우 추가
+    if (photo.includes('encar.com') && !photo.includes('.jpg') && !photo.includes('.png')) {
+      return `${photo}001.jpg`; // 엔카 이미지 URL 형식: xxxxx_001.jpg
+    }
     return photo;
   }
 
@@ -154,15 +158,65 @@ async function handleUserMessage(sessionId: string, userMessage: string) {
     message: '15만대 매물에서 조건에 맞는 차량을 검색중입니다...',
   });
 
-  // 간단한 필터 추출 (예산 등)
+  // 🔍 고급 필터 추출 (예산, 차종, 브랜드, 연료 등)
   const budgetMatch = userMessage.match(/(\d+)(?:만원|만|백만)/);
   const maxPrice = budgetMatch ? parseInt(budgetMatch[1]) : 5000;
 
+  // 차종 키워드 매핑
+  let carType = undefined;
+  if (userMessage.includes('SUV') || userMessage.includes('에스유브이') || userMessage.includes('스포츠유틸리티')) {
+    carType = 'SUV';
+  } else if (userMessage.includes('세단') || userMessage.includes('승용차')) {
+    carType = '세단';
+  } else if (userMessage.includes('소형') || userMessage.includes('경차')) {
+    carType = '소형';
+  } else if (userMessage.includes('중형') || userMessage.includes('패밀리')) {
+    carType = '중형';
+  } else if (userMessage.includes('대형') || userMessage.includes('고급')) {
+    carType = '대형';
+  }
+
+  // 브랜드 추출
+  let manufacturer = undefined;
+  if (userMessage.includes('현대') || userMessage.includes('hyundai')) {
+    manufacturer = '현대';
+  } else if (userMessage.includes('기아') || userMessage.includes('kia')) {
+    manufacturer = '기아';
+  } else if (userMessage.includes('BMW') || userMessage.includes('비엠더블유')) {
+    manufacturer = 'BMW';
+  } else if (userMessage.includes('벤츠') || userMessage.includes('메르세데스')) {
+    manufacturer = '벤츠';
+  } else if (userMessage.includes('아우디')) {
+    manufacturer = '아우디';
+  } else if (userMessage.includes('토요타')) {
+    manufacturer = '토요타';
+  }
+
+  // 연료 타입 추출
+  let fuelType = undefined;
+  if (userMessage.includes('디젤')) {
+    fuelType = '디젤';
+  } else if (userMessage.includes('가솔린') || userMessage.includes('휘발유')) {
+    fuelType = '가솔린';
+  } else if (userMessage.includes('하이브리드')) {
+    fuelType = '하이브리드';
+  } else if (userMessage.includes('전기차') || userMessage.includes('EV')) {
+    fuelType = '전기';
+  }
+
+  // 다양성을 위한 오프셋 랜덤화 (동일한 차량만 나오는 문제 해결)
+  const randomOffset = Math.floor(Math.random() * 1000);
+
   const searchParams = {
     maxPrice,
+    carType,
+    manufacturer,
+    fuelType,
     limit: 50,
-    offset: 0,
+    offset: randomOffset,
   };
+
+  console.log(`🔍 검색 파라미터:`, searchParams);
 
   // 🎯 캐시에서 차량 검색 결과 조회
   let vehicles = await cacheService.getVehicleSearchResults(searchParams);
