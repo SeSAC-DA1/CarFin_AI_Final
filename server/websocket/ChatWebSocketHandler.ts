@@ -129,7 +129,14 @@ async function handleUserMessage(sessionId: string, userMessage: string) {
 
     // 🔄 Fallback: 기존 시스템 사용
     console.log('🔄 기존 시스템으로 fallback');
-    await handleLegacyRecommendation(session, userMessage);
+
+    // 간단한 응답
+    sendMessage(session.ws, {
+      type: 'agent_message',
+      agent: 'concierge',
+      content: '죄송합니다. 시스템을 업그레이드 중입니다. 잠시 후 다시 시도해주세요.',
+      timestamp: new Date(),
+    });
   }
 }
 
