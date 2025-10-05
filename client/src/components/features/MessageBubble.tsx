@@ -122,18 +122,15 @@ export default function MessageBubble({ type, agent, content, timestamp }: Messa
       {!isUser && agentInfo && (
         <div className="flex-shrink-0 relative group">
           <div className={cn(
-            "w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all duration-300",
-            "hover:shadow-xl hover:scale-110 ring-2 ring-offset-2",
-            agentInfo.bgGradient,
-            agentInfo.ringColor
+            "w-11 h-11 rounded-full flex items-center justify-center shadow-sm",
+            agentInfo.bgGradient
           )}>
-            <agentInfo.icon className={cn("w-6 h-6 transition-all duration-300", agentInfo.color)} />
+            <agentInfo.icon className={cn("w-6 h-6", agentInfo.color)} />
           </div>
 
           {/* 활성 상태 인디케이터 */}
           <div className={cn(
-            "absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-background shadow-sm",
-            "animate-pulse",
+            "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background",
             agentInfo.dotColor
           )} />
 
@@ -162,13 +159,12 @@ export default function MessageBubble({ type, agent, content, timestamp }: Messa
 
         <div
           className={cn(
-            "rounded-3xl px-4 py-3 break-words shadow-lg transition-all duration-300",
-            "hover:shadow-xl",
+            "rounded-2xl px-4 py-3 break-words shadow-sm",
             isUser
-              ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground"
+              ? "bg-primary text-primary-foreground"
               : isError
               ? "bg-destructive/10 border border-destructive/20 text-destructive"
-              : "bg-gradient-to-br from-card to-card/80 border border-card-border backdrop-blur-sm"
+              : "bg-card border border-card-border"
           )}
           data-testid={`bubble-${type}`}
         >

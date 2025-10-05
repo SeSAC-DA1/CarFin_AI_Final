@@ -10,6 +10,7 @@ import WelcomeFlow from "@/components/layout/WelcomeFlow";
 import AgentStatusPanel from "@/components/ai/AgentStatusPanel";
 import FeedbackSection from "@/components/layout/FeedbackSection";
 import LoadingSpinner from "@/components/ai/LoadingSpinner";
+import ChatSidebar from "@/components/layout/ChatSidebar";
 import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
 
 const quickReplies = [
@@ -160,19 +161,31 @@ export default function ChatInterface() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
+    <div className="h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col">
       <ProgressSteps steps={steps} />
 
-      {/* 멀티에이전트 상태 패널 - 항상 보임 */}
-      <AgentStatusPanel
-        isActive={showMACRecCollaboration}
-        currentStep={progress?.step}
-        userQuery={currentUserQuery}
-        onComplete={handleAgentPanelComplete}
-      />
+      {/* 3컬럼 레이아웃: 사이드바 + 메인 + 우측패널 */}
+      <div className="flex-1 flex h-[calc(100vh-4rem)]">
+        {/* 왼쪽 사이드바 */}
+        <ChatSidebar
+          userProfile={{
+            name: "사용자",
+            budget: [2000, 4000],
+            preferences: ["가족용", "연비", "안전성"]
+          }}
+          onNewChat={() => {
+            setShowWelcome(true);
+            setCurrentUserQuery('');
+            // 새 채팅 로직
+          }}
+          onSelectConversation={(id) => {
+            console.log('대화 선택:', id);
+            // 대화 로딩 로직
+          }}
+        />
 
-      <div className="max-w-5xl mx-auto px-4 pb-4">
-        <div className="flex flex-col h-[calc(100vh-8rem)]">
+        {/* 메인 채팅 영역 */}
+        <div className="flex-1 flex flex-col bg-background/50">
           <div className="p-4 bg-card/80 backdrop-blur-sm rounded-t-2xl border border-b-0 border-card-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -289,6 +302,16 @@ export default function ChatInterface() {
           <div className="bg-card/80 backdrop-blur-sm rounded-b-2xl border border-t-0 border-card-border">
             <ChatInput onSend={handleSendMessage} />
           </div>
+        </div>
+
+        {/* 우측 에이전트 패널 */}
+        <div className="w-80 bg-card/20 backdrop-blur-sm border-l border-border">
+          <AgentStatusPanel
+            isActive={showMACRecCollaboration || !!progress}
+            currentStep={progress?.step}
+            userQuery={currentUserQuery}
+            onComplete={handleAgentPanelComplete}
+          />
         </div>
       </div>
     </div>

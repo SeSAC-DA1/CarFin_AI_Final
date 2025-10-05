@@ -210,8 +210,8 @@ export default function AgentStatusPanel({
 
   if (!isActive) {
     return (
-      <div className="fixed top-4 right-4 bg-card/90 backdrop-blur-sm rounded-2xl border border-card-border p-4 shadow-lg max-w-sm">
-        <div className="flex items-center gap-3 mb-3">
+      <div className="h-full flex flex-col p-4">
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-primary" />
           </div>
@@ -221,11 +221,11 @@ export default function AgentStatusPanel({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3 flex-1">
           {agentDefinitions.map((agent) => {
             const IconComponent = agent.icon;
             return (
-              <div key={agent.id} className="p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-300">
+              <div key={agent.id} className="p-3 rounded-lg bg-muted/20 border border-border">
                 <div className="flex items-start gap-3">
                   <IconComponent className={cn("w-4 h-4 mt-1", agent.color)} />
                   <div className="flex-1 min-w-0">
@@ -247,8 +247,8 @@ export default function AgentStatusPanel({
   }
 
   return (
-    <div className="fixed top-4 right-4 bg-card/95 backdrop-blur-sm rounded-2xl border border-card-border p-4 shadow-xl max-w-sm z-50">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="h-full flex flex-col p-4 bg-card/30 backdrop-blur-sm">
+      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
           <Loader2 className="w-4 h-4 text-primary animate-spin" />
         </div>
@@ -258,34 +258,21 @@ export default function AgentStatusPanel({
         </div>
       </div>
 
-      <div className="space-y-3">
-        {agents.map((agent, index) => (
+      <div className="space-y-3 flex-1 overflow-y-auto">
+        {agents.map((agent) => (
           <div
             key={agent.id}
             className={cn(
-              "p-4 rounded-xl border transition-all duration-500",
+              "p-3 rounded-lg border transition-colors duration-300",
               agent.bgColor,
               agent.borderColor || "border-border",
-              "transform hover:scale-102",
-              // 활성 상태 강화된 비주얼 효과
-              agent.status === 'active' && [
-                "ring-2 ring-offset-2 animate-pulse",
-                "shadow-lg transform scale-105",
-                (agent as any).glowColor
-              ],
-              agent.status === 'active' && agent.id === 'user_analyst' && "ring-blue-400/60 dark:ring-blue-500/40",
-              agent.status === 'active' && agent.id === 'searcher' && "ring-green-400/60 dark:ring-green-500/40",
-              agent.status === 'active' && agent.id === 'manager' && "ring-purple-400/60 dark:ring-purple-500/40",
-              // 완료 상태 효과
-              agent.status === 'completed' && "shadow-md opacity-95",
-              // 대기 상태 효과
-              agent.status === 'waiting' && "opacity-60 grayscale hover:opacity-80 hover:grayscale-0"
+              // 활성 상태 - 애니메이션 줄임
+              agent.status === 'active' && "border-primary/30 bg-primary/5",
+              // 완료 상태
+              agent.status === 'completed' && "opacity-80",
+              // 대기 상태
+              agent.status === 'waiting' && "opacity-60"
             )}
-            style={{
-              animationDelay: `${index * 200}ms`,
-              animationDuration: '0.6s',
-              animationFillMode: 'both'
-            }}
           >
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
@@ -295,7 +282,7 @@ export default function AgentStatusPanel({
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="font-semibold text-sm">{agent.name}</h4>
                   {agent.status === 'active' && (
-                    <span className="text-xs font-mono font-bold text-primary animate-pulse">
+                    <span className="text-xs font-mono font-bold text-primary">
                       {agent.progress}%
                     </span>
                   )}
@@ -329,7 +316,7 @@ export default function AgentStatusPanel({
       </div>
 
       {agents.every(agent => agent.status === 'completed') && (
-        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-xl border border-green-200 dark:border-green-800">
+        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
             <span className="text-sm font-medium text-green-700 dark:text-green-400">
