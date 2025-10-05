@@ -9,6 +9,7 @@ import MACRecCollaborationViewer from "./MACRecCollaborationViewer";
 import WelcomeFlow from "./WelcomeFlow";
 import AgentStatusPanel from "./AgentStatusPanel";
 import FeedbackSection from "./FeedbackSection";
+import LoadingSpinner from "./LoadingSpinner";
 import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
 
 const quickReplies = [
@@ -237,9 +238,12 @@ export default function ChatInterface() {
                 )}
 
                 {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
-                  <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20 animate-pulse">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                    <p className="text-sm text-muted-foreground">{progress.message}</p>
+                  <div className="animate-fade-in">
+                    <LoadingSpinner
+                      message={progress.message}
+                      step={progress.step}
+                      className="bg-card/50 backdrop-blur-sm rounded-xl border border-card-border"
+                    />
                   </div>
                 )}
 

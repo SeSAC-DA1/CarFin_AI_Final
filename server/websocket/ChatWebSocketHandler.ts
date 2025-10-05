@@ -125,84 +125,127 @@ async function handleUserMessage(sessionId: string, userMessage: string) {
     await handlePaperBasedRecommendation(session, userMessage);
 
   } catch (error) {
-    console.error('논문 기반 시스템 오류:', error);
+    console.error('🚨 논문 기반 시스템 오류:', error);
 
-    // 🔄 Fallback: 기존 시스템 사용
-    console.log('🔄 기존 시스템으로 fallback');
+    // 🔄 Intelligent Fallback: 레거시 시스템으로 복구
+    console.log('🔄 레거시 시스템으로 자동 복구 시작');
 
-    // 간단한 응답
     sendMessage(session.ws, {
-      type: 'agent_message',
-      agent: 'concierge',
-      content: '죄송합니다. 시스템을 업그레이드 중입니다. 잠시 후 다시 시도해주세요.',
-      timestamp: new Date(),
+      type: 'progress',
+      step: 'fallback_recovery',
+      message: '🔄 시스템 복구 중... 레거시 TOPSIS 엔진으로 전환',
     });
+
+    try {
+      await handleLegacyRecommendation(session, userMessage);
+    } catch (fallbackError) {
+      console.error('🚨 레거시 시스템도 실패:', fallbackError);
+
+      sendMessage(session.ws, {
+        type: 'agent_message',
+        agent: 'system',
+        content: '현재 시스템 점검 중입니다. 잠시 후 다시 시도해주세요. 문제가 지속되면 새로고침해주세요.',
+        timestamp: new Date(),
+      });
+    }
   }
 }
 
 /**
- * 🎓 논문 3개 기반 통합 추천 시스템
+ * 🎓 논문 3개 기반 통합 추천 시스템 (Production Optimized)
  */
 async function handlePaperBasedRecommendation(session: ChatSession, userMessage: string) {
-  // 진행 상태 표시
-  sendMessage(session.ws, {
-    type: 'progress',
-    step: 'analyzing_needs',
-    message: '🎓 논문 기반 AI 시스템이 분석중입니다...',
-  });
+  try {
+    // 🎯 1. 초기 상태 및 성능 추적
+    const startTime = Date.now();
 
-  // 🎯 전체 차량 데이터 로드 (논문 시스템에 필요)
-  const allVehicles = await storage.searchVehicles({ limit: 1000, offset: 0 });
-  console.log(`📊 전체 차량 데이터 로드: ${allVehicles.length}개`);
+    sendMessage(session.ws, {
+      type: 'progress',
+      step: 'analyzing_needs',
+      message: '🎓 논문 3개 기반 AI 시스템 시작...',
+    });
 
-  // 🤖 멀티에이전트 시스템 생성
-  const multiAgentSystem = new MultiAgentSystem(process.env.GOOGLE_API_KEY!);
+    // 🎯 2. 병렬 데이터 로딩 (성능 최적화)
+    const [allVehicles, multiAgentSystem] = await Promise.all([
+      storage.searchVehicles({ limit: 1000, offset: 0 }),
+      Promise.resolve(new MultiAgentSystem(process.env.GOOGLE_API_KEY!))
+    ]);
 
-  // 🔄 실시간 스트리밍으로 멀티에이전트 협업 과정 표시
-  const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles);
+    console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
-  for await (const step of collaborationStream) {
-    console.log(`🤖 ${step.agent}: ${step.type}`);
+    // 🎯 3. 타임아웃 설정 (30초)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('추천 시스템 타임아웃 (30초)')), 30000);
+    });
 
-    if (step.type === 'agent_working') {
-      sendMessage(session.ws, {
-        type: 'progress',
-        step: step.agent,
-        message: step.content,
-      });
-    } else if (step.type === 'agent_response') {
-      sendMessage(session.ws, {
-        type: 'agent_message',
-        agent: step.agent,
-        content: step.content,
-        timestamp: new Date(),
-      });
-    } else if (step.type === 'recommendations' && step.data) {
-      // 🎯 최종 추천 결과 전송
-      const vehicles = step.data.map((rec: any) => ({
-        ...rec.vehicle,
-        image: getVehicleImage(rec.vehicle.manufacturer, rec.vehicle.photo),
-        topsisScore: rec.topsisScore,
-        matchingScore: rec.matchingScore,
-        reason: rec.reason,
-        pros: rec.pros,
-        cons: rec.cons
-      }));
+    // 🎯 4. 실시간 스트리밍 협업 (타임아웃 포함)
+    const collaborationPromise = (async () => {
+      const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles);
 
-      sendMessage(session.ws, {
-        type: 'vehicles',
-        vehicles: vehicles,
-        timestamp: new Date(),
-      });
+      for await (const step of collaborationStream) {
+        console.log(`🤖 ${step.agent}: ${step.type}`);
 
-      sendMessage(session.ws, {
-        type: 'progress',
-        step: 'completed',
-        message: '🎉 논문 기반 추천 완료!',
-      });
+        if (step.type === 'agent_working') {
+          sendMessage(session.ws, {
+            type: 'progress',
+            step: step.agent,
+            message: step.content,
+          });
+        } else if (step.type === 'agent_response') {
+          sendMessage(session.ws, {
+            type: 'agent_message',
+            agent: step.agent,
+            content: step.content,
+            timestamp: new Date(),
+          });
+        } else if (step.type === 'recommendations' && step.data) {
+          // 🎯 최종 추천 결과 전송 (이미지 최적화)
+          const vehicles = step.data.map((rec: any) => ({
+            ...rec.vehicle,
+            image: getVehicleImage(rec.vehicle.manufacturer, rec.vehicle.photo),
+            topsisScore: rec.topsisScore,
+            matchingScore: rec.matchingScore,
+            reason: rec.reason,
+            pros: rec.pros,
+            cons: rec.cons
+          }));
 
-      return; // 성공적으로 완료
-    }
+          sendMessage(session.ws, {
+            type: 'vehicles',
+            vehicles: vehicles,
+            timestamp: new Date(),
+          });
+
+          const totalTime = Date.now() - startTime;
+          console.log(`✅ 논문 기반 추천 완료: ${totalTime}ms`);
+
+          sendMessage(session.ws, {
+            type: 'progress',
+            step: 'completed',
+            message: `🎉 논문 기반 추천 완료! (${totalTime}ms)`,
+          });
+
+          return;
+        }
+      }
+    })();
+
+    // 타임아웃 경쟁
+    await Promise.race([collaborationPromise, timeoutPromise]);
+
+  } catch (error) {
+    console.error('🚨 논문 기반 시스템 오류:', error);
+
+    // 에러 상황에서 사용자에게 명확한 피드백
+    sendMessage(session.ws, {
+      type: 'agent_message',
+      agent: 'system',
+      content: '죄송합니다. 시스템이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.',
+      timestamp: new Date(),
+    });
+
+    // Fallback으로 레거시 시스템 실행
+    throw error;
   }
 }
 

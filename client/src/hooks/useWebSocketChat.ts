@@ -80,67 +80,109 @@ export function useWebSocketChat() {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('📨 WebSocket 메시지 수신:', data.type, data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('📨 WebSocket 메시지 수신:', data.type, data);
 
-      if (data.type === 'user_message' || data.type === 'agent_message') {
-        setMessages(prev => [...prev, {
-          type: data.type,
-          agent: data.agent,
-          content: data.content,
-          timestamp: new Date(data.timestamp),
-        }]);
-      } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended') {
-        // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환
-        const formattedVehicles = data.vehicles.map((vehicle: any) => ({
-          id: vehicle.id || vehicle.vehicleId || vehicle.rank?.toString(),
-          rank: vehicle.rank || 1,
-          name: vehicle.name || `${vehicle.manufacturer || vehicle.brand} ${vehicle.model}`,
-          manufacturer: vehicle.manufacturer || vehicle.brand,
-          model: vehicle.model,
-          year: vehicle.year || vehicle.modelYear,
-          price: vehicle.price,
-          mileage: vehicle.mileage || vehicle.distance,
-          fuel: vehicle.fuel || vehicle.fuelType,
-          image: vehicle.image,
-          topsisScore: vehicle.topsisScore || vehicle.matchingScore || 0,
-          matchScore: vehicle.matchScore || vehicle.topsisScore || 0,
-          reason: vehicle.reason,
-          pros: vehicle.pros,
-          cons: vehicle.cons,
-          location: vehicle.location,
-          detailUrl: vehicle.detailUrl
-        }));
-        console.log('🚗 차량 데이터 변환 완료:', formattedVehicles.length);
-        setVehicles(formattedVehicles);
-        setProgress(null);
-      } else if (data.type === 'progress') {
-        setProgress({
-          step: data.step,
-          message: data.message,
-        });
-      } else if (data.type === 'vehicle_insights') {
-        setInsights({
-          vehicleId: data.vehicleId,
-          data: data.insights,
-        });
-      } else if (data.type === 'error') {
+        if (data.type === 'user_message' || data.type === 'agent_message') {
+          setMessages(prev => [...prev, {
+            type: data.type,
+            agent: data.agent,
+            content: data.content,
+            timestamp: new Date(data.timestamp),
+          }]);
+        } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended') {
+          try {
+            // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환 (안전 처리)
+            const formattedVehicles = (data.vehicles || []).map((vehicle: any) => ({
+              id: vehicle.id || vehicle.vehicleId || vehicle.rank?.toString() || Math.random().toString(),
+              rank: vehicle.rank || 1,
+              name: vehicle.name || `${vehicle.manufacturer || vehicle.brand || '브랜드 미상'} ${vehicle.model || '모델 미상'}`,
+              manufacturer: vehicle.manufacturer || vehicle.brand || '브랜드 미상',
+              model: vehicle.model || '모델 미상',
+              year: vehicle.year || vehicle.modelYear || new Date().getFullYear(),
+              price: vehicle.price || 0,
+              mileage: vehicle.mileage || vehicle.distance || 0,
+              fuel: vehicle.fuel || vehicle.fuelType || '연료 미상',
+              image: vehicle.image || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop',
+              topsisScore: vehicle.topsisScore || vehicle.matchingScore || 0,
+              matchScore: vehicle.matchScore || vehicle.topsisScore || 0,
+              reason: vehicle.reason || '추천 이유',
+              pros: vehicle.pros || [],
+              cons: vehicle.cons || [],
+              location: vehicle.location || '위치 미상',
+              detailUrl: vehicle.detailUrl || ''
+            }));
+
+            console.log('🚗 차량 데이터 변환 완료:', formattedVehicles.length);
+            setVehicles(formattedVehicles);
+            setProgress(null);
+          } catch (vehicleError) {
+            console.error('🚨 차량 데이터 처리 오류:', vehicleError);
+            setMessages(prev => [...prev, {
+              type: 'error',
+              content: '차량 데이터 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+              timestamp: new Date(),
+            }]);
+          }
+        } else if (data.type === 'progress') {
+          setProgress({
+            step: data.step || 'unknown',
+            message: data.message || '처리 중...',
+          });
+        } else if (data.type === 'vehicle_insights') {
+          setInsights({
+            vehicleId: data.vehicleId,
+            data: data.insights,
+          });
+        } else if (data.type === 'error') {
+          setMessages(prev => [...prev, {
+            type: 'error',
+            content: data.content || '알 수 없는 오류가 발생했습니다.',
+            timestamp: new Date(),
+          }]);
+        }
+      } catch (parseError) {
+        console.error('🚨 WebSocket 메시지 파싱 오류:', parseError, '원본 데이터:', event.data);
         setMessages(prev => [...prev, {
           type: 'error',
-          content: data.content,
+          content: '서버와의 통신 오류가 발생했습니다. 연결을 확인해주세요.',
           timestamp: new Date(),
         }]);
       }
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket 에러:', error);
+      console.error('🚨 WebSocket 에러:', error);
       setIsConnected(false);
+
+      // 사용자에게 연결 오류 알림
+      setMessages(prev => [...prev, {
+        type: 'error',
+        content: '서버 연결에 문제가 발생했습니다. 자동으로 재연결을 시도합니다.',
+        timestamp: new Date(),
+      }]);
     };
 
-    ws.onclose = () => {
-      console.log('🔌 WebSocket 연결 종료');
+    ws.onclose = (event) => {
+      console.log('🔌 WebSocket 연결 종료', event.code, event.reason);
       setIsConnected(false);
+
+      // 비정상 종료인 경우에만 재연결 시도
+      if (event.code !== 1000) { // 1000 = 정상 종료
+        console.log('🔄 WebSocket 재연결 시도...');
+        setMessages(prev => [...prev, {
+          type: 'agent_message',
+          agent: 'system',
+          content: '🔄 연결이 끊어졌습니다. 자동으로 재연결 중...',
+          timestamp: new Date(),
+        }]);
+
+        // 3초 후 재연결 시도
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
     };
 
     wsRef.current = ws;
