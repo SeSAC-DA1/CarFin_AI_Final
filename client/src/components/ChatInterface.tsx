@@ -5,7 +5,8 @@ import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
 import QuickReplyButtons from "./QuickReplyButtons";
 import ProgressSteps from "./ProgressSteps";
-import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel } from "lucide-react";
+import MACRecCollaborationViewer from "./MACRecCollaborationViewer";
+import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
 
 const quickReplies = [
   { label: "3000만원 이하 가족용 SUV", value: "3000만원 이하로 가족용 SUV 찾아요", icon: Users },
@@ -17,6 +18,8 @@ const quickReplies = [
 export default function ChatInterface() {
   const { messages, vehicles, progress, isConnected, sendMessage } = useWebSocketChat();
   const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const [showMACRecCollaboration, setShowMACRecCollaboration] = useState(false);
+  const [currentUserQuery, setCurrentUserQuery] = useState<string>('');
 
   const steps = useMemo(() => {
     if (!progress) {
@@ -50,11 +53,22 @@ export default function ChatInterface() {
   const handleQuickReply = (value: string) => {
     sendMessage(value);
     setShowQuickReplies(false);
+    setCurrentUserQuery(value);
+    // MACRec 협업 시뮬레이션 시작
+    setShowMACRecCollaboration(true);
   };
 
   const handleSendMessage = (message: string) => {
     sendMessage(message);
     setShowQuickReplies(false);
+    setCurrentUserQuery(message);
+    // MACRec 협업 시뮬레이션 시작
+    setShowMACRecCollaboration(true);
+  };
+
+  const handleMACRecComplete = () => {
+    setShowMACRecCollaboration(false);
+    console.log('🎉 MACRec 협업 완료');
   };
 
   return (
@@ -70,8 +84,13 @@ export default function ChatInterface() {
                   <Car className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold">AI 차량 추천</h2>
-                  <p className="text-xs text-muted-foreground">15만대 매물 실시간 분석</p>
+                  <h2 className="text-base font-semibold flex items-center gap-2">
+                    AI 차량 추천
+                    {showMACRecCollaboration && <Sparkles className="w-4 h-4 text-primary animate-pulse" />}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {showMACRecCollaboration ? 'MACRec 멀티에이전트 협업 중...' : '15만대 매물 실시간 분석'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -95,7 +114,19 @@ export default function ChatInterface() {
               <MessageBubble key={index} {...message} />
             ))}
 
-            {progress && progress.step !== 'completed' && (
+            {/* MACRec 멀티에이전트 협업 뷰어 */}
+            {showMACRecCollaboration && currentUserQuery && (
+              <div className="animate-slide-up" data-testid="macrec-collaboration">
+                <MACRecCollaborationViewer
+                  query={currentUserQuery}
+                  isActive={showMACRecCollaboration}
+                  onComplete={handleMACRecComplete}
+                  className="mb-4"
+                />
+              </div>
+            )}
+
+            {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
               <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20 animate-pulse">
                 <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
                 <p className="text-sm text-muted-foreground">{progress.message}</p>

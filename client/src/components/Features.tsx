@@ -11,37 +11,37 @@ const features = [
   },
   {
     icon: TrendingUp,
-    title: "Alibaba 개인화 재정렬",
+    title: "개인화 추천 시스템",
     others: "정적 추천 리스트",
     carfin: "RecSys 2019 Best Paper로 선호도 즉시 반영",
-    badge: "실시간 학습"
+    badge: "Alibaba 검증"
   },
   {
     icon: Shield,
-    title: "TOPSIS 다기준 평가",
+    title: "객관적 다기준 평가",
     others: "주관적 평가",
-    carfin: "6가지 기준 객관적 정밀 분석",
+    carfin: "6가지 기준으로 정밀 분석하는 TOPSIS 방법론",
     badge: "산업 표준"
   },
   {
     icon: Clock,
-    title: "15만대 데이터 분석",
+    title: "대용량 데이터 빠른 분석",
     others: "제한된 매물 검색",
     carfin: "PostgreSQL + Redis로 15만대 빠른 분석",
-    badge: "대용량 처리"
+    badge: "빅데이터"
   },
   {
     icon: Users,
     title: "대화 맥락 기억",
     others: "단발성 질의응답",
     carfin: "AI가 이전 대화 기억하고 맥락 이해",
-    badge: "컨텍스트 인식"
+    badge: "컨텍스트"
   },
   {
     icon: Sparkles,
-    title: "엔카·차차차 실데이터",
+    title: "실제 매물 데이터 연동",
     others: "일부 매물만 연동",
-    carfin: "15만대 실제 매물 + 검증된 학술 알고리즘",
+    carfin: "엔카·차차차 실데이터 + 검증된 학술 알고리즘",
     badge: "실데이터"
   }
 ];
@@ -53,7 +53,7 @@ export default function Features() {
         <div className="text-center mb-12 space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">일반 서비스와 무엇이 다른가요?</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            3개 최신 논문 + 15만대 실데이터 기반, 검증된 차별화 포인트
+            학술 논문 기반 검증된 방법론으로 더 정확한 추천을 제공합니다
           </p>
         </div>
 

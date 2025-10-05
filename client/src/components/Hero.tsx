@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Database, Zap, MessageCircle, Search, BarChart3 } from "lucide-react";
+import { ArrowRight, Sparkles, Database, Zap, MessageCircle, Search, BarChart3, Shield, Clock, Award, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -18,27 +18,33 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">멀티 에이전트 기반 추천</span>
+              <span className="text-sm font-medium text-primary">학술 논문 기반 추천 시스템</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                복잡한 고민을 이해하는
+                복잡한 차량 선택을
               </span>
               <br />
-              <span className="text-foreground">멀티 에이전트 추천 시스템</span>
+              <span className="text-foreground">더 쉽고 정확하게</span>
+              <br />
+              <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
+                3명의 AI가 함께 분석합니다
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
               <span className="text-foreground/90 font-medium">학술 논문으로 검증된 멀티 에이전트 시스템</span>
               <br />
-              <span className="text-muted-foreground">대화 맥락을 이해하고 데이터로 답합니다</span>
+              <span className="text-muted-foreground">대화를 통해 니즈를 파악하고 15만대 데이터에서 맞춤 추천</span>
+              <br />
+              <span className="text-primary font-medium">객관적 기준으로 정확한 분석을 제공합니다</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 rounded-full shadow-lg hover:shadow-xl transition-shadow" data-testid="button-start-chat">
                 <Link href="/chat">
-                  지금 시작하기
+                  차량 추천 시작하기
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
@@ -64,7 +70,7 @@ export default function Hero() {
                 </div>
                 <div>
                   <p className="text-lg font-semibold">3명의 AI</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">멀티 에이전트</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">전문 분석</p>
                 </div>
               </div>
 
@@ -90,7 +96,7 @@ export default function Hero() {
                   </div>
                   <div>
                     <p className="font-semibold">멀티 에이전트 협업</p>
-                    <p className="text-sm text-muted-foreground">3개 AI 실시간 분석중</p>
+                    <p className="text-sm text-muted-foreground">3개 AI가 실시간 분석</p>
                   </div>
                 </div>
 

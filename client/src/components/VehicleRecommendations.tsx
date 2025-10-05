@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import VehicleInsightsModal from "./VehicleInsightsModal";
-import { useState } from "react";
+import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
+import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
+import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
 export interface Vehicle {
@@ -26,18 +27,44 @@ export interface Vehicle {
 
 interface VehicleRecommendationsProps {
   vehicles: Vehicle[];
+  userQuery?: string;
+  showPersonalization?: boolean;
 }
 
 const rankColors = ["text-yellow-500", "text-gray-400", "text-amber-600"];
 const rankLabels = ["1위", "2위", "3위"];
 
-export default function VehicleRecommendations({ vehicles }: VehicleRecommendationsProps) {
+export default function VehicleRecommendations({
+  vehicles,
+  userQuery = '',
+  showPersonalization = false
+}: VehicleRecommendationsProps) {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [showTOPSISModal, setShowTOPSISModal] = useState(false);
+  const [selectedVehicleForTOPSIS, setSelectedVehicleForTOPSIS] = useState<Vehicle | null>(null);
+  const [showPersonalizationDashboard, setShowPersonalizationDashboard] = useState(false);
   const { insights, requestInsights } = useWebSocketChat();
 
   const handleViewInsights = (vehicle: Vehicle) => {
-    requestInsights(vehicle.id.toString());
-    setSelectedVehicleId(vehicle.id.toString());
+    // TOPSIS 상세 분석 모달 열기
+    setSelectedVehicleForTOPSIS(vehicle);
+    setShowTOPSISModal(true);
+  };
+
+  // 개인화 대시보드 자동 표시
+  useEffect(() => {
+    if (showPersonalization && userQuery && vehicles.length > 0) {
+      setShowPersonalizationDashboard(true);
+      // 3초 후 자동으로 숨김
+      const timer = setTimeout(() => {
+        setShowPersonalizationDashboard(false);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPersonalization, userQuery, vehicles]);
+
+  const handlePersonalizationComplete = () => {
+    setShowPersonalizationDashboard(false);
   };
 
   const selectedVehicle = vehicles.find(v => v.id.toString() === selectedVehicleId);
@@ -45,9 +72,17 @@ export default function VehicleRecommendations({ vehicles }: VehicleRecommendati
   return (
     <>
       <div className="space-y-4" data-testid="vehicle-recommendations">
-        <div className="flex items-center gap-2 px-2">
-          <Award className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">AI 추천 차량 Top 3</h3>
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <Award className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">멀티에이전트 AI 추천 Top 3</h3>
+          </div>
+          {showPersonalization && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+              <span>개인화 완료</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -134,7 +169,7 @@ export default function VehicleRecommendations({ vehicles }: VehicleRecommendati
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    AI 분석
+                    TOPSIS 분석
                   </Button>
                   {vehicle.detailUrl && (
                     <Button
@@ -157,22 +192,35 @@ export default function VehicleRecommendations({ vehicles }: VehicleRecommendati
         </div>
       </div>
 
-      {selectedVehicle && (
-        <VehicleInsightsModal
-          open={!!selectedVehicleId}
-          onOpenChange={(open) => !open && setSelectedVehicleId(null)}
-          vehicle={{
-            id: selectedVehicle.id.toString(),
-            name: selectedVehicle.name,
-            year: selectedVehicle.year,
-            price: selectedVehicle.price,
-            mileage: selectedVehicle.mileage,
-            fuel: selectedVehicle.fuel,
-            image: selectedVehicle.image,
-            topsisScore: selectedVehicle.topsisScore,
+      {/* 개인화 투명성 대시보드 */}
+      {showPersonalizationDashboard && userQuery && (
+        <div className="mt-6 animate-slide-up">
+          <PersonalizationTransparencyDashboard
+            isActive={showPersonalizationDashboard}
+            userQuery={userQuery}
+            onComplete={handlePersonalizationComplete}
+          />
+        </div>
+      )}
+
+      {/* TOPSIS 상세 분석 모달 */}
+      {selectedVehicleForTOPSIS && (
+        <TOPSISAnalysisModal
+          isOpen={showTOPSISModal}
+          onClose={() => {
+            setShowTOPSISModal(false);
+            setSelectedVehicleForTOPSIS(null);
           }}
-          insights={insights?.vehicleId === selectedVehicleId ? insights.data : null}
-          isLoading={!!selectedVehicleId && (!insights || insights.vehicleId !== selectedVehicleId)}
+          vehicle={{
+            id: selectedVehicleForTOPSIS.id.toString(),
+            manufacturer: selectedVehicleForTOPSIS.manufacturer || selectedVehicleForTOPSIS.name.split(' ')[0],
+            model: selectedVehicleForTOPSIS.model || selectedVehicleForTOPSIS.name.split(' ')[1] || selectedVehicleForTOPSIS.name,
+            year: selectedVehicleForTOPSIS.year,
+            price: selectedVehicleForTOPSIS.price,
+            mileage: selectedVehicleForTOPSIS.mileage,
+            fuelType: selectedVehicleForTOPSIS.fuel,
+            location: selectedVehicleForTOPSIS.location
+          }}
         />
       )}
     </>
