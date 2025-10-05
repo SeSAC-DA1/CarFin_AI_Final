@@ -5,6 +5,7 @@ import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sp
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
+import VehicleAnalysisDashboard from "./VehicleAnalysisDashboard";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -43,12 +44,39 @@ export default function VehicleRecommendations({
   const [showTOPSISModal, setShowTOPSISModal] = useState(false);
   const [selectedVehicleForTOPSIS, setSelectedVehicleForTOPSIS] = useState<Vehicle | null>(null);
   const [showPersonalizationDashboard, setShowPersonalizationDashboard] = useState(false);
+  const [showAnalysisDashboard, setShowAnalysisDashboard] = useState(false);
+  const [selectedVehicleForAnalysis, setSelectedVehicleForAnalysis] = useState<Vehicle | null>(null);
+  const [analysisData, setAnalysisData] = useState<any>(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const { insights, requestInsights } = useWebSocketChat();
 
-  const handleViewInsights = (vehicle: Vehicle) => {
-    // TOPSIS 상세 분석 모달 열기
-    setSelectedVehicleForTOPSIS(vehicle);
-    setShowTOPSISModal(true);
+  const handleViewInsights = async (vehicle: Vehicle) => {
+    // 신뢰성 검증 대시보드 열기
+    setSelectedVehicleForAnalysis(vehicle);
+    setIsLoadingAnalysis(true);
+
+    try {
+      // 신뢰성 검증 분석 API 호출
+      const response = await fetch(`/api/vehicles/${vehicle.id}/verification`);
+      const data = await response.json();
+
+      if (data.success) {
+        setAnalysisData(data.verification_result);
+        setShowAnalysisDashboard(true);
+      } else {
+        console.error('분석 실패:', data.error);
+        // 실패 시 기존 TOPSIS 모달로 fallback
+        setSelectedVehicleForTOPSIS(vehicle);
+        setShowTOPSISModal(true);
+      }
+    } catch (error) {
+      console.error('분석 요청 실패:', error);
+      // 에러 시 기존 TOPSIS 모달로 fallback
+      setSelectedVehicleForTOPSIS(vehicle);
+      setShowTOPSISModal(true);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
   };
 
   // 개인화 대시보드 자동 표시
@@ -166,10 +194,11 @@ export default function VehicleRecommendations({
                     size="sm"
                     className="flex-1 gap-1.5 text-xs h-8"
                     onClick={() => handleViewInsights(vehicle)}
+                    disabled={isLoadingAnalysis}
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    상세 분석
+                    {isLoadingAnalysis ? '분석 중...' : '신뢰성 검증'}
                   </Button>
                   {vehicle.detailUrl && (
                     <Button
@@ -203,7 +232,27 @@ export default function VehicleRecommendations({
         </div>
       )}
 
-      {/* TOPSIS 상세 분석 모달 */}
+      {/* 신뢰성 검증 분석 대시보드 */}
+      {showAnalysisDashboard && selectedVehicleForAnalysis && analysisData && (
+        <VehicleAnalysisDashboard
+          vehicle={{
+            id: selectedVehicleForAnalysis.id.toString(),
+            manufacturer: selectedVehicleForAnalysis.manufacturer || selectedVehicleForAnalysis.name.split(' ')[0],
+            model: selectedVehicleForAnalysis.model || selectedVehicleForAnalysis.name.split(' ')[1] || selectedVehicleForAnalysis.name,
+            modelYear: selectedVehicleForAnalysis.year,
+            price: selectedVehicleForAnalysis.price,
+            distance: selectedVehicleForAnalysis.mileage
+          }}
+          analysisData={analysisData}
+          onClose={() => {
+            setShowAnalysisDashboard(false);
+            setSelectedVehicleForAnalysis(null);
+            setAnalysisData(null);
+          }}
+        />
+      )}
+
+      {/* TOPSIS 상세 분석 모달 (Fallback) */}
       {selectedVehicleForTOPSIS && (
         <TOPSISAnalysisModal
           isOpen={showTOPSISModal}

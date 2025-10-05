@@ -314,6 +314,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 🛡️ 차량 신뢰성 검증 분석 API
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  app.get("/api/vehicles/:id/verification", async (req, res) => {
+    try {
+      console.log('🛡️ 차량 신뢰성 검증 분석 API 호출');
+
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicleById(vehicleId);
+
+      if (!vehicle) {
+        return res.status(404).json({ error: "차량을 찾을 수 없습니다" });
+      }
+
+      // 유사 차량 데이터 (동일 브랜드/모델군 또는 가격대)
+      const similarVehicles = await storage.searchVehicles({
+        brand: vehicle.brand,
+        minPrice: Math.max(0, vehicle.price - 500), // ±500만원
+        maxPrice: vehicle.price + 500,
+        limit: 50,
+        offset: 0
+      });
+
+      // 검증 엔진 실행
+      const { VehicleVerificationEngine } = await import("./lib/verification/VehicleVerificationEngine");
+      const verificationResult = await VehicleVerificationEngine.analyzeVehicle(vehicle, similarVehicles);
+
+      console.log(`✅ 차량 검증 완료: ${vehicle.brand} ${vehicle.model} - 종합 안전도 ${verificationResult.comprehensiveRisk.totalRiskScore}점`);
+
+      res.json({
+        success: true,
+        vehicle_info: {
+          id: vehicle.vehicleId,
+          brand: vehicle.brand,
+          model: vehicle.model,
+          year: vehicle.modelYear,
+          price: vehicle.price,
+          distance: vehicle.distance
+        },
+        verification_result: verificationResult,
+        analysis_metadata: {
+          similar_vehicles_analyzed: similarVehicles.length,
+          analysis_date: new Date().toISOString(),
+          verification_methods: [
+            "침수이력 AI 분석",
+            "허위매물 탐지 알고리즘",
+            "주행거리 조작 의심 분석",
+            "시장 가격 이상치 탐지",
+            "제원 정합성 검증"
+          ]
+        }
+      });
+
+    } catch (error) {
+      console.error('🛡️ 차량 검증 분석 에러:', error);
+      res.status(500).json({
+        error: "차량 검증 분석 중 오류가 발생했습니다",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 📊 시스템 모니터링 API
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
