@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
 import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
@@ -26,11 +27,13 @@ const quickReplies = [
 
 export default function ChatInterface() {
   const { messages, vehicles, progress, isConnected, sendMessage } = useWebSocketChat();
+  const { startNewConversation, updateConversation } = useConversationHistory();
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [showMACRecCollaboration, setShowMACRecCollaboration] = useState(false);
   const [currentUserQuery, setCurrentUserQuery] = useState<string>('');
   const [showWelcome, setShowWelcome] = useState(messages.length === 0);
   const [showAgentPanel, setShowAgentPanel] = useState(true);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // 📚 실제 논문 3개 기반 단계 정의 (MACRec + Alibaba + AHP-TOPSIS)
   const steps = useMemo(() => {
@@ -132,6 +135,17 @@ export default function ChatInterface() {
     setShowQuickReplies(false);
     setCurrentUserQuery(message);
     setShowWelcome(false);
+
+    // 새 세션 시작 또는 기존 세션 업데이트
+    if (!currentSessionId) {
+      const newSessionId = startNewConversation(message);
+      setCurrentSessionId(newSessionId);
+    } else {
+      updateConversation(currentSessionId, {
+        lastMessage: message,
+        vehicleCount: vehicles.length
+      });
+    }
   };
 
   const handleWelcomeStart = () => {
@@ -172,19 +186,21 @@ export default function ChatInterface() {
       <div className="flex-1 flex h-[calc(100vh-4rem)]">
         {/* 왼쪽 사이드바 */}
         <ChatSidebar
-          userProfile={{
-            name: "사용자",
-            budget: [2000, 4000],
-            preferences: ["가족용", "연비", "안전성"]
-          }}
+          currentSessionId={currentSessionId}
           onNewChat={() => {
             setShowWelcome(true);
             setCurrentUserQuery('');
-            // 새 채팅 로직
+            setCurrentSessionId(null);
+            // 새 채팅 시작
           }}
           onSelectConversation={(id) => {
-            console.log('대화 선택:', id);
-            // 대화 로딩 로직
+            console.log('Selected conversation:', id);
+            // TODO: 선택된 대화 로드 로직 구현
+            setCurrentSessionId(id);
+          }}
+          onQuickAction={(query) => {
+            // 빠른 액션으로 메시지 전송
+            handleSendMessage(query);
           }}
         />
 

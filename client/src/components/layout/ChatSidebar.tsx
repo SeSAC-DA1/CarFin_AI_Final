@@ -11,60 +11,44 @@ import {
   CarFront,
   Clock,
   Heart,
-  TrendingUp
+  TrendingUp,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface ChatSidebarProps {
-  userProfile?: {
-    name?: string;
-    budget?: number[];
-    preferences?: string[];
-  };
-  conversations?: Array<{
-    id: string;
-    title: string;
-    timestamp: Date;
-    vehicleCount: number;
-  }>;
   onNewChat?: () => void;
   onSelectConversation?: (id: string) => void;
+  onQuickAction?: (query: string) => void;
+  currentSessionId?: string;
 }
 
 export default function ChatSidebar({
-  userProfile,
-  conversations = [],
   onNewChat,
-  onSelectConversation
+  onSelectConversation,
+  onQuickAction,
+  currentSessionId
 }: ChatSidebarProps) {
   const [activeTab, setActiveTab] = useState<'history' | 'profile' | 'filters'>('history');
 
-  // 모킹 대화 히스토리
-  const mockConversations = conversations.length > 0 ? conversations : [
-    {
-      id: '1',
-      title: '3000만원 이하 가족용 SUV',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30분 전
-      vehicleCount: 3
-    },
-    {
-      id: '2',
-      title: '출퇴근용 연비 좋은 세단',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2시간 전
-      vehicleCount: 3
-    },
-    {
-      id: '3',
-      title: '신혼부부용 차량 추천',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1일 전
-      vehicleCount: 2
-    }
-  ];
+  // 실제 데이터 훅 사용
+  const { conversations, deleteConversation, clearAllHistory } = useConversationHistory();
+  const {
+    userProfile,
+    getBudgetString,
+    getUsageString,
+    getTopPriorities,
+    getProfileCompleteness
+  } = useUserProfile();
 
+  // 동적 빠른 액션 (사용자 프로필 기반)
   const quickActions = [
-    { icon: CarFront, label: "가족용 SUV", query: "3000만원 이하 가족용 SUV 추천해주세요" },
-    { icon: TrendingUp, label: "연비 좋은 차", query: "연비 좋은 출퇴근용 세단 추천해주세요" },
-    { icon: Heart, label: "신혼부부용", query: "신혼부부에게 적합한 차량 추천해주세요" }
+    { icon: CarFront, label: "가족용 SUV", query: "가족용 SUV 추천해주세요" },
+    { icon: TrendingUp, label: "연비 좋은 차", query: "연비 좋은 차 추천해주세요" },
+    { icon: Heart, label: "신혼부부용", query: "신혼부부용 차 추천해주세요" }
   ];
 
   const formatTimeAgo = (timestamp: Date) => {
@@ -134,70 +118,143 @@ export default function ChatSidebar({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium">최근 상담 내역</h3>
-              <Badge variant="secondary" className="text-xs">
-                {mockConversations.length}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {conversations.length}
+                </Badge>
+                {conversations.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllHistory}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
             </div>
 
-            {mockConversations.map((conversation) => (
-              <Card
-                key={conversation.id}
-                className="p-3 cursor-pointer hover:bg-muted/50 transition-colors border-border"
-                onClick={() => onSelectConversation?.(conversation.id)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium line-clamp-2 leading-tight">
-                    {conversation.title}
-                  </h4>
-                  <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
-                    {conversation.vehicleCount}대
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  {formatTimeAgo(conversation.timestamp)}
-                </div>
-              </Card>
-            ))}
+            {conversations.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">아직 상담 내역이 없습니다</p>
+                <p className="text-xs">새 상담을 시작해보세요</p>
+              </div>
+            ) : (
+              conversations.map((conversation) => (
+                <Card
+                  key={conversation.id}
+                  className={cn(
+                    "p-3 cursor-pointer hover:bg-muted/50 transition-colors border-border",
+                    currentSessionId === conversation.id && "ring-2 ring-primary/50 bg-primary/5"
+                  )}
+                  onClick={() => onSelectConversation?.(conversation.id)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="text-sm font-medium line-clamp-2 leading-tight">
+                      {conversation.title}
+                    </h4>
+                    <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">
+                        {conversation.vehicleCount}대
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conversation.id);
+                        }}
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="w-3 h-3" />
+                    {formatTimeAgo(conversation.timestamp)}
+                  </div>
+                  {conversation.lastMessage && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                      {conversation.lastMessage}
+                    </p>
+                  )}
+                </Card>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === 'profile' && (
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">사용자 프로필</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">사용자 프로필</h3>
+              <Badge variant="outline" className="text-xs">
+                {getProfileCompleteness()}% 완성
+              </Badge>
+            </div>
 
-            <Card className="p-3 border-border">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">
-                    {userProfile?.name || '게스트'}
-                  </span>
-                </div>
+            {!userProfile ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">프로필이 설정되지 않았습니다</p>
+                <p className="text-xs">프로필 설정 페이지에서 정보를 입력해주세요</p>
+              </div>
+            ) : (
+              <Card className="p-3 border-border">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      {userProfile.name || '게스트'}
+                    </span>
+                    {userProfile.age && (
+                      <Badge variant="outline" className="text-xs">
+                        {userProfile.age}
+                      </Badge>
+                    )}
+                  </div>
 
-                {userProfile?.budget && (
+                  {userProfile.location && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">거주지역</p>
+                      <Badge variant="secondary" className="text-xs">
+                        {userProfile.location}
+                      </Badge>
+                    </div>
+                  )}
+
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">예산 범위</p>
-                    <Badge variant="secondary">
-                      {userProfile.budget[0]}만원 - {userProfile.budget[1]}만원
+                    <Badge variant="secondary" className="text-xs">
+                      {getBudgetString()}
                     </Badge>
                   </div>
-                )}
 
-                {userProfile?.preferences && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-2">선호 조건</p>
-                    <div className="flex flex-wrap gap-1">
-                      {userProfile.preferences.map((pref, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {pref}
-                        </Badge>
-                      ))}
-                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">사용 용도</p>
+                    <Badge variant="secondary" className="text-xs">
+                      {getUsageString()}
+                    </Badge>
                   </div>
-                )}
-              </div>
-            </Card>
+
+                  {getTopPriorities().length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">중요한 조건</p>
+                      <div className="flex flex-wrap gap-1">
+                        {getTopPriorities().map((priority, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {priority}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             <div>
               <h4 className="text-sm font-medium mb-2">빠른 액션</h4>
@@ -210,10 +267,7 @@ export default function ChatSidebar({
                       variant="outline"
                       size="sm"
                       className="w-full justify-start text-xs h-8"
-                      onClick={() => {
-                        // 빠른 액션 메시지 전송 로직
-                        console.log('Quick action:', action.query);
-                      }}
+                      onClick={() => onQuickAction?.(action.query)}
                     >
                       <Icon className="w-3.5 h-3.5 mr-2" />
                       {action.label}
