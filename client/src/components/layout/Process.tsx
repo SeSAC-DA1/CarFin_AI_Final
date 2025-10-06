@@ -4,26 +4,26 @@ const steps = [
   {
     icon: MessageSquare,
     number: "01",
-    title: "대화 시작",
-    description: "자연어로 원하는 차량 조건 입력"
+    title: "어떤 차 원하시나요?",
+    description: "편하게 말씀해 주세요"
   },
   {
     icon: Search,
     number: "02",
-    title: "AI 협업 분석",
-    description: "3개 에이전트가 실시간 협업"
+    title: "AI 3명이 찾아드립니다",
+    description: "각자 전문 분야에서 동시 분석"
   },
   {
     icon: BarChart3,
     number: "03",
-    title: "TOPSIS 평가",
-    description: "다기준 의사결정으로 순위 결정"
+    title: "꼼꼼히 비교분석",
+    description: "여러 기준으로 정밀 평가"
   },
   {
     icon: CheckCircle,
     number: "04",
-    title: "추천 완료",
-    description: "상세 분석과 함께 결과 제공"
+    title: "딱 3대만 추천",
+    description: "이유와 함께 명확한 결과"
   }
 ];
 
@@ -32,9 +32,9 @@ export default function Process() {
     <section className="py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12 space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold">추천 프로세스</h2>
+          <h2 className="text-3xl md:text-4xl font-bold">어떻게 찾아드릴까요?</h2>
           <p className="text-lg text-muted-foreground">
-            4단계로 완성되는 정밀한 차량 추천
+            간단한 4단계로 딱 맞는 차 3대를 찾아드려요
           </p>
         </div>
 

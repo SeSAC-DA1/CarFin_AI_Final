@@ -36,8 +36,8 @@ export default function Onboarding() {
   const steps: OnboardingStep[] = [
     {
       id: 1,
-      title: "AI 3명이 당신의 전용 카컨설턴트가 됩니다",
-      description: "복잡한 중고차 선택, 이제 AI 전문가들이 해결해드립니다",
+      title: "3명의 AI가 여러분을 도와드려요",
+      description: "각자 다른 전문성을 가진 AI들이 협력해서 딱 맞는 차를 찾아드립니다",
       icon: <Users className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8">
@@ -47,8 +47,8 @@ export default function Onboarding() {
                 <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Brain className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-bold mb-2">니즈 분석가</h3>
-                <p className="text-sm text-muted-foreground">당신의 라이프스타일과 예산을 정밀 분석</p>
+                <h3 className="font-bold mb-2">🧠 분석 AI</h3>
+                <p className="text-sm text-muted-foreground">여러분이 원하는 걸 정확히 파악해요</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-2/20">
@@ -56,8 +56,8 @@ export default function Onboarding() {
                 <div className="w-16 h-16 rounded-lg bg-chart-2/10 flex items-center justify-center mx-auto mb-4">
                   <BarChart3 className="w-8 h-8 text-chart-2" />
                 </div>
-                <h3 className="font-bold mb-2">데이터 전문가</h3>
-                <p className="text-sm text-muted-foreground">127만대 차량을 동시에 빅데이터 분석</p>
+                <h3 className="font-bold mb-2">🔍 검색 AI</h3>
+                <p className="text-sm text-muted-foreground">15만대 중에서 조건에 맞는 차들을 찾아요</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-3/20">
@@ -65,15 +65,15 @@ export default function Onboarding() {
                 <div className="w-16 h-16 rounded-lg bg-chart-3/10 flex items-center justify-center mx-auto mb-4">
                   <Target className="w-8 h-8 text-chart-3" />
                 </div>
-                <h3 className="font-bold mb-2">추천 컨시어지</h3>
-                <p className="text-sm text-muted-foreground">최적의 차량을 골라 개인화 추천</p>
+                <h3 className="font-bold mb-2">⭐ 추천 AI</h3>
+                <p className="text-sm text-muted-foreground">여러 기준으로 비교해서 베스트 3대를 골라요</p>
               </CardContent>
             </Card>
           </div>
           <div className="relative bg-gradient-to-r from-primary/5 via-chart-2/5 to-chart-3/5 p-6 rounded-lg border border-primary/20">
             <p className="text-center text-foreground">
               <Sparkles className="w-5 h-5 inline mr-2 text-primary" />
-              3명의 AI가 실시간으로 협업하는 모습을 직접 보실 수 있습니다
+              3명이 어떻게 협력하는지 실시간으로 볼 수 있어요
             </p>
           </div>
         </div>
@@ -81,8 +81,8 @@ export default function Onboarding() {
     },
     {
       id: 2,
-      title: "3개 논문 기반의 과학적 추천 시스템",
-      description: "검증된 학술 연구를 바탕으로 한 신뢰할 수 있는 추천",
+      title: "검증된 방법으로 안전하게 추천해요",
+      description: "세계적으로 인정받은 3가지 방법을 사용해서 믿을 수 있어요",
       icon: <Shield className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-6">
@@ -94,9 +94,9 @@ export default function Onboarding() {
                     <Users className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="mb-2 bg-primary/10 text-primary border-primary/30">SIGIR 2024</Badge>
-                    <h3 className="font-bold mb-2">MACRec: Multi-Agent Collaborative Recommendation</h3>
-                    <p className="text-sm text-muted-foreground">여러 AI 에이전트가 협업하여 더 정확한 추천을 제공</p>
+                    <Badge variant="outline" className="mb-2 bg-primary/10 text-primary border-primary/30">글로벌 AI 학회</Badge>
+                    <h3 className="font-bold mb-2">🤝 AI들이 서로 협업하는 기술</h3>
+                    <p className="text-sm text-muted-foreground">혼자 하는 것보다 여러 AI가 함께 일하면 더 정확해요</p>
                   </div>
                 </div>
               </CardContent>
@@ -108,9 +108,9 @@ export default function Onboarding() {
                     <TrendingUp className="w-6 h-6 text-chart-2" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="mb-2 bg-chart-2/10 text-chart-2 border-chart-2/30">RecSys 2019</Badge>
-                    <h3 className="font-bold mb-2">Personalized Re-ranking (Alibaba)</h3>
-                    <p className="text-sm text-muted-foreground">개인화된 선호도 기반 재정렬 알고리즘</p>
+                    <Badge variant="outline" className="mb-2 bg-chart-2/10 text-chart-2 border-chart-2/30">글로벌 IT기업</Badge>
+                    <h3 className="font-bold mb-2">🧠 실시간으로 배우는 AI</h3>
+                    <p className="text-sm text-muted-foreground">여러분이 말씀해주시면 바로 학습해서 다음엔 더 잘해요</p>
                   </div>
                 </div>
               </CardContent>
@@ -122,9 +122,9 @@ export default function Onboarding() {
                     <BarChart3 className="w-6 h-6 text-chart-3" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="mb-2 bg-chart-3/10 text-chart-3 border-chart-3/30">Multi Studies</Badge>
-                    <h3 className="font-bold mb-2">AHP-TOPSIS Decision Analysis</h3>
-                    <p className="text-sm text-muted-foreground">다기준 의사결정 분석으로 객관적 평가</p>
+                    <Badge variant="outline" className="mb-2 bg-chart-3/10 text-chart-3 border-chart-3/30">산업계 표준</Badge>
+                    <h3 className="font-bold mb-2">⚖️ 공정한 비교 평가</h3>
+                    <p className="text-sm text-muted-foreground">여러 기준을 편견 없이 객관적으로 비교해서 평가해요</p>
                   </div>
                 </div>
               </CardContent>

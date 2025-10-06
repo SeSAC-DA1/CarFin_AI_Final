@@ -11,13 +11,17 @@ import AgentStatusPanel from "@/components/ai/AgentStatusPanel";
 import FeedbackSection from "@/components/layout/FeedbackSection";
 import LoadingSpinner from "@/components/ai/LoadingSpinner";
 import ChatSidebar from "@/components/layout/ChatSidebar";
-import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles } from "lucide-react";
+import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles, HelpCircle, GraduationCap, Mountain, Star } from "lucide-react";
 
 const quickReplies = [
   { label: "3000만원 이하 가족용 SUV", value: "3000만원 이하로 가족용 SUV 찾아요", icon: Users },
   { label: "출퇴근용 세단, 연비 좋은 걸로", value: "출퇴근용 세단, 연비 좋은 걸로요", icon: Fuel },
   { label: "신혼부부용 차", value: "신혼부부용 차, 안전하고 예쁜 걸로", icon: Heart },
-  { label: "2500만원 이하 SUV", value: "2500만원 이하 SUV 추천해주세요", icon: Truck }
+  { label: "첫차 구입, 도움 주세요", value: "처음 차 사는데 뭘 골라야 할지 모르겠어요", icon: HelpCircle },
+  { label: "대학생 아들용 경차", value: "대학생 아들이 쓸 경차나 소형차 추천해주세요", icon: GraduationCap },
+  { label: "주말 캠핑용 차량", value: "주말에 캠핑 다니기 좋은 차 찾아요", icon: Mountain },
+  { label: "1500만원 이하 실속형", value: "1500만원 이하로 실속 있는 차 추천해주세요", icon: Star },
+  { label: "AI에게 맡길게요", value: "제 상황에 맞는 차를 AI가 알아서 찾아주세요", icon: Sparkles }
 ];
 
 export default function ChatInterface() {

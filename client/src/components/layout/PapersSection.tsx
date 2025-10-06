@@ -5,30 +5,30 @@ import { BookOpen, Award, TrendingUp } from "lucide-react";
 const papers = [
   {
     icon: BookOpen,
-    title: "멀티 에이전트 협업",
-    venue: "SIGIR 2024",
-    description: "정보검색 분야 최고 학회에서 발표된 최신 멀티 에이전트 협업 프레임워크를 적용했습니다",
-    badge: "핵심 시스템",
+    title: "AI 3명이 서로 협업",
+    venue: "글로벌 AI 학회 검증",
+    description: "세계적으로 인정받은 AI 협업 기술로 각각 다른 전문성을 가진 AI들이 함께 일해요",
+    badge: "자율 협업",
     color: "bg-chart-1/10 text-chart-1",
-    impact: "3명의 AI가 역할별로 협업"
+    impact: "각자 다른 방식으로 분석"
   },
   {
     icon: Award,
-    title: "개인화 재정렬",
-    venue: "RecSys 2019 Best Paper",
-    description: "Alibaba가 실제 배포한 개인화 재정렬 알고리즘으로 사용자 피드백을 즉시 반영합니다",
-    badge: "실시간 학습",
+    title: "실시간으로 배우는 AI",
+    venue: "글로벌 IT기업 실증",
+    description: "알리바바 같은 대기업에서 실제로 사용하는 기술로 여러분 피드백을 바로 학습해요",
+    badge: "즉시 학습",
     color: "bg-chart-2/10 text-chart-2",
-    impact: "0.5초 내 재추천"
+    impact: "말씀해주시면 바로 개선"
   },
   {
     icon: TrendingUp,
-    title: "TOPSIS 의사결정",
-    venue: "Industry Standard",
-    description: "자동차 업계에서 수십년간 검증된 다기준 의사결정 방법론으로 객관적 평가를 제공합니다",
-    badge: "산업 표준",
+    title: "과학적 비교 평가",
+    venue: "산업계 표준 방법",
+    description: "자동차 업계에서 오랫동안 쓰인 검증된 방법으로 여러 기준을 공정하게 비교해요",
+    badge: "객관적 평가",
     color: "bg-chart-3/10 text-chart-3",
-    impact: "6가지 기준 정밀 분석"
+    impact: "편견 없이 정확한 분석"
   }
 ];
 
@@ -37,9 +37,9 @@ export default function PapersSection() {
     <section className="py-16 md:py-24 bg-card/30" id="technology">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12 space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold">3개 논문 기반 검증된 시스템</h2>
+          <h2 className="text-3xl md:text-4xl font-bold">믿을 수 있는 검증된 기술</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            최신 AI 연구와 산업 표준을 결합한 과학적 추천 엔진
+            세계적으로 인정받은 3가지 기술로 안전하고 정확하게 추천해드려요
           </p>
         </div>
 
