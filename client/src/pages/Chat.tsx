@@ -1,11 +1,5 @@
-import Navigation from "@/components/layout/Navigation";
-import ChatInterface from "@/components/features/ChatInterface";
+import SimpleChatInterface from "@/components/features/SimpleChatInterface";
 
 export default function Chat() {
-  return (
-    <div>
-      <Navigation />
-      <ChatInterface />
-    </div>
-  );
+  return <SimpleChatInterface />;
 }

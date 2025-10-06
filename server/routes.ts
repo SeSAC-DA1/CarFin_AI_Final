@@ -14,6 +14,9 @@ import { setupVite, serveStatic } from "./vite";
 import { generatePaperBasedRecommendations, type PaperBasedRecommendationRequest } from "./lib/integration/PaperBasedRecommendationEngine";
 import { railwayRedisService } from "./lib/cache/RailwayRedisService";
 
+// 🔍 데이터 품질 필터링 시스템
+import { DataQualityFilter } from "./lib/data/DataQualityFilter";
+
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/vehicles/search", async (req, res) => {
     try {
@@ -30,8 +33,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
       };
 
-      const vehicles = await storage.searchVehicles(filters);
-      res.json(vehicles);
+      const rawVehicles = await storage.searchVehicles(filters);
+
+      // 🔍 데이터 품질 필터링 적용
+      const dataFilter = new DataQualityFilter();
+      const vehicles = dataFilter.filterVehicles(rawVehicles);
+
+      res.json({
+        vehicles,
+        data_quality: {
+          original_count: rawVehicles.length,
+          filtered_count: vehicles.length,
+          filter_applied: true
+        }
+      });
     } catch (error) {
       res.status(500).json({ error: "Failed to search vehicles" });
     }
@@ -126,13 +141,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset: 0,
       };
 
-      const vehicles = await storage.searchVehicles(searchFilters);
+      const rawVehicles = await storage.searchVehicles(searchFilters);
+
+      // 🔍 데이터 품질 필터링 적용
+      const dataFilter = new DataQualityFilter();
+      const vehicles = dataFilter.filterVehicles(rawVehicles);
 
       if (vehicles.length === 0) {
         return res.json({
           success: false,
-          message: "검색 조건에 맞는 차량이 없습니다.",
-          agentAnalyses: []
+          message: "품질 기준을 만족하는 차량이 없습니다. 검색 조건을 완화해 주세요.",
+          agentAnalyses: [],
+          data_quality: dataFilter.getFilteringStats(rawVehicles, vehicles)
         });
       }
 
@@ -194,9 +214,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // 🔍 데이터 품질 필터 초기화
+      const dataFilter = new DataQualityFilter();
+
       // 간단한 검색 필터 적용
       const searchFilters = {
-        limit: 10,
+        limit: 100, // 필터링 전에 더 많은 데이터 가져오기
         offset: 0
       };
 
@@ -208,22 +231,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 차량 데이터 가져오기
-      const vehicles = await storage.searchVehicles(searchFilters);
-      console.log(`📊 검색된 차량: ${vehicles.length}개`);
+      const rawVehicles = await storage.searchVehicles(searchFilters);
+      console.log(`📊 검색된 원시 차량: ${rawVehicles.length}개`);
 
-      if (vehicles.length === 0) {
+      // 🔍 데이터 품질 필터링 적용 (추천용 엄격한 기준)
+      const qualityVehicles = dataFilter.filterForRecommendation(rawVehicles);
+      const filterStats = dataFilter.getFilteringStats(rawVehicles, qualityVehicles);
+
+      console.log(`✅ 품질 필터링 완료: ${filterStats.original} → ${filterStats.filtered} (${filterStats.removalRate} 제거)`);
+      console.log(`🎯 데이터 품질 점수: ${filterStats.qualityScore}`);
+
+      if (qualityVehicles.length === 0) {
         return res.json({
           success: false,
-          message: "검색 조건에 맞는 차량이 없습니다.",
-          top3_recommendations: []
+          message: "품질 기준을 만족하는 차량이 없습니다. 조건을 완화해 주세요.",
+          top3_recommendations: [],
+          data_quality: filterStats
         });
       }
 
-      // 간단한 추천 로직 (가격 대비 성능)
-      const recommendations = vehicles.slice(0, 3).map((vehicle, index) => ({
+      // 간단한 추천 로직 (가격 대비 성능) - 품질 필터링된 차량만 사용
+      const recommendations = qualityVehicles.slice(0, 3).map((vehicle, index) => ({
         vehicle,
         personalized_score: 85 - (index * 5), // 85, 80, 75점
-        explanation: `${vehicle.brand} ${vehicle.model} - 가격 ${vehicle.price}만원, ${vehicle.modelYear}년식`,
+        explanation: `${vehicle.manufacturer} ${vehicle.model} - 가격 ${vehicle.price}만원, ${vehicle.modelYear}년식`,
         rank: index + 1
       }));
 
@@ -267,10 +298,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Peer Group을 위한 전체 차량 데이터
-      const allVehicles = await storage.searchVehicles({
+      const rawVehicles = await storage.searchVehicles({
         limit: 500,
         offset: 0
       });
+
+      // 🔍 데이터 품질 필터링 (TOPSIS 분석용)
+      const dataFilter = new DataQualityFilter();
+      const allVehicles = dataFilter.filterVehicles(rawVehicles);
+      console.log(`🔍 TOPSIS 분석용 데이터 필터링: ${rawVehicles.length} → ${allVehicles.length}개`);
 
       // AHP-TOPSIS 분석 실행
       const { AHP_TOPSIS_Engine } = await import("./lib/papers/topsis/AHP_TOPSIS_Dashboard");
