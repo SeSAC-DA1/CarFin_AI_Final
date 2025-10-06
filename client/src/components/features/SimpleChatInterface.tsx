@@ -5,7 +5,8 @@ import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car, Send, Sparkles, Loader2 } from "lucide-react";
+import { Car, Send, Sparkles, Loader2, ArrowLeft, Home } from "lucide-react";
+import { Link } from "wouter";
 
 // 간단한 퀵 스타터 메시지들
 const quickStarters = [
@@ -42,15 +43,36 @@ export default function SimpleChatInterface() {
       {/* 간단한 헤더 */}
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Car className="w-4 h-4 text-primary" />
+          <div className="flex items-center justify-between">
+            {/* 왼쪽: 뒤로가기 + 로고 */}
+            <div className="flex items-center gap-3">
+              <Link to="/">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">뒤로가기</span>
+                </Button>
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Car className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold">CARFIN AI</h1>
+                  <p className="text-xs text-muted-foreground">
+                    실시간 15만대 분석 • AI 추천
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold">CARFIN AI</h1>
-              <p className="text-xs text-muted-foreground">
-                실시간 15만대 분석 • AI 추천
-              </p>
+
+            {/* 오른쪽: 홈 버튼 */}
+            <div className="flex items-center gap-2">
+              <Link to="/">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Home className="w-4 h-4" />
+                  <span className="hidden sm:inline">홈으로</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
