@@ -196,7 +196,10 @@ ${reviewSummary}
       
       return rankings.map((r: any) => {
         const vehicle = vehicles.find(v => v.vehicleId === r.vehicleId);
-        if (!vehicle) throw new Error(`Vehicle ${r.vehicleId} not found`);
+        if (!vehicle) {
+          console.log(`⚠️ Vehicle ${r.vehicleId} not found, skipping...`);
+          return null;
+        }
         
         return {
           vehicle,
@@ -208,7 +211,7 @@ ${reviewSummary}
           topsisScore: r.topsisScore,
           matchingScore: r.matchingScore
         };
-      });
+      }).filter(Boolean); // null 값들 제거
     } catch (error) {
       console.error('Ranking parsing error:', error);
       

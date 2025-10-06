@@ -1,5 +1,5 @@
-import SimpleChatInterface from "@/components/features/SimpleChatInterface";
+import ChatInterface from "@/components/features/ChatInterface";
 
 export default function Chat() {
-  return <SimpleChatInterface />;
+  return <ChatInterface />;
 }

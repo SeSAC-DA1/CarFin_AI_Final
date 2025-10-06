@@ -63,7 +63,7 @@ export function useWebSocketChat() {
 
       // Railway/Vercel 등 배포 환경에서는 포트 제외, 로컬 개발에서만 포트 사용
       if (host === 'localhost' || host === '127.0.0.1') {
-        const port = window.location.port || '8000';
+        const port = window.location.port || '5000';
         wsUrl = `${protocol}//${host}:${port}/ws/chat`;
       } else {
         // 배포 환경에서는 포트 없이 연결
