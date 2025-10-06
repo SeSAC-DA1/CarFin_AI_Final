@@ -15,7 +15,8 @@
       "Bash(tsx:*)",
       "Bash(dir)",
       "Bash(dir dist)",
-      "Bash(railway whoami:*)"
+      "Bash(railway whoami:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

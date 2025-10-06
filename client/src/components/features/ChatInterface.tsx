@@ -35,7 +35,7 @@ export default function ChatInterface() {
   const [showAgentPanel, setShowAgentPanel] = useState(true);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
-  // 📚 실제 논문 3개 기반 단계 정의 (MACRec + Alibaba + AHP-TOPSIS)
+  // 🎯 사용자 친화적 진행 단계 (간소화)
   const steps = useMemo(() => {
     if (!progress) {
       return [
@@ -43,45 +43,40 @@ export default function ChatInterface() {
           id: "greeting",
           label: "대화 시작",
           status: "completed" as const,
-          detail: "사용자 요청 접수 완료",
-          agent: "",
-          paper: ""
+          detail: "요청을 받았어요"
         },
         {
-          id: "macrec",
-          label: "MACRec 프로토콜",
+          id: "analyzing",
+          label: "분석 중",
           status: "pending" as const,
-          detail: "멀티에이전트 협업 분석 (SIGIR 2024)",
-          agent: "Manager + User Analyst + Searcher",
-          paper: "📊 MACRec (SIGIR 2024)"
+          detail: "조건을 분석하고 있어요"
         },
         {
-          id: "reranking",
-          label: "개인화 재정렬",
+          id: "searching",
+          label: "검색 중",
           status: "pending" as const,
-          detail: "Alibaba 개인화 알고리즘 (RecSys 2019)",
-          agent: "Personalized Re-ranking Engine",
-          paper: "🔄 Alibaba (RecSys 2019)"
+          detail: "적합한 차량을 찾고 있어요"
         },
         {
-          id: "topsis",
-          label: "AHP-TOPSIS 분석",
+          id: "recommending",
+          label: "추천 준비",
           status: "pending" as const,
-          detail: "다기준 의사결정 정밀 평가",
-          agent: "TOPSIS Evaluation Engine",
-          paper: "📈 AHP-TOPSIS (Multiple Studies)"
+          detail: "최적의 차량을 선별하고 있어요"
         }
       ];
     }
 
-    // 실제 백엔드 step과 논문 단계 매핑
+    // 실제 백엔드 step과 간소화된 단계 매핑
     const stepMap: Record<string, number> = {
-      analyzing_needs: 1,
+      analyzing_needs: 1,    // 분석 중
       user_analyst: 1,
-      searching_vehicles: 1,
-      searcher: 1,
-      final_recommendation: 2,
-      manager: 2,
+      needs_analyst: 1,
+      searching_vehicles: 2, // 검색 중
+      searcher: 2,
+      data_analyst: 2,
+      final_recommendation: 3, // 추천 준비
+      manager: 3,
+      concierge: 3,
       completed: 4,
     };
 
@@ -92,33 +87,25 @@ export default function ChatInterface() {
         id: "greeting",
         label: "대화 시작",
         status: currentStepIndex > 0 ? "completed" as const : "active" as const,
-        detail: "사용자 요청 접수 완료",
-        agent: "",
-        paper: ""
+        detail: "요청을 받았어요"
       },
       {
-        id: "macrec",
-        label: "MACRec 프로토콜",
+        id: "analyzing",
+        label: "분석 중",
         status: currentStepIndex > 1 ? "completed" as const : currentStepIndex === 1 ? "active" as const : "pending" as const,
-        detail: currentStepIndex === 1 ? "멀티에이전트 협업 실행 중" : "사용자 프로필 추출 및 차량 검색 완료",
-        agent: "Manager + User Analyst + Searcher",
-        paper: "📊 MACRec (SIGIR 2024)"
+        detail: currentStepIndex === 1 ? "조건을 분석하고 있어요" : "분석 완료!"
       },
       {
-        id: "reranking",
-        label: "개인화 재정렬",
+        id: "searching",
+        label: "검색 중",
         status: currentStepIndex > 2 ? "completed" as const : currentStepIndex === 2 ? "active" as const : "pending" as const,
-        detail: currentStepIndex === 2 ? "개인화 점수 계산 및 Top 3 선택 중" : "50개 후보 → Top 3 재정렬 완료",
-        agent: "Personalized Re-ranking Engine",
-        paper: "🔄 Alibaba (RecSys 2019)"
+        detail: currentStepIndex === 2 ? "적합한 차량을 찾고 있어요" : "검색 완료!"
       },
       {
-        id: "topsis",
-        label: "AHP-TOPSIS 분석",
+        id: "recommending",
+        label: "추천 준비",
         status: currentStepIndex >= 4 ? "completed" as const : currentStepIndex === 3 ? "active" as const : "pending" as const,
-        detail: currentStepIndex >= 3 ? "6가지 기준 정밀 평가 중" : "종합 분석 및 추천 완성",
-        agent: "TOPSIS Evaluation Engine",
-        paper: "📈 AHP-TOPSIS (Multiple Studies)"
+        detail: currentStepIndex >= 3 ? "최적의 차량을 선별하고 있어요" : "추천 완료!"
       }
     ];
   }, [progress]);

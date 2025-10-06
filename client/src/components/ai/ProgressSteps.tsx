@@ -1,45 +1,30 @@
 import { cn } from "@/lib/utils";
-import { Check, Brain, Database, Award, MessageCircle, Users, RotateCcw, BarChart } from "lucide-react";
+import { Check, MessageCircle, Brain, Database, Award } from "lucide-react";
 
 interface Step {
   id: string;
   label: string;
   status: "completed" | "active" | "pending";
   detail?: string;
-  agent?: string;
-  paper?: string; // 논문 정보 추가
 }
 
 interface ProgressStepsProps {
   steps: Step[];
 }
 
-// 논문 기반 아이콘 매핑
-const getStepIcon = (stepId: string, agent?: string) => {
+// 간소화된 아이콘 매핑
+const getStepIcon = (stepId: string) => {
   switch (stepId) {
     case "greeting":
       return MessageCircle;
-    case "macrec":
-      return Users; // 멀티에이전트 협업
-    case "reranking":
-      return RotateCcw; // 재정렬
-    case "topsis":
-      return BarChart; // 분석
+    case "analyzing":
+      return Brain;
+    case "searching":
+      return Database;
+    case "recommending":
+      return Award;
     default:
-      // 레거시 지원
-      switch (agent) {
-        case "니즈 분석 AI":
-        case "Manager + User Analyst + Searcher":
-          return Brain;
-        case "검색 AI":
-        case "Personalized Re-ranking Engine":
-          return Database;
-        case "평가 AI":
-        case "TOPSIS Evaluation Engine":
-          return Award;
-        default:
-          return MessageCircle;
-      }
+      return MessageCircle;
   }
 };
 
@@ -65,12 +50,12 @@ export default function ProgressSteps({ steps }: ProgressStepsProps) {
                     <Check className="w-5 h-5" />
                   ) : step.status === "active" ? (
                     (() => {
-                      const IconComponent = getStepIcon(step.id, step.agent);
+                      const IconComponent = getStepIcon(step.id);
                       return <IconComponent className="w-5 h-5" />;
                     })()
                   ) : (
                     (() => {
-                      const IconComponent = getStepIcon(step.id, step.agent);
+                      const IconComponent = getStepIcon(step.id);
                       return <IconComponent className="w-4 h-4 opacity-50" />;
                     })()
                   )}
@@ -96,16 +81,6 @@ export default function ProgressSteps({ steps }: ProgressStepsProps) {
                       )}
                     >
                       {step.detail}
-                    </span>
-                  )}
-                  {step.paper && (
-                    <span className="text-xs text-primary/60 mt-0.5 font-medium">
-                      {step.paper}
-                    </span>
-                  )}
-                  {step.agent && step.status === "active" && (
-                    <span className="text-xs text-primary/70 mt-0.5 font-medium">
-                      {step.agent} 작업 중
                     </span>
                   )}
                 </div>
