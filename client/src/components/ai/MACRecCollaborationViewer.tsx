@@ -22,8 +22,8 @@ interface MACRecAgent {
   emoji: string;
   specialty: string;
   status: 'idle' | 'thinking' | 'processing' | 'collaborating' | 'done';
-  currentTask?: string;
-  progress?: number;
+  currentTask?: string | undefined;
+  progress?: number | undefined;
 }
 
 interface TaskDecompositionStep {
@@ -32,8 +32,8 @@ interface TaskDecompositionStep {
   assignedAgent: string;
   dependencies: string[];
   status: 'pending' | 'in_progress' | 'completed';
-  startTime?: Date;
-  endTime?: Date;
+  startTime?: Date | undefined;
+  endTime?: Date | undefined;
 }
 
 interface CollaborationMessage {
@@ -63,7 +63,6 @@ interface MACRecCollaborationViewerProps {
 export default function MACRecCollaborationViewer({
   query,
   isActive,
-  onComplete,
   className = ''
 }: MACRecCollaborationViewerProps) {
   const [currentStep, setCurrentStep] = useState<string>('initializing');
@@ -104,8 +103,9 @@ export default function MACRecCollaborationViewer({
   const [executionTime, setExecutionTime] = useState<number>(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  // 시뮬레이션 상태
+  // 시뮬레이션 상태 (used for tracking simulation progress)
   const [simulationPhase, setSimulationPhase] = useState(0);
+  console.log('Current simulation phase:', simulationPhase);
 
   useEffect(() => {
     if (isActive && !startTime) {
@@ -121,6 +121,7 @@ export default function MACRecCollaborationViewer({
       }, 100);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [startTime]);
 
   const startMACRecSimulation = async () => {
@@ -313,7 +314,7 @@ export default function MACRecCollaborationViewer({
   const updateAgentStatus = (agentId: string, status: MACRecAgent['status'], task?: string) => {
     setAgents(prev => prev.map(agent =>
       agent.id === agentId
-        ? { ...agent, status, currentTask: task }
+        ? { ...agent, status, currentTask: task !== undefined ? task : undefined }
         : agent
     ));
   };
@@ -324,8 +325,8 @@ export default function MACRecCollaborationViewer({
         ? {
             ...task,
             status,
-            startTime: status === 'in_progress' ? new Date() : task.startTime,
-            endTime: status === 'completed' ? new Date() : undefined
+            startTime: status === 'in_progress' ? new Date() : (task.startTime !== undefined ? task.startTime : undefined),
+            endTime: status === 'completed' ? new Date() : (task.endTime !== undefined ? task.endTime : undefined)
           }
         : task
     ));

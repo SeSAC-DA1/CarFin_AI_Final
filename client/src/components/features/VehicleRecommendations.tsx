@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
+import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -43,8 +44,10 @@ export default function VehicleRecommendations({
   const [showTOPSISModal, setShowTOPSISModal] = useState(false);
   const [selectedVehicleForTOPSIS, setSelectedVehicleForTOPSIS] = useState<Vehicle | null>(null);
   const [showPersonalizationDashboard, setShowPersonalizationDashboard] = useState(false);
+  const [showFinanceDashboard, setShowFinanceDashboard] = useState(false);
+  const [selectedVehicleForFinance, setSelectedVehicleForFinance] = useState<Vehicle | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
-  const { insights, requestInsights } = useWebSocketChat();
+  const { insights } = useWebSocketChat();
 
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
@@ -52,6 +55,12 @@ export default function VehicleRecommendations({
     setSelectedVehicleForTOPSIS(vehicle);
     setShowTOPSISModal(true);
     setIsLoadingAnalysis(false);
+  };
+
+  const handleFinanceConsultation = (vehicle: Vehicle) => {
+    // 금융 상담 모달 열기
+    setSelectedVehicleForFinance(vehicle);
+    setShowFinanceDashboard(true);
   };
 
   // 개인화 대시보드 자동 표시
@@ -64,6 +73,7 @@ export default function VehicleRecommendations({
       }, 15000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [showPersonalization, userQuery, vehicles]);
 
   const handlePersonalizationComplete = () => {
@@ -90,13 +100,8 @@ export default function VehicleRecommendations({
 
         <div className="relative">
           {/* 🎨 현대적 캐러셀 스타일 컨테이너 */}
-          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden"
                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <style jsx>{`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
           {vehicles.map((vehicle) => (
             <Card
               key={vehicle.id}
@@ -194,7 +199,46 @@ export default function VehicleRecommendations({
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-1">
+                {/* 🏦 금융 정보 미리보기 */}
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CreditCard className="w-3 h-3" />
+                    <span>금융 옵션</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-blue-50 dark:bg-blue-950/20 p-2 rounded">
+                      <div className="text-blue-600 dark:text-blue-400 font-medium">할부</div>
+                      <div className="font-mono font-bold">
+                        {(() => {
+                          const monthlyPayment = Math.round(vehicle.price * 10000 * 0.018);
+                          return `${(monthlyPayment / 10000).toFixed(0)}만원/월`;
+                        })()}
+                      </div>
+                      <div className="text-muted-foreground">60개월</div>
+                    </div>
+
+                    <div className="bg-purple-50 dark:bg-purple-950/20 p-2 rounded">
+                      <div className="text-purple-600 dark:text-purple-400 font-medium">리스</div>
+                      <div className="font-mono font-bold">
+                        {(() => {
+                          const leasePayment = Math.round(vehicle.price * 10000 * 0.015);
+                          return `${(leasePayment / 10000).toFixed(0)}만원/월`;
+                        })()}
+                      </div>
+                      <div className="text-muted-foreground">36개월</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-950/20 p-2 rounded">
+                    <span className="text-green-600 dark:text-green-400">예상 보험료</span>
+                    <span className="font-medium">
+                      {Math.max(7, Math.round(vehicle.price * 0.3))}만원/월
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-1.5 pt-1">
                   <Button
                     size="sm"
                     className="flex-1 gap-1.5 text-xs h-8"
@@ -203,8 +247,20 @@ export default function VehicleRecommendations({
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-{isLoadingAnalysis ? '분석 중...' : '차량 진단'}
+                    {isLoadingAnalysis ? '분석 중...' : '차량 진단'}
                   </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
+                    onClick={() => handleFinanceConsultation(vehicle)}
+                    data-testid={`button-finance-${vehicle.rank}`}
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                    금융 상담
+                  </Button>
+
                   {vehicle.detailUrl && (
                     <Button
                       size="sm"
@@ -215,7 +271,7 @@ export default function VehicleRecommendations({
                     >
                       <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3.5 h-3.5" />
-                        보러가기
+                        보기
                       </a>
                     </Button>
                   )}
@@ -262,13 +318,32 @@ export default function VehicleRecommendations({
           }}
           vehicle={{
             id: selectedVehicleForTOPSIS.id.toString(),
-            manufacturer: selectedVehicleForTOPSIS.manufacturer || selectedVehicleForTOPSIS.name.split(' ')[0],
+            manufacturer: selectedVehicleForTOPSIS.manufacturer || selectedVehicleForTOPSIS.name.split(' ')[0] || '알 수 없음',
             model: selectedVehicleForTOPSIS.model || selectedVehicleForTOPSIS.name.split(' ')[1] || selectedVehicleForTOPSIS.name,
             year: selectedVehicleForTOPSIS.year,
             price: selectedVehicleForTOPSIS.price,
             mileage: selectedVehicleForTOPSIS.mileage,
             fuelType: selectedVehicleForTOPSIS.fuel,
-            location: selectedVehicleForTOPSIS.location
+            location: selectedVehicleForTOPSIS.location || '알 수 없음'
+          }}
+        />
+      )}
+
+      {/* 🏦 차량 금융 대시보드 모달 */}
+      {selectedVehicleForFinance && (
+        <VehicleFinanceDashboard
+          isOpen={showFinanceDashboard}
+          onClose={() => {
+            setShowFinanceDashboard(false);
+            setSelectedVehicleForFinance(null);
+          }}
+          vehicle={{
+            manufacturer: selectedVehicleForFinance.manufacturer || selectedVehicleForFinance.name.split(' ')[0] || '알 수 없음',
+            model: selectedVehicleForFinance.model || selectedVehicleForFinance.name.split(' ')[1] || selectedVehicleForFinance.name,
+            year: selectedVehicleForFinance.year,
+            price: selectedVehicleForFinance.price,
+            mileage: selectedVehicleForFinance.mileage,
+            fuelType: selectedVehicleForFinance.fuel
           }}
         />
       )}

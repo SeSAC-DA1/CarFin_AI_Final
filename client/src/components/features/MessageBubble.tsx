@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { MessageCircle, Search, BarChart3, User, Brain, Database, Award } from "lucide-react";
+import { MessageCircle, User, Brain, Database, Award } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 

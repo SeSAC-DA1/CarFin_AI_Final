@@ -16,7 +16,10 @@
       "Bash(dir)",
       "Bash(dir dist)",
       "Bash(railway whoami:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npx:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

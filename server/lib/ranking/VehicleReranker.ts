@@ -3,7 +3,7 @@
 // 2차: LLM 기반 중립적 차량 분석 및 리랭킹 + 리뷰 감성분석 통합
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { VehicleOptionAnalyzer } from '@/lib/valuation/VehicleOptionAnalyzer';
+import { VehicleOptionAnalyzer } from '../valuation/VehicleOptionAnalyzer.js';
 
 interface VehicleForRanking {
   vehicle_id?: string;
@@ -90,8 +90,11 @@ export class VehicleReranker {
       console.log(`📊 배치 ${i + 1}/${batches.length} 처리 중...`);
 
       try {
+        const batch = batches[i];
+        if (!batch) continue;
+
         const batchResults = await this.processBatch(
-          batches[i],
+          batch,
           persona,
           userContext,
           i === 0 // 첫 번째 배치에서만 전체 분석
@@ -100,9 +103,12 @@ export class VehicleReranker {
       } catch (error) {
         console.error(`❌ 배치 ${i + 1} 처리 실패:`, error);
         // 실패한 배치는 기본 점수로 폴백
-        const fallbackResults = batches[i].map((vehicle, idx) => ({
+        const batch = batches[i];
+        if (!batch) continue;
+
+        const fallbackResults = batch.map((vehicle, idx) => ({
           vehicle,
-          score: 50 + (batches[i].length - idx) * 5, // 기본 점수
+          score: 50 + (batch.length - idx) * 5, // 기본 점수
           reasoning: `기본 분석: ${vehicle.manufacturer} ${vehicle.model}은 ${persona.name}님의 기본 조건에 부합합니다.`,
           personalizedInsights: [
             `💰 예산 ${persona.budget.min}-${persona.budget.max}만원 범위에 적합`,
@@ -157,7 +163,8 @@ export class VehicleReranker {
     // 🔥 리뷰 인사이트 분석 수행
     const reviewInsightResults = new Map<string, any>();
     try {
-      const { brandTierReviewEngine } = await import('@/lib/review/BrandTierReviewEngine');
+      const { BrandTierReviewEngine } = await import('../review/BrandTierReviewEngine.js');
+      const brandTierReviewEngine = new BrandTierReviewEngine();
       console.log(`💬 ${vehicles.length}대 차량의 리뷰 인사이트 생성 중...`);
 
       for (const vehicle of vehicles) {

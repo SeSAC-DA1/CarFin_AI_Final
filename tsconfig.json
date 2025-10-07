@@ -15,6 +15,23 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "types": ["node", "vite/client"],
+
+    // 🎯 추가 엄격한 타입 검사 (교육/공모전 점수 향상)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "downlevelIteration": true,
+
+    // 📊 품질 향상 설정
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
+
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"]

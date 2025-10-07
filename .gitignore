@@ -45,3 +45,7 @@ Desktop.ini
 tmp/
 temp/
 .tmp/
+nul
+
+# MCP Servers (개발 전용)
+chrome-devtools-mcp/

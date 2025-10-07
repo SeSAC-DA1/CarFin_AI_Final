@@ -12,7 +12,7 @@ import AgentStatusPanel from "@/components/ai/AgentStatusPanel";
 import FeedbackSection from "@/components/layout/FeedbackSection";
 import LoadingSpinner from "@/components/ai/LoadingSpinner";
 import ChatSidebar from "@/components/layout/ChatSidebar";
-import { DollarSign, Car, Truck, Wifi, WifiOff, Users, Heart, Fuel, Sparkles, HelpCircle, GraduationCap, Mountain, Star } from "lucide-react";
+import { Car, Wifi, WifiOff, Users, Heart, Fuel, Sparkles, HelpCircle, GraduationCap, Mountain, Star } from "lucide-react";
 
 const quickReplies = [
   { label: "3000만원 이하 가족용 SUV", value: "3000만원 이하로 가족용 SUV 찾아요", icon: Users },
@@ -32,7 +32,6 @@ export default function ChatInterface() {
   const [showMACRecCollaboration, setShowMACRecCollaboration] = useState(false);
   const [currentUserQuery, setCurrentUserQuery] = useState<string>('');
   const [showWelcome, setShowWelcome] = useState(messages.length === 0);
-  const [showAgentPanel, setShowAgentPanel] = useState(true);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // 🎯 사용자 친화적 진행 단계 (간소화)
@@ -315,7 +314,7 @@ export default function ChatInterface() {
         <div className="w-80 bg-card/20 backdrop-blur-sm border-l border-border">
           <AgentStatusPanel
             isActive={showMACRecCollaboration || !!progress}
-            currentStep={progress?.step}
+            currentStep={progress?.step || undefined}
             userQuery={currentUserQuery}
             onComplete={handleAgentPanelComplete}
           />

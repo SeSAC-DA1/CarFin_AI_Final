@@ -47,8 +47,8 @@ interface TOPSISStep {
   name: string;
   description: string;
   status: 'pending' | 'processing' | 'completed';
-  result?: string;
-  calculation?: string;
+  result?: string | undefined;
+  calculation?: string | undefined;
 }
 
 interface PeerVehicle {

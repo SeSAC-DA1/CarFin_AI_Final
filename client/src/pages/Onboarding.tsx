@@ -57,7 +57,7 @@ export default function Onboarding() {
                   <BarChart3 className="w-8 h-8 text-chart-2" />
                 </div>
                 <h3 className="font-bold mb-2">🔍 검색 AI</h3>
-                <p className="text-sm text-muted-foreground">15만대 중에서 조건에 맞는 차들을 찾아요</p>
+                <p className="text-sm text-muted-foreground">15만대 중 조건에 맞는 차들을 찾아요</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-3/20">
@@ -251,24 +251,26 @@ export default function Onboarding() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="mb-8 border-border/50 bg-background/80 backdrop-blur-lg">
-                <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-6">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center border border-primary/30">
-                      {steps[currentStep].icon}
+              {steps[currentStep] && (
+                <Card className="mb-8 border-border/50 bg-background/80 backdrop-blur-lg">
+                  <CardHeader className="text-center pb-6">
+                    <div className="flex justify-center mb-6">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center border border-primary/30">
+                        {steps[currentStep].icon}
+                      </div>
                     </div>
-                  </div>
-                  <CardTitle className="text-2xl md:text-3xl font-bold mb-4">
-                    {steps[currentStep].title}
-                  </CardTitle>
-                  <CardDescription className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                    {steps[currentStep].description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-8">
-                  {steps[currentStep].content}
-                </CardContent>
-              </Card>
+                    <CardTitle className="text-2xl md:text-3xl font-bold mb-4">
+                      {steps[currentStep].title}
+                    </CardTitle>
+                    <CardDescription className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                      {steps[currentStep].description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-8">
+                    {steps[currentStep].content}
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -291,23 +293,23 @@ export default function Onboarding() {
             </Button>
           </div>
 
-          {/* Quick Stats */}
+          {/* Tech Specs - Real Data */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-6">
-              이미 많은 분들이 CARFIN AI로 차량을 찾고 계십니다
+              실제 데이터와 검증된 알고리즘으로 정확하게 추천합니다
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">15,000+</div>
-                <div className="text-sm text-muted-foreground">상담 완료</div>
+                <div className="text-2xl font-bold text-primary mb-1">10만대+</div>
+                <div className="text-sm text-muted-foreground">실시간 중고차 매물</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-chart-2 mb-1">98%</div>
-                <div className="text-sm text-muted-foreground">만족도</div>
+                <div className="text-2xl font-bold text-chart-2 mb-1">3초 이내</div>
+                <div className="text-sm text-muted-foreground">평균 응답 시간</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-chart-3 mb-1">2.5분</div>
-                <div className="text-sm text-muted-foreground">평균 상담시간</div>
+                <div className="text-2xl font-bold text-chart-3 mb-1">3개 논문</div>
+                <div className="text-sm text-muted-foreground">학술 검증 알고리즘</div>
               </div>
             </div>
           </div>

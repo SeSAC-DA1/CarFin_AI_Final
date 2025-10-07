@@ -3,16 +3,7 @@
  * 9999만원 같은 더미 데이터와 비현실적인 매물 제거
  */
 
-interface Vehicle {
-  vehicleId: number;
-  price: number;
-  modelYear: number;
-  distance: number;
-  originPrice: number;
-  manufacturer: string;
-  fuelType: string;
-  firstRegistrationDate: number;
-}
+import type { Vehicle } from "@shared/types/vehicle";
 
 interface DataQualityRules {
   // 가격 필터링
@@ -108,11 +99,8 @@ class DataQualityFilter {
       return false;
     }
 
-    // 7. 등록일 검증
-    if (!this.isValidRegistrationDate(vehicle.firstRegistrationDate)) {
-      console.log(`❌ 등록일 이상: ${vehicle.firstRegistrationDate} (vehicleId: ${vehicle.vehicleId})`);
-      return false;
-    }
+    // 7. 등록일 검증 (옵셔널 - DB에 없을 수 있음)
+    // firstRegistrationDate는 DB 스키마에만 있고 애플리케이션 타입에는 없으므로 스킵
 
     return true;
   }

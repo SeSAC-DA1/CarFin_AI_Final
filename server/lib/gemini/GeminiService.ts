@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 // API 키 검증 (GOOGLE_API_KEY 우선, GEMINI_API_KEY 백업)
 const API_KEY = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
@@ -158,14 +158,14 @@ JSON 형식으로만 응답.`;
         temperature: 0.3,
         responseMimeType: "application/json",
         responseSchema: {
-          type: "object",
+          type: SchemaType.OBJECT,
           properties: {
-            priceWeight: { type: "number" },
-            safetyWeight: { type: "number" },
-            brandWeight: { type: "number" },
-            performanceWeight: { type: "number" },
-            fuelEfficiencyWeight: { type: "number" },
-            designWeight: { type: "number" },
+            priceWeight: { type: SchemaType.NUMBER },
+            safetyWeight: { type: SchemaType.NUMBER },
+            brandWeight: { type: SchemaType.NUMBER },
+            performanceWeight: { type: SchemaType.NUMBER },
+            fuelEfficiencyWeight: { type: SchemaType.NUMBER },
+            designWeight: { type: SchemaType.NUMBER },
           },
           required: ["priceWeight", "safetyWeight", "brandWeight", "performanceWeight", "fuelEfficiencyWeight", "designWeight"],
         },
@@ -239,13 +239,13 @@ JSON 형식으로만 응답.`;
         temperature: 0.7,
         responseMimeType: "application/json",
         responseSchema: {
-          type: "object",
+          type: SchemaType.OBJECT,
           properties: {
-            summary: { type: "string" },
-            strengths: { type: "array", items: { type: "string" } },
-            weaknesses: { type: "array", items: { type: "string" } },
-            costAnalysis: { type: "string" },
-            recommendation: { type: "string" },
+            summary: { type: SchemaType.STRING },
+            strengths: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+            weaknesses: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+            costAnalysis: { type: SchemaType.STRING },
+            recommendation: { type: SchemaType.STRING },
           },
           required: ["summary", "strengths", "weaknesses", "costAnalysis", "recommendation"],
         },

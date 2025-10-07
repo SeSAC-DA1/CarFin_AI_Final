@@ -103,7 +103,7 @@ export default function ProfileSetup() {
     {
       id: 1,
       title: "기본 정보를 알려주세요",
-      description: "더 정확한 추천을 위해 기본적인 정보가 필요해요",
+      description: "더 정확한 추천을 위해 몇 가지 여쭤볼게요",
       icon: <User className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-6 max-w-md mx-auto">
@@ -189,7 +189,7 @@ export default function ProfileSetup() {
     {
       id: 3,
       title: "예산 범위를 설정해주세요",
-      description: "현실적인 예산을 설정하면 더 정확한 추천이 가능해요",
+      description: "예산 범위를 설정하시면 더 정확한 추천이 가능해요",
       icon: <DollarSign className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8 max-w-2xl mx-auto">
@@ -365,24 +365,26 @@ export default function ProfileSetup() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="mb-8 border-border/50 bg-background/80 backdrop-blur-lg">
-                <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-6">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center border border-primary/30">
-                      {steps[currentStep].icon}
+              {steps[currentStep] && (
+                <Card className="mb-8 border-border/50 bg-background/80 backdrop-blur-lg">
+                  <CardHeader className="text-center pb-6">
+                    <div className="flex justify-center mb-6">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center border border-primary/30">
+                        {steps[currentStep].icon}
+                      </div>
                     </div>
-                  </div>
-                  <CardTitle className="text-xl md:text-2xl font-bold mb-4">
-                    {steps[currentStep].title}
-                  </CardTitle>
-                  <CardDescription className="text-base text-muted-foreground max-w-2xl mx-auto">
-                    {steps[currentStep].description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-8">
-                  {steps[currentStep].content}
-                </CardContent>
-              </Card>
+                    <CardTitle className="text-xl md:text-2xl font-bold mb-4">
+                      {steps[currentStep].title}
+                    </CardTitle>
+                    <CardDescription className="text-base text-muted-foreground max-w-2xl mx-auto">
+                      {steps[currentStep].description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-8">
+                    {steps[currentStep].content}
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           </AnimatePresence>
 

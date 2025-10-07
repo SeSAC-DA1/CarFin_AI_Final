@@ -23,7 +23,7 @@ const agents = [
     icon: Database,
     color: "text-green-600",
     bgColor: "bg-green-50 dark:bg-green-950/30",
-    description: "15만대 중에서 조건에 맞는 차량을 빠르게 검색해요",
+    description: "15만대 중 조건에 맞는 차량을 빠르게 검색해요",
     detail: "0.5초만에 수만 대의 매물에서 당신의 조건에 맞는 차량을 찾습니다"
   },
   {
@@ -169,16 +169,22 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
     }
   ];
 
+  const step = steps[currentStep];
+
+  if (!step) {
+    return null;
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold">{steps[currentStep].title}</h2>
-          <p className="text-muted-foreground">{steps[currentStep].subtitle}</p>
+          <h2 className="text-2xl font-bold">{step.title}</h2>
+          <p className="text-muted-foreground">{step.subtitle}</p>
         </div>
 
         <div className="bg-card/50 backdrop-blur-sm rounded-3xl border border-card-border p-6">
-          {steps[currentStep].content}
+          {step.content}
         </div>
 
         <div className="flex justify-center">

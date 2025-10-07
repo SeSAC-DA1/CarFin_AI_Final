@@ -15,7 +15,7 @@
  * - 강점/약점 자동 추출 및 구매 리스크 평가
  */
 
-import type { Vehicle } from '../recommendation/PersonalizedReranking';
+import type { Vehicle } from '../alibaba/PersonalizedReranking';
 
 export interface AHPCriteria {
   price: { weight: number; type: 'cost' | 'benefit' };
@@ -232,7 +232,13 @@ export class AHP_TOPSIS_Engine {
 
     // Step 6: 상대적 근접도 계산 (0-1 스케일)
     const targetIndex = peerGroup.findIndex(v => v.id === targetVehicle.id);
-    const relativeCloseness = distances[targetIndex].relativeCloseness;
+    const targetDistance = distances[targetIndex];
+
+    if (!targetDistance) {
+      throw new Error(`Target vehicle not found in distances: ${targetVehicle.id}`);
+    }
+
+    const relativeCloseness = targetDistance.relativeCloseness;
 
     // Step 7: 0-100 점수로 변환
     const overallScore = Math.round(relativeCloseness * 100);
@@ -253,8 +259,8 @@ export class AHP_TOPSIS_Engine {
       rank: rank,
       percentile: percentile,
       criteria_scores: criteriaScores,
-      distance_to_ideal: distances[targetIndex].distanceToIdeal,
-      distance_to_nadir: distances[targetIndex].distanceToNadir,
+      distance_to_ideal: targetDistance.distanceToIdeal,
+      distance_to_nadir: targetDistance.distanceToNadir,
       key_strengths: strengths,
       key_weaknesses: weaknesses
     };
@@ -304,19 +310,28 @@ export class AHP_TOPSIS_Engine {
    * 벡터 정규화
    */
   private normalizeMatrix(matrix: number[][]): number[][] {
+    if (!matrix[0]) {
+      throw new Error('Matrix is empty');
+    }
 
     const numCriteria = matrix[0].length;
     const normalized: number[][] = [];
 
     for (let j = 0; j < numCriteria; j++) {
       // 각 기준별 제곱합 계산
-      const sumOfSquares = matrix.reduce((sum, row) => sum + Math.pow(row[j], 2), 0);
+      const sumOfSquares = matrix.reduce((sum, row) => {
+        const value = row[j];
+        return sum + Math.pow(value ?? 0, 2);
+      }, 0);
       const denominator = Math.sqrt(sumOfSquares);
 
       // 정규화
       for (let i = 0; i < matrix.length; i++) {
         if (!normalized[i]) normalized[i] = [];
-        normalized[i][j] = matrix[i][j] / denominator;
+        const matrixRow = matrix[i];
+        if (matrixRow) {
+          normalized[i]![j] = matrixRow[j]! / denominator;
+        }
       }
     }
 
@@ -338,7 +353,7 @@ export class AHP_TOPSIS_Engine {
     ];
 
     return matrix.map(row =>
-      row.map((value, j) => value * weights[j])
+      row.map((value, j) => value * (weights[j] || 0))
     );
   }
 
@@ -346,6 +361,9 @@ export class AHP_TOPSIS_Engine {
    * 이상해 계산
    */
   private calculateIdealSolution(matrix: number[][], criteria: AHPCriteria): number[] {
+    if (!matrix[0]) {
+      throw new Error('Matrix is empty');
+    }
 
     const criteriaTypes = [
       criteria.price.type,
@@ -359,9 +377,14 @@ export class AHP_TOPSIS_Engine {
     const ideal: number[] = [];
 
     for (let j = 0; j < matrix[0].length; j++) {
-      const column = matrix.map(row => row[j]);
+      const column = matrix.map(row => row[j] ?? 0);
+      const criteriaType = criteriaTypes[j];
 
-      if (criteriaTypes[j] === 'benefit') {
+      if (!criteriaType) {
+        throw new Error(`Criteria type not found at index ${j}`);
+      }
+
+      if (criteriaType === 'benefit') {
         ideal[j] = Math.max(...column); // 클수록 좋음
       } else {
         ideal[j] = Math.min(...column); // 작을수록 좋음
@@ -375,6 +398,9 @@ export class AHP_TOPSIS_Engine {
    * 나쁜해 계산
    */
   private calculateNadirSolution(matrix: number[][], criteria: AHPCriteria): number[] {
+    if (!matrix[0]) {
+      throw new Error('Matrix is empty');
+    }
 
     const criteriaTypes = [
       criteria.price.type,
@@ -388,9 +414,14 @@ export class AHP_TOPSIS_Engine {
     const nadir: number[] = [];
 
     for (let j = 0; j < matrix[0].length; j++) {
-      const column = matrix.map(row => row[j]);
+      const column = matrix.map(row => row[j] ?? 0);
+      const criteriaType = criteriaTypes[j];
 
-      if (criteriaTypes[j] === 'benefit') {
+      if (!criteriaType) {
+        throw new Error(`Criteria type not found at index ${j}`);
+      }
+
+      if (criteriaType === 'benefit') {
         nadir[j] = Math.min(...column); // 작을수록 나쁨
       } else {
         nadir[j] = Math.max(...column); // 클수록 나쁨
@@ -417,11 +448,23 @@ export class AHP_TOPSIS_Engine {
     return matrix.map((row, index) => {
       // 유클리드 거리 계산
       const distanceToIdeal = Math.sqrt(
-        row.reduce((sum, value, j) => sum + Math.pow(value - ideal[j], 2), 0)
+        row.reduce((sum, value, j) => {
+          const idealValue = ideal[j];
+          if (idealValue === undefined) {
+            throw new Error(`Ideal value not found at index ${j}`);
+          }
+          return sum + Math.pow(value - idealValue, 2);
+        }, 0)
       );
 
       const distanceToNadir = Math.sqrt(
-        row.reduce((sum, value, j) => sum + Math.pow(value - nadir[j], 2), 0)
+        row.reduce((sum, value, j) => {
+          const nadirValue = nadir[j];
+          if (nadirValue === undefined) {
+            throw new Error(`Nadir value not found at index ${j}`);
+          }
+          return sum + Math.pow(value - nadirValue, 2);
+        }, 0)
       );
 
       // 상대적 근접도 (0-1)

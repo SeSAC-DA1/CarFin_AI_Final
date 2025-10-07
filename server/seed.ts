@@ -23,7 +23,11 @@ const categories = ["세단", "SUV", "해치백", "왜건", "쿠페", "전기차
 const fuels = ["가솔린", "디젤", "하이브리드", "전기", "LPG"];
 
 function getRandomItem<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
+  const item = array[Math.floor(Math.random() * array.length)];
+  if (item === undefined) {
+    throw new Error('Array is empty');
+  }
+  return item;
 }
 
 function getRandomInt(min: number, max: number): number {

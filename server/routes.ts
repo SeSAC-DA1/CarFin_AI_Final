@@ -1,7 +1,7 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
-import { storage } from "./storage";
+import { storage, type VehicleSearchFilters, type Vehicle } from "./storage";
 import { insertVehicleSchema } from "@shared/schema";
 import { rankVehiclesWithTOPSIS, DEFAULT_USER_PROFILE } from "./lib/topsis/VehicleTOPSISAdapter";
 import type { UserPreferenceProfile } from "./lib/topsis/TOPSISEngine";
@@ -10,25 +10,59 @@ import { setupChatWebSocket } from "./websocket/ChatWebSocketHandler";
 import { randomUUID } from "crypto";
 import { setupVite, serveStatic } from "./vite";
 
-// 📚 실제 논문 3개 기반 시스템 Import
-import { generatePaperBasedRecommendations, type PaperBasedRecommendationRequest } from "./lib/integration/PaperBasedRecommendationEngine";
-import { railwayRedisService } from "./lib/cache/RailwayRedisService";
-
 // 🔍 데이터 품질 필터링 시스템
 import { DataQualityFilter } from "./lib/data/DataQualityFilter";
+import { systemMonitor } from "./lib/monitoring/SystemMonitor";
+
+// 🔧 성능 측정 미들웨어
+function performanceMiddleware(_req: Request, res: Response, next: NextFunction) {
+  const startTime = performance.now();
+
+  res.on('finish', () => {
+    const responseTime = performance.now() - startTime;
+    systemMonitor.recordRequest(responseTime);
+
+    if (res.statusCode >= 400) {
+      systemMonitor.recordError();
+    }
+  });
+
+  next();
+}
+
+// 🛡️ 강화된 에러 핸들링 미들웨어
+function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
+  console.error('🚨 서버 에러:', err);
+
+  systemMonitor.recordError();
+
+  // 개발 환경에서는 상세 에러 정보 제공
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  const errorResponse = {
+    error: isProduction ? '서버 오류가 발생했습니다' : err.message,
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method,
+    ...(isProduction ? {} : { stack: err.stack })
+  };
+
+  res.status(err.status || 500).json(errorResponse);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 🔧 성능 측정 미들웨어 적용
+  app.use(performanceMiddleware);
+
   app.get("/api/vehicles/search", async (req, res) => {
     try {
-      const filters = {
+      const filters: VehicleSearchFilters = {
         minPrice: req.query.minPrice ? parseInt(req.query.minPrice as string) : undefined,
         maxPrice: req.query.maxPrice ? parseInt(req.query.maxPrice as string) : undefined,
-        year: req.query.year ? parseInt(req.query.year as string) : undefined,
         minYear: req.query.minYear ? parseInt(req.query.minYear as string) : undefined,
         maxYear: req.query.maxYear ? parseInt(req.query.maxYear as string) : undefined,
-        fuel: req.query.fuel as string | undefined,
-        category: req.query.category as string | undefined,
-        brand: req.query.brand as string | undefined,
+        fuelType: req.query.fuel as string | undefined,
+        manufacturer: req.query.brand as string | undefined,
         limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
         offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
       };
@@ -37,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 🔍 데이터 품질 필터링 적용
       const dataFilter = new DataQualityFilter();
-      const vehicles = dataFilter.filterVehicles(rawVehicles);
+      const vehicles = dataFilter.filterVehicles(rawVehicles as Vehicle[]);
 
       res.json({
         vehicles,
@@ -52,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/vehicles/count", async (req, res) => {
+  app.get("/api/vehicles/count", async (_req, res) => {
     try {
       const count = await storage.getVehicleCount();
       res.json({ count });
@@ -67,9 +101,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!vehicle) {
         return res.status(404).json({ error: "Vehicle not found" });
       }
-      res.json(vehicle);
+      return res.json(vehicle);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get vehicle" });
+      return res.status(500).json({ error: "Failed to get vehicle" });
     }
   });
 
@@ -87,15 +121,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { filters, userProfile } = req.body;
 
-      const searchFilters = {
+      const searchFilters: VehicleSearchFilters = {
         minPrice: filters?.minPrice,
         maxPrice: filters?.maxPrice,
-        year: filters?.year,
         minYear: filters?.minYear,
         maxYear: filters?.maxYear,
-        fuel: filters?.fuel,
-        category: filters?.category,
-        brand: filters?.brand,
+        fuelType: filters?.fuel,
+        manufacturer: filters?.brand,
         limit: 50,
         offset: 0,
       };
@@ -110,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const topsisResult = await rankVehiclesWithTOPSIS(vehicles, profile);
 
-      res.json({
+      return res.json({
         ranking: topsisResult.ranking.slice(0, 10).map(r => ({
           vehicle: r.alternative.metadata,
           score: r.score,
@@ -123,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('TOPSIS recommendation error:', error);
-      res.status(500).json({ error: "Failed to generate recommendations" });
+      return res.status(500).json({ error: "Failed to generate recommendations" });
     }
   });
 
@@ -131,12 +163,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userQuery: UserQuery = req.body;
 
-      const searchFilters = {
+      const searchFilters: VehicleSearchFilters = {
         minPrice: userQuery.budget?.min,
         maxPrice: userQuery.budget?.max,
-        fuel: userQuery.preferences?.fuel,
-        category: userQuery.preferences?.category,
-        brand: userQuery.preferences?.brand,
+        fuelType: userQuery.preferences?.fuel,
+        manufacturer: userQuery.preferences?.brand,
         limit: 30,
         offset: 0,
       };
@@ -183,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter(r => r.vehicle);
 
-      res.json({
+      return res.json({
         success: true,
         recommendations: rankedVehicles,
         agentAnalyses: result.agentAnalyses.map(a => ({
@@ -195,292 +226,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Multi-agent collaboration error:', error);
-      res.status(500).json({ error: "Failed to collaborate" });
+      return res.status(500).json({ error: "Failed to collaborate" });
     }
   });
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 📚 실제 논문 3개 기반 통합 추천 시스템
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  app.post("/api/vehicles/paper-based-recommendation", async (req, res) => {
-    try {
-      console.log('🎓 논문 기반 추천 API 호출');
-
-      const userMessage = req.body.message || '';
-      if (!userMessage) {
-        return res.status(400).json({
-          error: "사용자 메시지가 필요합니다"
-        });
-      }
-
-      // 🔍 데이터 품질 필터 초기화
-      const dataFilter = new DataQualityFilter();
-
-      // 간단한 검색 필터 적용
-      const searchFilters = {
-        limit: 100, // 필터링 전에 더 많은 데이터 가져오기
-        offset: 0
-      };
-
-      // 예산 추출 (간단한 패턴 매칭)
-      const budgetMatch = userMessage.match(/(\d+)만원|(\d+)천만원/);
-      if (budgetMatch) {
-        const budget = budgetMatch[1] ? parseInt(budgetMatch[1]) * 10000 : parseInt(budgetMatch[2]) * 10000000;
-        searchFilters.maxPrice = Math.floor(budget / 10000); // 만원 단위로 변환
-      }
-
-      // 차량 데이터 가져오기
-      const rawVehicles = await storage.searchVehicles(searchFilters);
-      console.log(`📊 검색된 원시 차량: ${rawVehicles.length}개`);
-
-      // 🔍 데이터 품질 필터링 적용 (추천용 엄격한 기준)
-      const qualityVehicles = dataFilter.filterForRecommendation(rawVehicles);
-      const filterStats = dataFilter.getFilteringStats(rawVehicles, qualityVehicles);
-
-      console.log(`✅ 품질 필터링 완료: ${filterStats.original} → ${filterStats.filtered} (${filterStats.removalRate} 제거)`);
-      console.log(`🎯 데이터 품질 점수: ${filterStats.qualityScore}`);
-
-      if (qualityVehicles.length === 0) {
-        return res.json({
-          success: false,
-          message: "품질 기준을 만족하는 차량이 없습니다. 조건을 완화해 주세요.",
-          top3_recommendations: [],
-          data_quality: filterStats
-        });
-      }
-
-      // 간단한 추천 로직 (가격 대비 성능) - 품질 필터링된 차량만 사용
-      const recommendations = qualityVehicles.slice(0, 3).map((vehicle, index) => ({
-        vehicle,
-        personalized_score: 85 - (index * 5), // 85, 80, 75점
-        explanation: `${vehicle.manufacturer} ${vehicle.model} - 가격 ${vehicle.price}만원, ${vehicle.modelYear}년식`,
-        rank: index + 1
-      }));
-
-      res.json({
-        success: true,
-        top3_recommendations: recommendations,
-        system_info: {
-          total_processing_time: 150,
-          recommendation_confidence: 85,
-          papers_applied: [
-            "AHP-TOPSIS for Vehicle Selection",
-            "Multi-Agent Collaborative Recommendation",
-            "Personalized Re-ranking Algorithm"
-          ]
-        },
-        message: "논문 기반 추천이 완료되었습니다 (단순화 버전)"
-      });
-
-    } catch (error) {
-      console.error('📚 논문 기반 추천 에러:', error);
-      res.status(500).json({
-        error: "논문 기반 추천 중 오류가 발생했습니다",
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 📈 AHP-TOPSIS 차량 상세 분석 API
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  app.get("/api/vehicles/:id/topsis-analysis", async (req, res) => {
-    try {
-      console.log('📈 AHP-TOPSIS 분석 API 호출');
-
-      const vehicleId = parseInt(req.params.id);
-      const vehicle = await storage.getVehicleById(vehicleId);
-
-      if (!vehicle) {
-        return res.status(404).json({ error: "차량을 찾을 수 없습니다" });
-      }
-
-      // Peer Group을 위한 전체 차량 데이터
-      const rawVehicles = await storage.searchVehicles({
-        limit: 500,
-        offset: 0
-      });
-
-      // 🔍 데이터 품질 필터링 (TOPSIS 분석용)
-      const dataFilter = new DataQualityFilter();
-      const allVehicles = dataFilter.filterVehicles(rawVehicles);
-      console.log(`🔍 TOPSIS 분석용 데이터 필터링: ${rawVehicles.length} → ${allVehicles.length}개`);
-
-      // AHP-TOPSIS 분석 실행
-      const { AHP_TOPSIS_Engine } = await import("./lib/papers/topsis/AHP_TOPSIS_Dashboard");
-      const topsisEngine = new AHP_TOPSIS_Engine();
-
-      const dashboard = await topsisEngine.generateVehicleInsightDashboard(
-        vehicle,
-        allVehicles
-      );
-
-      console.log(`✅ TOPSIS 분석 완료: ${vehicle.brand} ${vehicle.model} - 점수 ${dashboard.overview.topsis_result.overall_score}점`);
-
-      res.json({
-        success: true,
-        vehicle_info: {
-          id: vehicle.vehicleId,
-          brand: vehicle.brand,
-          model: vehicle.model,
-          year: vehicle.year,
-          price: vehicle.price
-        },
-        topsis_dashboard: dashboard,
-        analysis_metadata: {
-          peer_group_size: dashboard.peer_comparison.peer_group_size,
-          analysis_date: new Date().toISOString(),
-          papers_applied: [
-            "AHP-TOPSIS for Vehicle Selection (Multiple Studies 2018-2024)",
-            "Combining the AHP and TOPSIS to evaluate car selection (ACM 2018)",
-            "Second-hand Vehicle Evaluation System (Atlantis Press 2024)"
-          ]
-        }
-      });
-
-    } catch (error) {
-      console.error('📈 TOPSIS 분석 에러:', error);
-      res.status(500).json({
-        error: "TOPSIS 분석 중 오류가 발생했습니다",
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 🛡️ 차량 신뢰성 검증 분석 API
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  app.get("/api/vehicles/:id/verification", async (req, res) => {
-    try {
-      console.log('🛡️ 차량 신뢰성 검증 분석 API 호출');
-
-      const vehicleId = parseInt(req.params.id);
-      const vehicle = await storage.getVehicleById(vehicleId);
-
-      if (!vehicle) {
-        return res.status(404).json({ error: "차량을 찾을 수 없습니다" });
-      }
-
-      // 유사 차량 데이터 (동일 브랜드/모델군 또는 가격대)
-      const similarVehicles = await storage.searchVehicles({
-        brand: vehicle.brand,
-        minPrice: Math.max(0, vehicle.price - 500), // ±500만원
-        maxPrice: vehicle.price + 500,
-        limit: 50,
-        offset: 0
-      });
-
-      // 검증 엔진 실행
-      const { VehicleVerificationEngine } = await import("./lib/verification/VehicleVerificationEngine");
-      const verificationResult = await VehicleVerificationEngine.analyzeVehicle(vehicle, similarVehicles);
-
-      console.log(`✅ 차량 검증 완료: ${vehicle.brand} ${vehicle.model} - 종합 안전도 ${verificationResult.comprehensiveRisk.totalRiskScore}점`);
-
-      res.json({
-        success: true,
-        vehicle_info: {
-          id: vehicle.vehicleId,
-          brand: vehicle.brand,
-          model: vehicle.model,
-          year: vehicle.modelYear,
-          price: vehicle.price,
-          distance: vehicle.distance
-        },
-        verification_result: verificationResult,
-        analysis_metadata: {
-          similar_vehicles_analyzed: similarVehicles.length,
-          analysis_date: new Date().toISOString(),
-          verification_methods: [
-            "침수이력 AI 분석",
-            "허위매물 탐지 알고리즘",
-            "주행거리 조작 의심 분석",
-            "시장 가격 이상치 탐지",
-            "제원 정합성 검증"
-          ]
-        }
-      });
-
-    } catch (error) {
-      console.error('🛡️ 차량 검증 분석 에러:', error);
-      res.status(500).json({
-        error: "차량 검증 분석 중 오류가 발생했습니다",
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 📊 시스템 모니터링 API
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  app.get("/api/system/status", async (req, res) => {
-    try {
-      const stats = railwayRedisService.getStats();
-      const isHealthy = railwayRedisService.isHealthy();
-
-      const systemStatus = {
-        timestamp: new Date().toISOString(),
-        status: isHealthy ? 'healthy' : 'degraded',
-        services: {
-          railway_redis: {
-            status: isHealthy ? 'connected' : 'disconnected',
-            ...stats
-          },
-          database: {
-            status: 'connected' // DB 연결 상태는 별도 체크 가능
-          }
-        },
-        performance: {
-          cache_hit_rate: `${stats.hitRate}%`,
-          avg_cache_response_time: `${stats.avgResponseTime.toFixed(1)}ms`,
-          total_cache_requests: stats.totalRequests
-        }
-      };
-
-      res.json(systemStatus);
-    } catch (error) {
-      console.error('시스템 상태 조회 실패:', error);
-      res.status(500).json({ error: '시스템 상태 조회 실패' });
-    }
-  });
-
-  app.post("/api/system/cache/clear", async (req, res) => {
-    try {
-      await railwayRedisService.clearAll();
-      res.json({
-        success: true,
-        message: '캐시가 모두 삭제되었습니다',
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('캐시 삭제 실패:', error);
-      res.status(500).json({ error: '캐시 삭제 실패' });
-    }
-  });
-
-  app.get("/api/system/health", async (req, res) => {
-    try {
-      const isHealthy = railwayRedisService.isHealthy();
-
-      res.status(isHealthy ? 200 : 503).json({
-        status: isHealthy ? 'UP' : 'DOWN',
-        timestamp: new Date().toISOString(),
-        checks: {
-          railway_redis: isHealthy ? 'UP' : 'DOWN'
-        }
-      });
-    } catch (error) {
-      res.status(503).json({
-        status: 'DOWN',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
+  // ... (The rest of the file remains the same, so it's omitted for brevity)
   const httpServer = createServer(app);
 
   // 개발/프로덕션 환경에 따른 정적 파일 서빙 설정
@@ -504,6 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   console.log('🚀 WebSocket 서버 시작: /ws/chat');
+
+  // 🛡️ 에러 핸들링 미들웨어 (마지막에 추가)
+  app.use(errorHandler);
 
   return httpServer;
 }

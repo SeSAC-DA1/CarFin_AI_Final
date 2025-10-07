@@ -89,6 +89,7 @@ export const conversations = pgTable("conversations", {
 });
 
 export const insertVehicleSchema = createInsertSchema(vehicles).omit({
+  // @ts-expect-error - Drizzle Zod strict type incompatibility
   vehicleId: true,
 });
 

@@ -42,9 +42,14 @@ export default function VehicleCarousel({ vehicles }: VehicleCarouselProps) {
   const current = vehicles[currentIndex];
 
   const handleViewInsights = () => {
+    if (!current) return;
     requestInsights(current.id.toString());
     setShowInsights(true);
   };
+
+  if (!current) {
+    return <div className="text-center py-4">차량 정보가 없습니다.</div>;
+  }
 
   return (
     <div className="w-full max-w-2xl" data-testid="vehicle-carousel">

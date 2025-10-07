@@ -5,7 +5,7 @@ import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car, Send, Sparkles, Loader2, ArrowLeft, Home } from "lucide-react";
+import { Car, Sparkles, Loader2, ArrowLeft, Home } from "lucide-react";
 import { Link } from "wouter";
 
 // 간단한 퀵 스타터 메시지들
@@ -18,7 +18,6 @@ const quickStarters = [
 
 export default function SimpleChatInterface() {
   const { messages, vehicles, isConnected, sendMessage } = useWebSocketChat();
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const hasMessages = messages.length > 0;
@@ -28,7 +27,6 @@ export default function SimpleChatInterface() {
 
     setIsLoading(true);
     sendMessage(message);
-    setInput("");
 
     // 로딩 상태를 3초 후 해제 (실제로는 메시지 응답에 따라)
     setTimeout(() => setIsLoading(false), 3000);
@@ -92,7 +90,7 @@ export default function SimpleChatInterface() {
                 <h2 className="text-2xl font-semibold">어떤 차 찾으세요?</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   그냥 평소에 말하듯이 편하게 얘기해주세요!<br />
-                  15만대 중에서 딱 맞는 차량 찾아드릴게요.
+                  15만대 중 딱 맞는 차량 찾아드릴게요.
                 </p>
               </div>
 
@@ -144,9 +142,7 @@ export default function SimpleChatInterface() {
           <div className="flex gap-2">
             <div className="flex-1">
               <ChatInput
-                onSendMessage={handleSend}
-                placeholder="어떤 차 찾으세요? 편하게 말씀해주세요..."
-                disabled={!isConnected}
+                onSend={handleSend}
               />
             </div>
           </div>

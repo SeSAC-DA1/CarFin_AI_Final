@@ -44,6 +44,7 @@ interface Agent {
   icon: typeof Brain;
   color: string;
   bgColor: string;
+  borderColor?: string;
   status: 'waiting' | 'active' | 'completed';
   task: string;
   detail?: string;
@@ -51,10 +52,10 @@ interface Agent {
 }
 
 interface AgentStatusPanelProps {
-  isActive?: boolean;
-  currentStep?: string;
-  userQuery?: string;
-  onComplete?: () => void;
+  isActive?: boolean | undefined;
+  currentStep?: string | undefined;
+  userQuery?: string | undefined;
+  onComplete?: (() => void) | undefined;
 }
 
 // MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024) - 사용자 맞춤 이름

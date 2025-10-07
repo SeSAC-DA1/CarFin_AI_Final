@@ -425,7 +425,8 @@ export class PaperBasedRecommendationEngine {
     const factors: string[] = [];
 
     const priorities = userProfile.priorities || {};
-    const maxPriority = Math.max(...Object.values(priorities));
+    const priorityValues = Object.values(priorities).filter((v): v is number => typeof v === 'number');
+    const maxPriority = priorityValues.length > 0 ? Math.max(...priorityValues) : 0;
 
     for (const [key, value] of Object.entries(priorities)) {
       if (value === maxPriority) {

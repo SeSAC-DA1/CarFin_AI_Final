@@ -23,7 +23,7 @@ interface ChatSidebarProps {
   onNewChat?: () => void;
   onSelectConversation?: (id: string) => void;
   onQuickAction?: (query: string) => void;
-  currentSessionId?: string;
+  currentSessionId?: string | null;
 }
 
 export default function ChatSidebar({

@@ -146,6 +146,48 @@ export function useWebSocketChat() {
             vehicleId: data.vehicleId,
             data: data.insights,
           });
+        } else if (data.type === 'profile_updated') {
+          // 🆕 Phase 2: 프로필 업데이트 알림 처리
+          console.log('✅ 프로필 업데이트 수신:', data.updates);
+
+          // localStorage 프로필 업데이트
+          try {
+            const currentProfile = JSON.parse(localStorage.getItem('carfin_user_profile') || '{}');
+            const updatedProfile = {
+              ...currentProfile,
+              ...(data.updates.budget && { budget: [data.updates.budget.min, data.updates.budget.max] }),
+              ...(data.updates.usage && { usage: data.updates.usage }),
+              ...(data.updates.carType && { carType: data.updates.carType }),
+              ...(data.updates.fuelType && { fuelType: data.updates.fuelType }),
+              ...(data.updates.transmission && { transmission: data.updates.transmission }),
+              importance: {
+                ...currentProfile.importance,
+                ...(data.updates.importance || {})
+              },
+              ...(data.updates.brands && { preferredBrands: data.updates.brands })
+            };
+            localStorage.setItem('carfin_user_profile', JSON.stringify(updatedProfile));
+
+            // 사용자에게 피드백 메시지 표시
+            const updateInfo: string[] = [];
+            if (data.updates.budget) updateInfo.push(`예산 ${data.updates.budget.min}~${data.updates.budget.max}만원`);
+            if (data.updates.usage) updateInfo.push(`용도 ${data.updates.usage.join(', ')}`);
+            if (data.updates.carType) updateInfo.push(`차종 ${data.updates.carType}`);
+            if (data.updates.importance) {
+              const importanceKeys = Object.keys(data.updates.importance);
+              if (importanceKeys.length > 0) updateInfo.push(`선호도 조정`);
+            }
+
+            if (updateInfo.length > 0) {
+              setMessages(prev => [...prev, {
+                type: 'system',
+                content: `✓ 프로필 업데이트: ${updateInfo.join(', ')}`,
+                timestamp: data.timestamp || new Date(),
+              }]);
+            }
+          } catch (profileError) {
+            console.error('프로필 업데이트 처리 오류:', profileError);
+          }
         } else if (data.type === 'error') {
           setMessages(prev => [...prev, {
             type: 'error',

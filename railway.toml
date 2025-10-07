@@ -1,0 +1,33 @@
+# 🚀 Railway 배포 설정 (교육/공모전용 최적화)
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm run build:production"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/api/system/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# 🔧 환경 변수 설정
+[environments.production]
+variables = { NODE_ENV = "production" }
+
+# 📊 성능 모니터링
+[observability]
+enabled = true
+
+# 🌐 네트워킹 설정
+[networking]
+serviceName = "carfin-ai"
+publicPort = 5000
+
+# 🔒 보안 설정
+[security]
+allowedOrigins = [
+  "https://carfin-ai.vercel.app",
+  "https://carfin.ai",
+  "http://localhost:5173"
+]

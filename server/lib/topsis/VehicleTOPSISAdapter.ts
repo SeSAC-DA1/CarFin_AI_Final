@@ -3,7 +3,7 @@
  * 차량 데이터를 TOPSIS 엔진에 맞게 변환
  */
 
-import { Vehicle } from "@shared/schema";
+import type { Vehicle } from "@shared/types/vehicle";
 import { TOPSISAlternative, TOPSISEngine, UserPreferenceProfile } from "./TOPSISEngine";
 
 /**

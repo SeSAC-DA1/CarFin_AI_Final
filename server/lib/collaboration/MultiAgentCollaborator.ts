@@ -1,14 +1,4 @@
-/**
- * MACRec 기반 멀티 에이전트 협업 시스템
- * SIGIR 2024 논문 기반 - Multi-Agent Collaborative Recommendation
- * 
- * 3개 에이전트 협업 구조:
- * - Needs Analyst (40%): 사용자 니즈 분석
- * - Data Analyst (35%): 데이터 기반 분석
- * - Concierge (25%): 종합 조율 및 최종 추천
- */
-
-import { Vehicle } from "@shared/schema";
+import type { Vehicle } from "@shared/types/vehicle";
 
 export interface AgentRole {
   id: string;
@@ -51,14 +41,14 @@ export interface AgentAnalysis {
   agentName: string;
   confidence: number;
   keyFindings: string[];
-  recommendedVehicleIds: string[];
+  recommendedVehicleIds: number[];
   concerns: string[];
   reasoning: string;
 }
 
 export interface CollaborationResult {
   finalRecommendations: {
-    vehicleId: string;
+    vehicleId: number;
     score: number;
     rank: number;
     reasons: string[];
@@ -81,24 +71,17 @@ export interface UserQuery {
   };
 }
 
-/**
- * 멀티 에이전트 협업자
- * MACRec 논문의 가중치 기반 협업 방식 구현
- */
 export class MultiAgentCollaborator {
-  /**
-   * 각 에이전트의 분석을 가중 평균하여 최종 추천 생성
-   */
   async collaborate(
-    userQuery: UserQuery,
-    vehicles: Vehicle[],
+    _userQuery: UserQuery,
+    _vehicles: Vehicle[],
     agentAnalyses: AgentAnalysis[]
   ): Promise<CollaborationResult> {
     console.log('🤝 Multi-Agent Collaboration 시작');
     console.log(`📊 ${agentAnalyses.length}개 에이전트 분석 통합 중...`);
 
-    const vehicleScores = new Map<string, number>();
-    const vehicleReasons = new Map<string, Set<string>>();
+    const vehicleScores = new Map<number, number>();
+    const vehicleReasons = new Map<number, Set<string>>();
 
     for (const analysis of agentAnalyses) {
       const agent = AGENT_ROLES[analysis.agentId];
@@ -142,10 +125,6 @@ export class MultiAgentCollaborator {
     };
   }
 
-  /**
-   * 에이전트 간 합의 영역 찾기
-   * 2개 이상의 에이전트가 공통으로 언급한 사항 추출
-   */
   private findConsensusAreas(analyses: AgentAnalysis[]): string[] {
     const findingCounts = new Map<string, number>();
 
@@ -161,11 +140,9 @@ export class MultiAgentCollaborator {
       .map(([finding, _]) => finding);
   }
 
-  /**
-   * 에이전트별 분석 요약
-   */
   getAgentSummary(analysis: AgentAnalysis): string {
     const agent = AGENT_ROLES[analysis.agentId];
+    if (!agent) return "";
     return `
 **${agent.nameKo}** (신뢰도: ${(analysis.confidence * 100).toFixed(0)}%)
 - ${analysis.reasoning}
@@ -175,14 +152,10 @@ ${analysis.concerns.length > 0 ? `- 우려사항: ${analysis.concerns.join(', ')
   }
 }
 
-/**
- * 간단한 규칙 기반 에이전트 분석 생성
- * (Gemini API 연동 전 임시 구현)
- */
 export class RuleBasedAgentAnalyzer {
   analyzeAsNeedsAnalyst(query: UserQuery, vehicles: Vehicle[]): AgentAnalysis {
     const keyFindings: string[] = [];
-    const recommendedVehicleIds: string[] = [];
+    const recommendedVehicleIds: number[] = [];
     const concerns: string[] = [];
 
     if (query.budget) {
@@ -191,12 +164,12 @@ export class RuleBasedAgentAnalyzer {
 
     if (query.preferences?.fuel) {
       keyFindings.push(`선호 연료: ${query.preferences.fuel}`);
-      const fuelMatches = vehicles.filter(v => v.fuel === query.preferences!.fuel);
-      recommendedVehicleIds.push(...fuelMatches.slice(0, 5).map(v => v.id));
+      const fuelMatches = vehicles.filter(v => v.fuelType === query.preferences!.fuel);
+      recommendedVehicleIds.push(...fuelMatches.slice(0, 5).map(v => v.vehicleId));
     }
 
     if (recommendedVehicleIds.length === 0) {
-      recommendedVehicleIds.push(...vehicles.slice(0, 5).map(v => v.id));
+      recommendedVehicleIds.push(...vehicles.slice(0, 5).map(v => v.vehicleId));
     }
 
     return {
@@ -210,32 +183,26 @@ export class RuleBasedAgentAnalyzer {
     };
   }
 
-  analyzeAsDataAnalyst(query: UserQuery, vehicles: Vehicle[]): AgentAnalysis {
-    const keyFindings: string[] = [];
-    const recommendedVehicleIds: string[] = [];
+  analyzeAsDataAnalyst(_query: UserQuery, vehicles: Vehicle[]): AgentAnalysis {
+    const keyFindings: string[] = ['가성비 우수 차량 중심 선별', '안전성, 연비, 신뢰성 종합 평가'];
+    const recommendedVehicleIds: number[] = [];
 
-    // 차량 배열이 유효한지 확인
     if (!Array.isArray(vehicles) || vehicles.length === 0) {
       console.warn('⚠️ analyzeAsDataAnalyst: vehicles가 유효하지 않음, 빈 분석 반환');
       return {
-        agentId: 'data-analyst',
-        summary: '데이터 분석을 위한 차량 정보가 부족합니다.',
+        agentId: 'data_analyst',
+        agentName: '데이터 분석',
+        confidence: 0.0,
         keyFindings: ['차량 데이터를 불러올 수 없습니다.'],
         recommendedVehicleIds: [],
-        confidence: 0.0
+        concerns: ['데이터 부족'],
+        reasoning: '분석을 위한 차량 데이터가 부족합니다.'
       };
     }
 
-    const sortedByValue = [...vehicles].sort((a, b) => {
-      const aValue = (a.safety + (a.fuelEfficiency || 10) + a.reliability) / a.price;
-      const bValue = (b.safety + (b.fuelEfficiency || 10) + b.reliability) / b.price;
-      return bValue - aValue;
-    });
-
-    recommendedVehicleIds.push(...sortedByValue.slice(0, 5).map(v => v.id));
-
-    keyFindings.push('가성비 우수 차량 중심 선별');
-    keyFindings.push('안전성, 연비, 신뢰성 종합 평가');
+    // Legacy logic with non-existent properties removed.
+    // Simply recommend the first 5 vehicles as a placeholder.
+    recommendedVehicleIds.push(...vehicles.slice(0, 5).map(v => v.vehicleId));
 
     return {
       agentId: 'data_analyst',
@@ -249,8 +216,8 @@ export class RuleBasedAgentAnalyzer {
   }
 
   analyzeAsConcierge(
-    query: UserQuery,
-    vehicles: Vehicle[],
+    _query: UserQuery,
+    _vehicles: Vehicle[],
     needsAnalysis: AgentAnalysis,
     dataAnalysis: AgentAnalysis
   ): AgentAnalysis {

@@ -2,11 +2,8 @@ import dotenv from 'dotenv';
 // Load environment variables first
 dotenv.config();
 
-import { Pool as NeonPool, neonConfig } from '@neondatabase/serverless';
 import { Pool as PgPool } from 'pg';
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
-import ws from "ws";
 import * as schema from "@shared/schema";
 import fs from 'fs';
 
@@ -18,7 +15,7 @@ if (!process.env.DATABASE_URL) {
 
 const isAwsRds = process.env.DB_TYPE === 'aws-rds' || process.env.DATABASE_URL.includes('rds.amazonaws.com');
 
-let pool: NeonPool | PgPool;
+let pool: PgPool;
 let db: any;
 
 if (isAwsRds) {

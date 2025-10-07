@@ -1,35 +1,38 @@
-import { 
-  type User, 
-  type InsertUser, 
-  type Vehicle, 
+import {
+  type User,
+  type InsertUser,
+  type Vehicle as DBVehicle,
   type InsertVehicle,
   type VehicleInspect,
   type VehicleInsurance,
   type HyundaiReview,
   type Conversation,
-  type InsertConversation
+  type InsertConversation,
+  users as usersTable,
+  vehicles as vehiclesTable,
+  vehiclesInspect,
+  vehiclesInsurance,
+  hyundaiReviews,
+  conversations as conversationsTable
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import {
+  type Vehicle,
+  type VehicleSearchFilters,
+  rawToVehicle,
+  rawArrayToVehicles
+} from "@shared/types/vehicle";
 
-export interface VehicleSearchFilters {
-  minPrice?: number;
-  maxPrice?: number;
-  manufacturer?: string;
-  model?: string;
-  minYear?: number;
-  maxYear?: number;
-  fuelType?: string;
-  carType?: string;
-  location?: string;
-  limit?: number;
-  offset?: number;
-}
+// Re-export for other modules
+export type { Vehicle, VehicleSearchFilters };
+import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   searchVehicles(filters: VehicleSearchFilters): Promise<Vehicle[]>;
   getVehicleById(id: number): Promise<Vehicle | undefined>;
   getVehicleWithDetails(id: number): Promise<{
@@ -39,13 +42,15 @@ export interface IStorage {
   } | undefined>;
   createVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
   getVehicleCount(): Promise<number>;
-  
+
   getReviewsByModel(model: string): Promise<HyundaiReview[]>;
-  
+
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   getConversationsBySession(sessionId: string): Promise<Conversation[]>;
 }
 
+// This is a temporary, in-memory storage for development and testing.
+// It does not persist data across server restarts.
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private vehicles: Map<number, Vehicle>;
@@ -69,42 +74,43 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    // The actual User schema only has id, username, password.
+    const user: User = { id, ...insertUser };
     this.users.set(id, user);
     return user;
   }
 
   async searchVehicles(filters: VehicleSearchFilters): Promise<Vehicle[]> {
     let results = Array.from(this.vehicles.values());
-    
+
     if (filters.minPrice) {
-      results = results.filter(v => v.price && v.price >= filters.minPrice!);
+      results = results.filter(v => v.price !== null && v.price >= filters.minPrice!);
     }
     if (filters.maxPrice) {
-      results = results.filter(v => v.price && v.price <= filters.maxPrice!);
+      results = results.filter(v => v.price !== null && v.price <= filters.maxPrice!);
     }
     if (filters.minYear) {
-      results = results.filter(v => v.modelYear && v.modelYear >= filters.minYear!);
+        results = results.filter(v => v.modelYear !== null && v.modelYear >= filters.minYear!);
     }
     if (filters.maxYear) {
-      results = results.filter(v => v.modelYear && v.modelYear <= filters.maxYear!);
+        results = results.filter(v => v.modelYear !== null && v.modelYear <= filters.maxYear!);
     }
     if (filters.fuelType) {
-      results = results.filter(v => v.fuelType === filters.fuelType);
+        results = results.filter(v => v.fuelType === filters.fuelType);
     }
     if (filters.carType) {
-      results = results.filter(v => v.carType === filters.carType);
+        results = results.filter(v => v.carType === filters.carType);
     }
     if (filters.manufacturer) {
-      results = results.filter(v => v.manufacturer === filters.manufacturer);
+        results = results.filter(v => v.manufacturer === filters.manufacturer);
     }
     if (filters.model) {
-      results = results.filter(v => v.model === filters.model);
+        results = results.filter(v => v.model === filters.model);
     }
 
     const offset = filters.offset || 0;
     const limit = filters.limit || 10;
-    
+
     return results.slice(offset, offset + limit);
   }
 
@@ -115,14 +121,33 @@ export class MemStorage implements IStorage {
   async getVehicleWithDetails(id: number): Promise<{ vehicle: Vehicle; inspect?: VehicleInspect; insurance?: VehicleInsurance; } | undefined> {
     const vehicle = this.vehicles.get(id);
     if (!vehicle) return undefined;
+    // MemStorage doesn't have related tables, so it returns only the vehicle.
     return { vehicle };
   }
 
   async createVehicle(insertVehicle: InsertVehicle): Promise<Vehicle> {
     const vehicleId = this.vehicles.size + 1;
-    const vehicle: Vehicle = { 
-      ...insertVehicle,
-      vehicleId
+    // Create a complete Vehicle object with default values for required fields.
+    const vehicle: Vehicle = {
+      vehicleId: vehicleId,
+      manufacturer: '테스트',
+      model: 'Test Model',
+      modelYear: 2022,
+      price: 3000,
+      distance: 0,
+      fuelType: '가솔린',
+      location: '서울',
+      photo: undefined,
+      detailUrl: undefined,
+      options: [],
+      carType: undefined,
+      grade: undefined,
+      transmission: undefined,
+      displacement: undefined,
+      color: undefined,
+      originPrice: undefined,
+      myAccidentCost: undefined,
+      otherAccidentCost: undefined,
     };
     this.vehicles.set(vehicleId, vehicle);
     return vehicle;
@@ -132,16 +157,20 @@ export class MemStorage implements IStorage {
     return this.vehicles.size;
   }
 
-  async getReviewsByModel(model: string): Promise<HyundaiReview[]> {
+  async getReviewsByModel(_model: string): Promise<HyundaiReview[]> {
+    // MemStorage doesn't store reviews.
     return [];
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
     const id = randomUUID();
     const conversation: Conversation = {
-      ...insertConversation,
       id,
-      createdAt: new Date()
+      createdAt: new Date(),
+      ...insertConversation,
+      userId: insertConversation.userId ?? null,
+      aiResponse: insertConversation.aiResponse ?? null,
+      vehicleRecommendations: insertConversation.vehicleRecommendations ?? null,
     };
     this.conversations.set(id, conversation);
     return conversation;
@@ -153,17 +182,6 @@ export class MemStorage implements IStorage {
     );
   }
 }
-
-import { db } from "./db";
-import { 
-  users as usersTable, 
-  vehicles as vehiclesTable,
-  vehiclesInspect,
-  vehiclesInsurance,
-  hyundaiReviews,
-  conversations as conversationsTable
-} from "@shared/schema";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 export class DBStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
@@ -183,69 +201,57 @@ export class DBStorage implements IStorage {
 
   async searchVehicles(filters: VehicleSearchFilters): Promise<Vehicle[]> {
     const conditions = [];
-    
-    if (filters.minPrice) {
-      conditions.push(gte(vehiclesTable.price, filters.minPrice));
-    }
-    if (filters.maxPrice) {
-      conditions.push(lte(vehiclesTable.price, filters.maxPrice));
-    }
-    if (filters.minYear) {
-      conditions.push(gte(vehiclesTable.modelYear, filters.minYear));
-    }
-    if (filters.maxYear) {
-      conditions.push(lte(vehiclesTable.modelYear, filters.maxYear));
-    }
-    if (filters.fuelType) {
-      conditions.push(eq(vehiclesTable.fuelType, filters.fuelType));
-    }
-    if (filters.carType) {
-      conditions.push(eq(vehiclesTable.carType, filters.carType));
-    }
-    if (filters.manufacturer) {
-      conditions.push(eq(vehiclesTable.manufacturer, filters.manufacturer));
-    }
-    if (filters.model) {
-      conditions.push(eq(vehiclesTable.model, filters.model));
-    }
-    if (filters.location) {
-      conditions.push(eq(vehiclesTable.location, filters.location));
-    }
+    if (filters.minPrice) conditions.push(gte(vehiclesTable.price, filters.minPrice));
+    if (filters.maxPrice) conditions.push(lte(vehiclesTable.price, filters.maxPrice));
+    if (filters.minYear) conditions.push(gte(vehiclesTable.modelYear, filters.minYear));
+    if (filters.maxYear) conditions.push(lte(vehiclesTable.modelYear, filters.maxYear));
+    if (filters.fuelType) conditions.push(eq(vehiclesTable.fuelType, filters.fuelType));
+    if (filters.carType) conditions.push(eq(vehiclesTable.carType, filters.carType));
+    if (filters.manufacturer) conditions.push(eq(vehiclesTable.manufacturer, filters.manufacturer));
+    if (filters.model) conditions.push(eq(vehiclesTable.model, filters.model));
+    if (filters.location) conditions.push(eq(vehiclesTable.location, filters.location));
 
     const limit = filters.limit || 10;
     const offset = filters.offset || 0;
 
     const query = db.select().from(vehiclesTable);
-    
+
+    let rawResults: DBVehicle[];
     if (conditions.length > 0) {
-      return query.where(and(...conditions)).limit(limit).offset(offset);
+      rawResults = await query.where(and(...conditions)).limit(limit).offset(offset);
+    } else {
+      rawResults = await query.limit(limit).offset(offset);
     }
-    
-    return query.limit(limit).offset(offset);
+
+    return rawArrayToVehicles(rawResults);
   }
 
   async getVehicleById(id: number): Promise<Vehicle | undefined> {
     const result = await db.select().from(vehiclesTable).where(eq(vehiclesTable.vehicleId, id)).limit(1);
-    return result[0];
+    if (!result[0]) return undefined;
+    return rawToVehicle(result[0]);
   }
 
   async getVehicleWithDetails(id: number): Promise<{ vehicle: Vehicle; inspect?: VehicleInspect; insurance?: VehicleInsurance; } | undefined> {
     const vehicle = await this.getVehicleById(id);
     if (!vehicle) return undefined;
 
-    const inspect = await db.select().from(vehiclesInspect).where(eq(vehiclesInspect.vehicleId, id)).limit(1);
-    const insurance = await db.select().from(vehiclesInsurance).where(eq(vehiclesInsurance.vehicleId, id)).limit(1);
+    const inspectResult = await db.select().from(vehiclesInspect).where(eq(vehiclesInspect.vehicleId, id)).limit(1);
+    const insuranceResult = await db.select().from(vehiclesInsurance).where(eq(vehiclesInsurance.vehicleId, id)).limit(1);
 
     return {
       vehicle,
-      inspect: inspect[0],
-      insurance: insurance[0]
+      inspect: inspectResult[0],
+      insurance: insuranceResult[0]
     };
   }
 
   async createVehicle(insertVehicle: InsertVehicle): Promise<Vehicle> {
     const result = await db.insert(vehiclesTable).values(insertVehicle).returning();
-    return result[0];
+    if (!result[0]) {
+      throw new Error('Failed to create vehicle');
+    }
+    return rawToVehicle(result[0]);
   }
 
   async getVehicleCount(): Promise<number> {
@@ -267,4 +273,4 @@ export class DBStorage implements IStorage {
   }
 }
 
-export const storage = new DBStorage();
+export const storage: IStorage = new DBStorage();

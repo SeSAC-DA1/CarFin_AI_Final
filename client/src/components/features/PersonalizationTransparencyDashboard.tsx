@@ -6,14 +6,8 @@ import {
   RefreshCw,
   Target,
   Zap,
-  ArrowRight,
   Users,
-  DollarSign,
-  Shield,
-  Fuel,
-  Calendar,
   Star,
-  AlertCircle,
   CheckCircle,
   Eye
 } from 'lucide-react';
@@ -41,21 +35,21 @@ interface VehicleCandidate {
   scoreContributions: Record<string, number>;
 }
 
-interface ReRankingProcess {
-  originalCandidates: VehicleCandidate[];
-  userProfile: UserProfile;
-  algorithmSteps: ReRankingStep[];
-  finalTopThree: VehicleCandidate[];
-  totalProcessingTime: number;
-}
+// interface ReRankingProcess {
+//   originalCandidates: VehicleCandidate[];
+//   userProfile: UserProfile;
+//   algorithmSteps: ReRankingStep[];
+//   finalTopThree: VehicleCandidate[];
+//   totalProcessingTime: number;
+// }
 
 interface ReRankingStep {
   id: string;
   name: string;
   description: string;
   status: 'pending' | 'processing' | 'completed';
-  processingTime?: number;
-  result?: string;
+  processingTime?: number | undefined;
+  result?: string | undefined;
 }
 
 interface FeedbackUpdate {
@@ -136,6 +130,7 @@ export default function PersonalizationTransparencyDashboard({
       }, 100);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [startTime]);
 
   const startPersonalizationSimulation = async () => {
@@ -313,7 +308,7 @@ export default function PersonalizationTransparencyDashboard({
   };
 
   const calculatePersonalizedScores = async () => {
-    const updatedCandidates = vehicleCandidates.map((candidate, index) => {
+    const updatedCandidates = vehicleCandidates.map((candidate) => {
       // 개인화 점수 계산 (시뮬레이션)
       let personalizedScore = 0.7; // 기본 점수
 
@@ -415,7 +410,12 @@ export default function PersonalizationTransparencyDashboard({
   const updateStepStatus = (stepId: string, status: ReRankingStep['status'], result?: string) => {
     setReRankingSteps(prev => prev.map(step =>
       step.id === stepId
-        ? { ...step, status, result, processingTime: status === 'completed' ? Date.now() : undefined }
+        ? {
+            ...step,
+            status,
+            result: result !== undefined ? result : undefined,
+            processingTime: status === 'completed' ? Date.now() : (step.processingTime !== undefined ? step.processingTime : undefined)
+          }
         : step
     ));
   };
