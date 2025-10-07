@@ -68,7 +68,7 @@ export class EnhancedFinanceCalculator {
     inspect?: VehicleInspect,
     insurance?: VehicleInsurance
   ): VehicleFinancialInfo {
-    const optionsAnalysis = EnhancedFinanceCalculator.analyzeVehicleOptions(vehicle.hasOptions);
+    const optionsAnalysis = EnhancedFinanceCalculator.analyzeVehicleOptions(vehicle.options?.join(',') || null);
     const riskAssessment = EnhancedFinanceCalculator.assessVehicleRisk(vehicle, inspect, insurance);
     const warrantyBenefit = EnhancedFinanceCalculator.calculateWarrantyBenefit(inspect?.warrantyType);
 
@@ -345,7 +345,7 @@ export class EnhancedFinanceCalculator {
     insurance?: VehicleInsurance
   ): number {
     let score = 60;
-    if (vehicle.hasOptions && vehicle.hasOptions.length > 10) {
+    if (vehicle.options && vehicle.options.length > 10) {
       score += 15;
     }
     if (inspect) {
