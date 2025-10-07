@@ -484,7 +484,7 @@ export default function MACRecCollaborationViewer({
                       {msg.to === 'all' ? '전체' : agents.find(a => a.id === msg.to)?.name?.split(' ')[0]}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {msg.timestamp.toLocaleTimeString('ko-KR', {
+                      {new Date(msg.timestamp).toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
                         minute: '2-digit',
                         second: '2-digit'

@@ -7,7 +7,7 @@ export interface MessageBubbleProps {
   type: "user" | "ai" | "user_message" | "agent_message" | "error";
   agent?: "concierge" | "needs" | "data" | "needs_analyst" | "data_analyst" | string;
   content: string;
-  timestamp: Date;
+  timestamp: Date | string | number;
 }
 
 const agentConfig: Record<string, {
@@ -179,7 +179,7 @@ export default function MessageBubble({ type, agent, content, timestamp }: Messa
 
         <div className="px-2">
           <span className="text-xs text-muted-foreground">
-            {timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+            {new Date(timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
       </div>

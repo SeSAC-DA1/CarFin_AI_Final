@@ -131,7 +131,7 @@ export default function PerformanceMonitor({ className }: PerformanceMonitorProp
             실시간 성능 모니터링
           </CardTitle>
           <CardDescription className="text-blue-600">
-            교육/공모전용 시스템 성능 지표 · 마지막 업데이트: {metrics.timestamp.toLocaleTimeString()}
+            교육/공모전용 시스템 성능 지표 · 마지막 업데이트: {new Date(metrics.timestamp).toLocaleTimeString()}
           </CardDescription>
         </CardHeader>
       </Card>
