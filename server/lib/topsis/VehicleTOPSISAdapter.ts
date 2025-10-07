@@ -1,10 +1,16 @@
 /**
  * Vehicle TOPSIS Adapter
  * 차량 데이터를 TOPSIS 엔진에 맞게 변환
+ *
+ * Phase 1 변경사항:
+ * - TCOCalculator 통합
+ * - 'price' 기준을 'tco'(총 소유비용)로 대체
+ * - 사용자 주행 패턴 반영 가능
  */
 
 import type { Vehicle } from "@shared/types/vehicle";
 import { TOPSISAlternative, TOPSISEngine, UserPreferenceProfile } from "./TOPSISEngine";
+import { TCOCalculator } from "../financial/TCOCalculator";
 
 /**
  * 브랜드별 가치 점수 (0-100)
@@ -68,39 +74,78 @@ function calculateDesignScore(vehicle: Vehicle): number {
 }
 
 /**
- * 차량 데이터를 TOPSIS Alternative로 변환
+ * 사용자 주행 프로필 (TCO 계산용)
  */
-export function convertVehicleToTOPSISAlternative(vehicle: Vehicle): TOPSISAlternative {
+export interface UserDrivingProfile {
+  annualKm?: number;         // 연간 주행거리 (기본: 15,000km)
+  ownershipYears?: number;   // 보유 기간 (기본: 3년)
+}
+
+/**
+ * 차량 데이터를 TOPSIS Alternative로 변환 (TCO 포함)
+ *
+ * Phase 1 변경:
+ * - 'price' → 'tco' (총 소유비용)
+ * - TCOCalculator를 사용하여 실제 3년 소유 비용 계산
+ * - metadata에 TCO 상세 정보 저장
+ */
+export async function convertVehicleToTOPSISAlternative(
+  vehicle: Vehicle,
+  userDrivingProfile?: UserDrivingProfile
+): Promise<TOPSISAlternative> {
   const brandValue = BRAND_VALUE_MAP[vehicle.manufacturer || ''] || 70;
-  
+
+  // 🆕 TCO 계산
+  const tcoResult = await TCOCalculator.calculate({
+    vehicle,
+    annualKm: userDrivingProfile?.annualKm || 15000,
+    ownershipYears: userDrivingProfile?.ownershipYears || 3,
+    currentYear: new Date().getFullYear()
+  });
+
   return {
     id: vehicle.vehicleId.toString(),
     name: `${vehicle.manufacturer || ''} ${vehicle.model || ''} (${vehicle.modelYear || ''})`,
     values: {
-      price: vehicle.price || 0,
+      tco: tcoResult.totalCost,  // ✨ 변경: price → tco
       performance: calculatePerformanceScore(vehicle),
       brand_value: brandValue,
       fuel_efficiency: vehicle.fuelType === '전기' ? 95 : vehicle.fuelType === '하이브리드' ? 85 : 70,
       safety_score: calculatePerformanceScore(vehicle),
       design_score: calculateDesignScore(vehicle),
     },
-    metadata: vehicle,
+    metadata: {
+      vehicle,
+      tcoBreakdown: tcoResult.breakdown,    // 🆕 TCO 상세 정보
+      tcoConfidence: tcoResult.confidence,  // 🆕 TCO 신뢰도
+      tcoWarnings: tcoResult.warnings        // 🆕 TCO 경고
+    },
   };
 }
 
 /**
- * 차량 리스트를 TOPSIS 엔진으로 평가
+ * 차량 리스트를 TOPSIS 엔진으로 평가 (TCO 포함)
+ *
+ * Phase 1 변경:
+ * - convertVehicleToTOPSISAlternative가 async이므로 Promise.all 사용
+ * - UserDrivingProfile 추가하여 개인화된 TCO 계산
  */
 export async function rankVehiclesWithTOPSIS(
   vehicles: Vehicle[],
-  userProfile: UserPreferenceProfile
+  userProfile: UserPreferenceProfile,
+  userDrivingProfile?: UserDrivingProfile
 ) {
   const topsisEngine = new TOPSISEngine();
   topsisEngine.setCriteria(userProfile);
-  
-  const alternatives = vehicles.map(convertVehicleToTOPSISAlternative);
+
+  // 🆕 병렬 처리로 성능 최적화
+  const alternativesPromises = vehicles.map(vehicle =>
+    convertVehicleToTOPSISAlternative(vehicle, userDrivingProfile)
+  );
+  const alternatives = await Promise.all(alternativesPromises);
+
   const result = await topsisEngine.evaluate(alternatives);
-  
+
   return result;
 }
 

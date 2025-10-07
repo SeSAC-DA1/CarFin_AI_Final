@@ -49,7 +49,7 @@ export class TOPSISEngine {
     const totalWeight = userProfile.priceWeight + userProfile.performanceWeight +
                        userProfile.brandWeight + userProfile.fuelEfficiencyWeight +
                        userProfile.safetyWeight + userProfile.designWeight;
-    
+
     if (totalWeight === 0) {
         // Avoid division by zero
         this.criteria = [];
@@ -57,14 +57,14 @@ export class TOPSISEngine {
     }
 
     this.criteria = [
-      { name: 'price', weight: userProfile.priceWeight / totalWeight, type: 'cost', displayName: '가격' },
+      { name: 'tco', weight: userProfile.priceWeight / totalWeight, type: 'cost', displayName: 'TCO(총 소유비용)' },  // ✨ Phase 1: price → tco
       { name: 'performance', weight: userProfile.performanceWeight / totalWeight, type: 'benefit', displayName: '성능' },
       { name: 'brand_value', weight: userProfile.brandWeight / totalWeight, type: 'benefit', displayName: '브랜드' },
       { name: 'fuel_efficiency', weight: userProfile.fuelEfficiencyWeight / totalWeight, type: 'benefit', displayName: '연비' },
       { name: 'safety_score', weight: userProfile.safetyWeight / totalWeight, type: 'benefit', displayName: '안전성' },
       { name: 'design_score', weight: userProfile.designWeight / totalWeight, type: 'benefit', displayName: '디자인' }
     ];
-    console.log('📊 TOPSIS 평가 기준 설정 완료:', this.criteria);
+    console.log('📊 TOPSIS 평가 기준 설정 완료 (TCO 포함):', this.criteria);
   }
 
   async evaluate(alternatives: TOPSISAlternative[]): Promise<TOPSISResult> {
