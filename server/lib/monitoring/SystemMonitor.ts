@@ -137,7 +137,7 @@ class SystemMonitor {
 
   private async updateCacheMetrics(): Promise<void> {
     try {
-      const cacheStatus = await railwayRedisService.isConnected();
+      const cacheStatus = railwayRedisService.isHealthy();
 
       if (cacheStatus) {
         // Redis 메모리 사용량 및 통계 (가능한 경우)

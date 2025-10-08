@@ -83,7 +83,9 @@ export function rawToVehicle(raw: RawVehicleData): Vehicle {
     location: raw.location || '알 수 없음',
     photo: raw.photo || undefined,
     detailUrl: raw.detailUrl || undefined,
-    options: raw.hasOptions ? raw.hasOptions.split(',').map(o => o.trim()) : [],
+    options: raw.hasOptions && typeof raw.hasOptions === 'string'
+      ? raw.hasOptions.split(',').map(o => o.trim())
+      : (Array.isArray(raw.hasOptions) ? raw.hasOptions : []),
     carType: raw.carType || undefined,
     grade: raw.grade || undefined,
     transmission: raw.transmission || undefined,
