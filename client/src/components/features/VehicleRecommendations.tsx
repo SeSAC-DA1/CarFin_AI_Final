@@ -7,6 +7,7 @@ import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
 import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
 import TCODetailModal from "./TCODetailModal";
+import TCOComparisonChart from "./TCOComparisonChart";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -378,6 +379,13 @@ export default function VehicleRecommendations({
           </div>
         </div>
       </div>
+
+      {/* 🆕 Phase 4: TCO 비교 차트 */}
+      {vehicles.some(v => v.tco) && (
+        <div className="mt-8 animate-slide-up">
+          <TCOComparisonChart vehicles={vehicles} />
+        </div>
+      )}
 
       {/* 개인화 투명성 대시보드 */}
       {showPersonalizationDashboard && userQuery && (
