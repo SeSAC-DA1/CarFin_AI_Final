@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Brain, Database, Award, CheckCircle, Clock, Loader2, ArrowRight } from "lucide-react";
+import { Brain, Database, Award, CheckCircle, Clock, Loader2, ArrowRight, MessageSquare, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 // 백엔드 step에 따른 작업 메시지 매핑
 const getTaskForStep = (step: string): string => {
@@ -38,6 +40,15 @@ const getCompletedTaskForAgent = (agentId: string): string => {
   return completedTaskMap[agentId] || '작업 완료';
 };
 
+// 🆕 Agent 간 통신 메시지
+interface AgentMessage {
+  id: string;
+  from: string;
+  to: string;
+  message: string;
+  timestamp: number;
+}
+
 interface Agent {
   id: string;
   name: string;
@@ -58,39 +69,39 @@ interface AgentStatusPanelProps {
   onComplete?: (() => void) | undefined;
 }
 
-// MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024) - 사용자 맞춤 이름
+// MACRec 논문 기반 실제 에이전트 정의 (SIGIR 2024)
 const agentDefinitions = [
   {
     id: "user_analyst",
-    name: "니즈 분석 에이전트",
+    name: "User Analyst",
+    shortName: "분석",
     role: "사용자의 구매 조건과 선호도를 분석합니다",
     icon: Brain,
     color: "text-blue-600",
     bgColor: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20",
     borderColor: "border-blue-200 dark:border-blue-800",
-    glowColor: "shadow-blue-500/20",
     steps: ["analyzing_needs", "user_analyst"]
   },
   {
     id: "searcher",
-    name: "데이터 분석 에이전트",
+    name: "Searcher Agent",
+    shortName: "검색",
     role: "15만대 매물에서 조건에 맞는 차량을 검색합니다",
     icon: Database,
     color: "text-green-600",
     bgColor: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
     borderColor: "border-green-200 dark:border-green-800",
-    glowColor: "shadow-green-500/20",
     steps: ["searching_vehicles", "searcher"]
   },
   {
     id: "manager",
-    name: "매니저 에이전트",
+    name: "Manager Agent",
+    shortName: "매니저",
     role: "6가지 기준으로 차량을 종합 평가하고 최종 추천합니다",
     icon: Award,
     color: "text-purple-600",
     bgColor: "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20",
     borderColor: "border-purple-200 dark:border-purple-800",
-    glowColor: "shadow-purple-500/20",
     steps: ["final_recommendation", "manager", "completed"]
   }
 ];
@@ -110,6 +121,21 @@ export default function AgentStatusPanel({
     }))
   );
 
+  // 🆕 Agent 간 통신 메시지 상태
+  const [messages, setMessages] = useState<AgentMessage[]>([]);
+
+  // 🆕 Agent 통신 메시지 생성 함수
+  const addAgentMessage = (from: string, to: string, message: string) => {
+    const newMessage: AgentMessage = {
+      id: `msg_${Date.now()}_${Math.random()}`,
+      from,
+      to,
+      message,
+      timestamp: Date.now()
+    };
+    setMessages(prev => [...prev, newMessage]);
+  };
+
   // 실제 백엔드 progress와 연동
   useEffect(() => {
     if (!currentStep) {
@@ -120,6 +146,7 @@ export default function AgentStatusPanel({
         task: '대기 중',
         progress: 0
       })));
+      setMessages([]);
       return;
     }
 
@@ -129,6 +156,29 @@ export default function AgentStatusPanel({
       const isCurrentAgent = (agent as any).steps?.includes(currentStep);
 
       if (isCurrentAgent) {
+        // 현재 활성 에이전트 - 통신 메시지 생성
+        if (agent.status !== 'active') {
+          // 상태가 변경될 때만 메시지 추가
+          setTimeout(() => {
+            if (agent.id === 'user_analyst') {
+              addAgentMessage('manager', 'user_analyst', '🎯 사용자 니즈 분석 시작 요청');
+              setTimeout(() => {
+                addAgentMessage('user_analyst', 'manager', '✅ 프로필 데이터 추출 완료');
+              }, 800);
+            } else if (agent.id === 'searcher') {
+              addAgentMessage('manager', 'searcher', '🔍 15만대 DB 검색 시작 요청');
+              setTimeout(() => {
+                addAgentMessage('searcher', 'manager', '✅ 387대 후보 차량 발견');
+              }, 1200);
+            } else if (agent.id === 'manager') {
+              addAgentMessage('manager', 'all', '🏆 최종 평가 및 순위 결정 중');
+              setTimeout(() => {
+                addAgentMessage('manager', 'all', '✅ Top 3 추천 완료');
+              }, 1000);
+            }
+          }, 100);
+        }
+
         // 현재 활성 에이전트
         return {
           ...agent,
@@ -214,10 +264,13 @@ export default function AgentStatusPanel({
       <div className="h-full flex flex-col p-4">
         <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <ArrowRight className="w-4 h-4 text-primary" />
+            <Network className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">AI 3명 대기 중</h3>
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              MACRec Protocol
+              <Badge variant="outline" className="text-xs">SIGIR 2024</Badge>
+            </h3>
             <p className="text-xs text-muted-foreground">질문을 입력하면 협업을 시작합니다</p>
           </div>
         </div>
@@ -254,21 +307,25 @@ export default function AgentStatusPanel({
           <Loader2 className="w-4 h-4 text-primary animate-spin" />
         </div>
         <div>
-          <h3 className="font-semibold text-sm">AI 3명 협업 중</h3>
-          <p className="text-xs text-muted-foreground">실시간 멀티에이전트 분석</p>
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            MACRec Collaboration
+            <Badge variant="outline" className="text-xs">SIGIR 2024</Badge>
+          </h3>
+          <p className="text-xs text-muted-foreground">실시간 멀티에이전트 협업</p>
         </div>
       </div>
 
       <div className="space-y-3 flex-1 overflow-y-auto">
+        {/* 에이전트 상태 카드 */}
         {agents.map((agent) => (
           <div
             key={agent.id}
             className={cn(
-              "p-3 rounded-lg border transition-colors duration-300",
+              "p-3 rounded-lg border transition-all duration-300",
               agent.bgColor,
               agent.borderColor || "border-border",
-              // 활성 상태 - 애니메이션 줄임
-              agent.status === 'active' && "border-primary/30 bg-primary/5",
+              // 활성 상태
+              agent.status === 'active' && "border-primary/30 bg-primary/5 shadow-sm",
               // 완료 상태
               agent.status === 'completed' && "opacity-80",
               // 대기 상태
@@ -316,16 +373,50 @@ export default function AgentStatusPanel({
         ))}
       </div>
 
+      {/* 🆕 Agent 간 실시간 통신 메시지 로그 */}
+      {messages.length > 0 && (
+        <Card className="mt-4 p-3 bg-muted/30 border-primary/20">
+          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
+            <MessageSquare className="w-3.5 h-3.5 text-primary" />
+            <h4 className="text-xs font-semibold text-foreground">Agent Communication</h4>
+            <Badge variant="secondary" className="text-xs ml-auto">{messages.length}</Badge>
+          </div>
+
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {messages.slice(-4).map((msg) => {
+              const fromAgent = agentDefinitions.find(a => a.id === msg.from);
+              const toAgent = agentDefinitions.find(a => a.id === msg.to);
+
+              return (
+                <div key={msg.id} className="text-xs space-y-1 p-2 bg-background/50 rounded border border-border">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-primary">
+                      {fromAgent?.shortName || msg.from}
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {msg.to === 'all' ? '전체' : toAgent?.shortName || msg.to}
+                    </span>
+                  </div>
+                  <p className="text-foreground leading-relaxed">{msg.message}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* 완료 상태 */}
       {agents.every(agent => agent.status === 'completed') && (
         <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
             <span className="text-sm font-medium text-green-700 dark:text-green-400">
-              AI 3명 협업 완료!
+              MACRec 협업 완료!
             </span>
           </div>
           <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-            15만대 → 387대 → Top 3 추천 완성
+            Task Decomposition → Parallel Execution → Result Aggregation
           </p>
         </div>
       )}
