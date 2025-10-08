@@ -14,6 +14,9 @@ export interface UserProfile {
     brand?: number;
   };
   preferences?: string[];
+  // 🆕 Phase 2: TCO 계산용 주행 프로필
+  annualKm?: number;        // 연간 주행거리 (기본: 15000km)
+  ownershipYears?: number;  // 보유 기간 (기본: 3년)
 }
 
 const PROFILE_STORAGE_KEY = 'carfin_user_profile';

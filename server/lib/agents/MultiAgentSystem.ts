@@ -4,6 +4,9 @@ import type { Vehicle } from "@shared/types/vehicle";
 import { EnhancedFinanceCalculator } from "../financial/EnhancedFinanceCalculator";
 import { storage } from "../../storage";
 import type { VehicleFinancialInfo } from "@shared/types/financial";
+// 🆕 Phase 2: TOPSIS + TCO 통합
+import { rankVehiclesWithTOPSIS, UserDrivingProfile } from "../topsis/VehicleTOPSISAdapter";
+import { UserPreferenceProfile } from "../topsis/TOPSISEngine";
 
 export interface AgentMessage {
   agentId: string;
@@ -50,8 +53,9 @@ export class MultiAgentSystem {
     const filteredVehicles = this.filterVehicles(vehicles, userMessage);
     yield { type: "agent_response", agent: "data_analyst", content: `${filteredVehicles.length}개의 매칭 차량을 발견했습니다` };
 
-    yield { type: "agent_working", agent: "concierge", content: "TOPSIS 알고리즘으로 차량을 평가하고 있습니다..." };
-    const rankedVehicles = await this.rankVehicles(filteredVehicles, userMessage, preferences, reviews);
+    // 🆕 Phase 2: TOPSIS + TCO 기반 평가
+    yield { type: "agent_working", agent: "concierge", content: "TOPSIS 알고리즘 + TCO(총 소유비용)으로 차량을 평가하고 있습니다..." };
+    const rankedVehicles = await this.rankVehiclesWithTOPSIS(filteredVehicles, userMessage, preferences, reviews, userProfile);
 
     const top3 = rankedVehicles.slice(0, 3);
 
@@ -230,82 +234,77 @@ export class MultiAgentSystem {
     return brandDiverseVehicles.slice(0, 50);
   }
 
-  private async rankVehicles(
+  // 🆕 Phase 2: TOPSIS + TCO 기반 차량 평가
+  private async rankVehiclesWithTOPSIS(
     vehicles: Vehicle[],
     userMessage: string,
     preferences: string,
-    reviews: HyundaiReview[]
+    reviews: HyundaiReview[],
+    userProfile?: any
   ): Promise<VehicleRecommendation[]> {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    console.log(`🎯 TOPSIS + TCO 평가 시작: ${vehicles.length}개 차량`);
 
-    const vehicleData = vehicles.map(v => ({
-      id: v.vehicleId,
-      manufacturer: v.manufacturer,
-      model: v.model,
-      year: v.modelYear,
-      price: v.price,
-      mileage: v.distance,
-      fuel: v.fuelType,
-      type: v.carType
-    }));
+    // 1. 사용자 프로필을 TOPSIS 가중치로 변환
+    const topsisProfile: UserPreferenceProfile = {
+      priceWeight: userProfile?.importance?.price || 0.20,
+      performanceWeight: userProfile?.importance?.performance || 0.20,
+      brandWeight: userProfile?.importance?.brand || 0.15,
+      fuelEfficiencyWeight: userProfile?.importance?.fuelEfficiency || 0.15,
+      safetyWeight: userProfile?.importance?.safety || 0.25,
+      designWeight: userProfile?.importance?.design || 0.05
+    };
 
-    const reviewSummary = reviews.length > 0
-      ? `실제 구매자 리뷰 (${reviews.length}개): ${reviews.slice(0, 5).map(r => r.review).join(', ')}`
-      : '리뷰 데이터 없음';
+    // 2. TCO 계산용 주행 프로필
+    const drivingProfile: UserDrivingProfile = {
+      annualKm: userProfile?.annualKm || 15000,
+      ownershipYears: userProfile?.ownershipYears || 3
+    };
 
-    const prompt = `당신은 중고차 추천 전문가입니다. 사용자 요구에 맞는 차량 3대를 추천하고 평가해주세요.\n\n사용자 요청: \"${userMessage}\"\n사용자 선호도: ${preferences}\n\n차량 목록:\n${JSON.stringify(vehicleData, null, 2)}\n\n${reviewSummary}\n\n다음 기준으로 각 차량을 평가하세요:\n1. 사용자 요구사항 부합도 (40%)\n2. 가격 경쟁력 (20%)\n3. 차량 상태 (연식, 주행거리) (20%)\n4. 연료 효율성 (10%)\n5. 브랜드 신뢰도 (10%)\n\n**중요: 가능한 한 다양한 브랜드(제조사)를 추천해주세요. 같은 브랜드만 추천하지 마세요.**\n\n각 차량에 대해 다음 JSON 형식으로 응답하세요:\n[
-  {
-    \"vehicleId\": 차량ID,
-    \"rank\": 1,
-    \"topsisScore\": 85,
-    \"matchingScore\": 88,
-    \"reason\": \"구체적인 추천 이유 (사용자 요구사항과 연결)\",
-    \"pros\": [\"주요 장점1\", \"주요 장점2\", \"주요 장점3\"],
-    \"cons\": [\"고려할 점1\", \"고려할 점2\"]
-  }
-]\n\n- 점수는 60-95점 범위로 현실적으로 설정\n- 1위는 85-95점, 2위는 80-90점, 3위는 75-85점 범위\n- 상위 3개만 반환\n- **브랜드(제조사) 다양성을 최대한 고려하여 추천**\n- 반드시 유효한 JSON 배열로 응답`;
+    console.log(`🚗 TCO 계산 조건: 연간 ${drivingProfile.annualKm}km, ${drivingProfile.ownershipYears}년 보유`);
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    
-    try {
-      const jsonMatch = text.match(/[\[\s\S]*\]/);
-      if (!jsonMatch) throw new Error('No JSON found');
-      
-      const rankings = JSON.parse(jsonMatch[0]);
-      
-      return rankings.map((r: any) => {
-        const vehicle = vehicles.find(v => v.vehicleId === r.vehicleId);
-        if (!vehicle) {
-          console.log(`⚠️ Vehicle ${r.vehicleId} not found, skipping...`);
-          return null;
-        }
-        
-        return {
-          vehicle,
-          rank: r.rank,
-          score: r.topsisScore || r.matchingScore || 0,
-          reason: r.reason,
-          pros: r.pros || [],
-          cons: r.cons || [],
-          topsisScore: r.topsisScore,
-          matchingScore: r.matchingScore
-        };
-      }).filter(Boolean) as VehicleRecommendation[];
-    } catch (error) {
-      console.error('Ranking parsing error:', error);
-      
-      return vehicles.slice(0, 3).map((vehicle, index) => ({
-        vehicle,
-        rank: index + 1,
-        score: 88 - index * 3,
-        reason: `${userMessage.includes('연비') ? '연비가 우수한' : '사용자 요구에 적합한'} 차량입니다`,
-        pros: ["사용자 요구사항 부합", "합리적인 가격", "좋은 차량 상태"],
-        cons: ["추가 검토 권장", "직접 확인 필요"],
-        topsisScore: 88 - index * 3,
-        matchingScore: 85 - index * 2
-      }));
-    }
+    // 3. TOPSIS + TCO 평가 (최대 50대)
+    const topsisResult = await rankVehiclesWithTOPSIS(
+      vehicles.slice(0, 50),
+      topsisProfile,
+      drivingProfile
+    );
+
+    // 4. TOPSIS 결과를 VehicleRecommendation 형식으로 변환
+    const recommendations: VehicleRecommendation[] = topsisResult.ranking.map(r => {
+      const tcoData = r.alternative.metadata?.tcoBreakdown;
+      const tcoTotal = tcoData
+        ? (tcoData.acquisitionTax + tcoData.vehicleTax + tcoData.maintenance + tcoData.depreciation + tcoData.fuelCost)
+        : 0;
+
+      return {
+        vehicle: {
+          ...r.alternative.metadata.vehicle,
+          // 🆕 TCO 데이터 추가
+          tco: tcoData ? {
+            total: tcoTotal,
+            breakdown: tcoData,
+            confidence: r.alternative.metadata.tcoConfidence || 0.7,
+            ownershipYears: drivingProfile.ownershipYears
+          } : undefined
+        },
+        rank: r.rank,
+        score: r.score * 100, // 0-1 범위를 0-100으로 변환
+        reason: `TOPSIS 다기준 평가 ${(r.score * 100).toFixed(1)}점 (TCO 반영)`,
+        pros: [
+          `총 소유비용 ${(tcoTotal / 10000).toFixed(0)}만원 (${drivingProfile.ownershipYears}년)`,
+          `TOPSIS 점수 ${(r.score * 100).toFixed(1)}점`,
+          "다기준 분석 기반 추천"
+        ],
+        cons: tcoData && r.alternative.metadata.tcoWarnings?.length > 0
+          ? r.alternative.metadata.tcoWarnings
+          : ["추가 검토 권장"],
+        topsisScore: r.score * 100,
+        matchingScore: r.score * 100
+      };
+    });
+
+    console.log(`✅ TOPSIS + TCO 평가 완료: Top 3 선정`);
+    return recommendations;
   }
 
   // 🏦 향상된 금융 옵션 분석 (RDS 기반)
