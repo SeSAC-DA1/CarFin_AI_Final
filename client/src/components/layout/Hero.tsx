@@ -18,18 +18,18 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">AI가 찾아주는 중고차</span>
+              <span className="text-sm font-medium text-primary">논문 기반 AI 추천 시스템</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                당신에게 딱 맞는 차량을
+                12만대에서
               </span>
               <br />
-              <span className="text-foreground">AI가 찾아드립니다</span>
+              <span className="text-foreground">당신의 차 3대만</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                12만대 이상 중에서 Top 3만 추천
+                3분 안에 AI가 추천합니다
               </span>
             </h1>
 
