@@ -57,7 +57,7 @@ export default function Onboarding() {
                   <BarChart3 className="w-8 h-8 text-chart-2" />
                 </div>
                 <h3 className="font-bold mb-2">🔍 검색 AI</h3>
-                <p className="text-sm text-muted-foreground">15만대 중 조건에 맞는 차들을 찾아요</p>
+                <p className="text-sm text-muted-foreground">12만 7천대 중 조건에 맞는 차들을 찾아요</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-3/20">
@@ -141,7 +141,7 @@ export default function Onboarding() {
     },
     {
       id: 3,
-      title: "127만대 중에서 숨은 가성비를 발견",
+      title: "12만 7천대 중에서 숨은 가성비를 발견",
       description: "방대한 데이터에서 당신만을 위한 특별한 차량을 찾아드립니다",
       icon: <Database className="w-8 h-8 text-primary" />,
       content: (
@@ -300,7 +300,7 @@ export default function Onboarding() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">10만대+</div>
+                <div className="text-2xl font-bold text-primary mb-1">12만 7천대</div>
                 <div className="text-sm text-muted-foreground">실시간 중고차 매물</div>
               </div>
               <div className="text-center">

@@ -29,7 +29,7 @@ export default function Hero() {
               <span className="text-foreground">AI가 찾아드려요</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                10만대 이상 중에서 딱 3대만
+                12만 7천대 이상 중에서 딱 3대만
               </span>
             </h1>
 
@@ -61,7 +61,7 @@ export default function Hero() {
                   <Search className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">10만대+</p>
+                  <p className="text-lg font-semibold">12만 7천대</p>
                   <p className="text-xs text-muted-foreground">다양한 선택지</p>
                 </div>
               </div>

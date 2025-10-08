@@ -52,6 +52,10 @@ interface ProfileData {
     design: number;
     brand: number;
   };
+
+  // 🆕 Phase 4: TCO 개인화
+  annualKm: number;       // 연간 주행거리
+  ownershipYears: number; // 보유 예정 기간
 }
 
 interface ProfileStep {
@@ -81,7 +85,9 @@ export default function ProfileSetup() {
       safety: 5,
       design: 5,
       brand: 5
-    }
+    },
+    annualKm: 15000,        // 기본값: 연간 1.5만 km
+    ownershipYears: 3       // 기본값: 3년
   });
 
   const updateProfile = (field: string, value: any) => {
@@ -274,6 +280,100 @@ export default function ProfileSetup() {
               />
             </div>
           ))}
+        </div>
+      )
+    },
+    {
+      id: 5,
+      title: "차량을 얼마나 사용하실 예정인가요?",
+      description: "정확한 총 소유비용(TCO) 계산을 위해 필요해요",
+      icon: <Calculator className="w-8 h-8 text-primary" />,
+      content: (
+        <div className="space-y-8 max-w-md mx-auto">
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">연간 주행거리</Label>
+            <p className="text-sm text-muted-foreground">1년에 평균적으로 얼마나 운전하시나요?</p>
+            <RadioGroup
+              value={profileData.annualKm.toString()}
+              onValueChange={(value) => updateProfile('annualKm', parseInt(value))}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="10000" id="km-10000" />
+                  <Label htmlFor="km-10000" className="flex-1 cursor-pointer">
+                    <div className="font-medium">연간 1만 km</div>
+                    <div className="text-xs text-muted-foreground">주말 운전자 (월 830km)</div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="15000" id="km-15000" />
+                  <Label htmlFor="km-15000" className="flex-1 cursor-pointer">
+                    <div className="font-medium">연간 1.5만 km (추천)</div>
+                    <div className="text-xs text-muted-foreground">보통 운전자 (월 1,250km)</div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="20000" id="km-20000" />
+                  <Label htmlFor="km-20000" className="flex-1 cursor-pointer">
+                    <div className="font-medium">연간 2만 km</div>
+                    <div className="text-xs text-muted-foreground">출퇴근용 (월 1,670km)</div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="30000" id="km-30000" />
+                  <Label htmlFor="km-30000" className="flex-1 cursor-pointer">
+                    <div className="font-medium">연간 3만 km</div>
+                    <div className="text-xs text-muted-foreground">장거리 운전자 (월 2,500km)</div>
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">보유 예정 기간</Label>
+            <p className="text-sm text-muted-foreground">차량을 얼마나 오래 타실 계획인가요?</p>
+            <RadioGroup
+              value={profileData.ownershipYears.toString()}
+              onValueChange={(value) => updateProfile('ownershipYears', parseInt(value))}
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="1" id="year-1" />
+                  <Label htmlFor="year-1" className="cursor-pointer">1년</Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="3" id="year-3" />
+                  <Label htmlFor="year-3" className="cursor-pointer">3년 (추천)</Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="5" id="year-5" />
+                  <Label htmlFor="year-5" className="cursor-pointer">5년</Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="10" id="year-10" />
+                  <Label htmlFor="year-10" className="cursor-pointer">10년 이상</Label>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  💡 이 정보로 정확한 TCO를 계산해요
+                </p>
+                <p className="text-blue-700 dark:text-blue-300 text-xs">
+                  취득세, 자동차세, 정비비, 감가상각, 연료비를 모두 고려하여
+                  {profileData.ownershipYears}년간 실제로 드는 총 비용을 알려드려요.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )
     }
