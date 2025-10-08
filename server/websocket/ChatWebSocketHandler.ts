@@ -126,23 +126,62 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     timestamp: new Date(),
   });
 
-  // 🆕 Phase 2.5: 프로필 완성도 분석 및 스마트 질문
+  // 🆕 개선된 대화 흐름: 최소 정보만 있으면 추천 실행
   try {
     const analyzer = new ProfileCompletenessAnalyzer();
     const completenessReport = analyzer.analyzeProfile(session.rawProfile);
 
     console.log(`📊 프로필 완성도: ${completenessReport.completenessScore}%`);
-    console.log(`❓ 질문 필요 여부: ${completenessReport.shouldAskQuestion}`);
+    console.log(`📋 현재 프로필:`, JSON.stringify(session.rawProfile, null, 2));
 
-    // Essential 필드가 누락되었고, 아직 질문하지 않은 경우
-    if (completenessReport.shouldAskQuestion && completenessReport.nextQuestionPriority) {
-      const nextField = completenessReport.nextQuestionPriority;
+    // ✅ 핵심 개선: 최소 정보가 있으면 즉시 추천
+    const hasMinimalInfo = session.rawProfile && (
+      session.rawProfile.budget?.length > 0 ||
+      session.rawProfile.usage?.length > 0 ||
+      session.rawProfile.carType ||
+      userMessage.length > 10  // 사용자가 의미있는 메시지를 보냈다면
+    );
 
-      // 같은 필드를 반복 질문하지 않도록 체크
-      if (session.lastQuestionAsked !== nextField.name) {
+    if (hasMinimalInfo) {
+      console.log('✅ 최소 정보 확보 → 추천 시스템 실행');
+      await handleMultiAgentRecommendation(session, userMessage);
+
+      // 추천 완료 후 추가 정보가 필요하면 자연스럽게 질문 (선택사항)
+      if (completenessReport.completenessScore < 60 && completenessReport.nextQuestionPriority) {
+        const nextField = completenessReport.nextQuestionPriority;
+
+        // Essential 필드는 건너뛰고, Important/Optional만 질문
+        if (nextField.category !== 'essential' && session.lastQuestionAsked !== nextField.name) {
+          try {
+            const questionEngine = new SmartQuestionEngine(process.env.GOOGLE_API_KEY!);
+            const smartQuestion = await questionEngine.generateSmartQuestion(nextField, {
+              missingField: nextField,
+              conversationHistory: session.conversationHistory,
+              userLastMessage: userMessage,
+              currentProfile: session.rawProfile,
+            });
+
+            console.log(`💬 추가 정보 질문 (선택): ${smartQuestion.question}`);
+            session.lastQuestionAsked = nextField.name;
+
+            sendMessage(session.ws, {
+              type: 'agent_message',
+              agent: 'concierge',
+              content: `\n\n더 정확한 추천을 위해 추가 정보를 알려주시면 좋을 것 같아요!\n${smartQuestion.question}`,
+              timestamp: new Date(),
+            });
+          } catch (questionError) {
+            console.warn('⚠️ 추가 질문 생성 실패 (무시):', questionError);
+          }
+        }
+      }
+    } else {
+      // 정보가 전혀 없는 경우에만 필수 질문
+      console.log('❌ 최소 정보 부족 → Essential 필드 질문');
+
+      if (completenessReport.nextQuestionPriority && completenessReport.nextQuestionPriority.category === 'essential') {
+        const nextField = completenessReport.nextQuestionPriority;
         const questionEngine = new SmartQuestionEngine(process.env.GOOGLE_API_KEY!);
-
-        // Essential 필드는 빠른 템플릿 질문, Important는 AI 컨텍스트 질문
         const smartQuestion = await questionEngine.generateSmartQuestion(nextField, {
           missingField: nextField,
           conversationHistory: session.conversationHistory,
@@ -150,35 +189,25 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
           currentProfile: session.rawProfile,
         });
 
-        console.log(`💬 스마트 질문 생성: ${smartQuestion.question}`);
         session.lastQuestionAsked = nextField.name;
 
-        // 질문을 AI 메시지로 전송
         sendMessage(session.ws, {
           type: 'agent_message',
           agent: 'concierge',
           content: smartQuestion.question,
           timestamp: new Date(),
         });
-
-        // 질문 후에는 추천 시스템을 실행하지 않고 사용자 응답 대기
-        return;
+      } else {
+        // Essential 정보도 없고 질문도 없으면 일반 응답
+        await handleMultiAgentRecommendation(session, userMessage);
       }
     }
-  } catch (analysisError) {
-    console.warn('⚠️ 프로필 분석 오류 (무시하고 계속):', analysisError);
-  }
-
-  // 프로필이 충분히 완성되었거나 질문을 이미 했다면 추천 시스템 실행
-  try {
-    console.log('🎓 멀티에이전트 시스템 시작');
-    await handleMultiAgentRecommendation(session, userMessage);
   } catch (error) {
-    console.error('🚨 멀티에이전트 시스템 오류:', error);
+    console.error('🚨 시스템 오류:', error);
     sendMessage(session.ws, {
       type: 'agent_message',
       agent: 'system',
-      content: '죄송합니다. 추천 시스템에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      content: '죄송합니다. 잠시 문제가 발생했습니다. 어떤 차량을 찾고 계신지 다시 말씀해주시겠어요?',
       timestamp: new Date(),
     });
   }
@@ -256,12 +285,8 @@ function updateSessionProfile(session: ChatSession, update: ExtractedProfileUpda
     }
   }
 
-  // 클라이언트에 업데이트 알림 전송
-  sendMessage(session.ws, {
-    type: 'profile_updated',
-    updates: update,
-    timestamp: new Date(),
-  });
+  // 🆕 개선: 조용한 프로필 업데이트 (메시지 없이 로그만)
+  console.log('✅ 프로필 업데이트:', JSON.stringify(update, null, 2));
 }
 
 async function handleMultiAgentRecommendation(session: ChatSession, userMessage: string) {
