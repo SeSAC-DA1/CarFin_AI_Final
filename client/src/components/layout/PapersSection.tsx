@@ -72,7 +72,7 @@ const papers = [
 
 export default function PapersSection() {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-card/30 to-background" id="technology">
+    <section id="papers" className="py-16 md:py-24 bg-gradient-to-b from-card/30 to-background">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 space-y-6">

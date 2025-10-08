@@ -27,7 +27,7 @@ const features = [
     icon: Clock,
     title: "대용량 데이터 빠른 분석",
     others: "제한된 매물 검색",
-    carfin: "PostgreSQL + Redis로 15만대 빠른 분석",
+    carfin: "PostgreSQL + Redis로 12만대 이상 빠른 분석",
     badge: "빅데이터"
   },
   {
@@ -48,7 +48,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="features" className="py-16 md:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12 space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">일반 서비스와 무엇이 다른가요?</h2>

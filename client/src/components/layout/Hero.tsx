@@ -23,22 +23,22 @@ export default function Hero() {
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                나에게 딱 맞는 차
+                당신에게 딱 맞는 차량을
               </span>
               <br />
-              <span className="text-foreground">AI가 찾아드려요</span>
+              <span className="text-foreground">AI가 찾아드립니다</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                12만 7천대 이상 중에서 딱 3대만
+                12만대 이상 중에서 Top 3만 추천
               </span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">3명의 AI 전문가가 협업해서</span>
+              <span className="text-foreground/90 font-medium">3개의 전문 AI가 협업하여</span>
               <br />
-              <span className="text-muted-foreground">당신만을 위한 차량을 찾아드립니다</span>
+              <span className="text-muted-foreground">개인화된 최적의 차량을 추천합니다</span>
               <br />
-              <span className="text-primary font-medium">논문 검증 알고리즘 기반 (SIGIR 2024, RecSys 2019)</span>
+              <span className="text-primary font-medium">학술 논문 검증 알고리즘 (SIGIR 2024, RecSys 2019)</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -61,8 +61,8 @@ export default function Hero() {
                   <Search className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">12만 7천대</p>
-                  <p className="text-xs text-muted-foreground">다양한 선택지</p>
+                  <p className="text-lg font-semibold">12만대 이상</p>
+                  <p className="text-xs text-muted-foreground">실시간 매물</p>
                 </div>
               </div>
 
@@ -71,8 +71,8 @@ export default function Hero() {
                   <BarChart3 className="w-6 h-6 text-chart-2" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">3명의 AI</p>
-                  <p className="text-xs text-muted-foreground">협업 분석</p>
+                  <p className="text-lg font-semibold">3개 AI</p>
+                  <p className="text-xs text-muted-foreground">실시간 협업</p>
                 </div>
               </div>
 
