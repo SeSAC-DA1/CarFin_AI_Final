@@ -25,6 +25,19 @@ export interface Vehicle {
   cons?: string[];
   location?: string;
   detailUrl?: string;
+  // 🆕 Phase 3: TCO 데이터
+  tco?: {
+    total: number;
+    breakdown: {
+      acquisitionTax: number;
+      vehicleTax: number;
+      maintenance: number;
+      depreciation: number;
+      fuelCost: number;
+    };
+    confidence: number;
+    ownershipYears: number;
+  };
 }
 
 export interface ProgressUpdate {
@@ -121,7 +134,14 @@ export function useWebSocketChat() {
               pros: vehicle.pros || [],
               cons: vehicle.cons || [],
               location: vehicle.location || '위치 미상',
-              detailUrl: vehicle.detailUrl || ''
+              detailUrl: vehicle.detailUrl || '',
+              // 🆕 Phase 3: TCO 데이터 매핑
+              tco: vehicle.tco ? {
+                total: vehicle.tco.total,
+                breakdown: vehicle.tco.breakdown,
+                confidence: vehicle.tco.confidence,
+                ownershipYears: vehicle.tco.ownershipYears
+              } : undefined
             };
             });
 

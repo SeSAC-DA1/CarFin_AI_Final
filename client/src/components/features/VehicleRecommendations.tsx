@@ -1,11 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Calculator } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Calculator, TrendingDown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
 import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
+import TCODetailModal from "./TCODetailModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -24,6 +25,19 @@ export interface Vehicle {
   location?: string;
   topsisScore: number;
   matchScore: number;
+  // 🆕 Phase 3: TCO 데이터
+  tco?: {
+    total: number;
+    breakdown: {
+      acquisitionTax: number;
+      vehicleTax: number;
+      maintenance: number;
+      depreciation: number;
+      fuelCost: number;
+    };
+    confidence: number;
+    ownershipYears: number;
+  };
 }
 
 interface VehicleRecommendationsProps {
@@ -49,6 +63,10 @@ export default function VehicleRecommendations({
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const { insights } = useWebSocketChat();
 
+  // 🆕 Phase 3: TCO 모달 상태
+  const [showTCOModal, setShowTCOModal] = useState(false);
+  const [selectedVehicleForTCO, setSelectedVehicleForTCO] = useState<Vehicle | null>(null);
+
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
@@ -61,6 +79,12 @@ export default function VehicleRecommendations({
     // 금융 상담 모달 열기
     setSelectedVehicleForFinance(vehicle);
     setShowFinanceDashboard(true);
+  };
+
+  // 🆕 Phase 3: TCO 상세보기 핸들러
+  const handleViewTCO = (vehicle: Vehicle) => {
+    setSelectedVehicleForTCO(vehicle);
+    setShowTCOModal(true);
   };
 
   // 개인화 대시보드 자동 표시
@@ -199,46 +223,103 @@ export default function VehicleRecommendations({
                   </div>
                 </div>
 
-                {/* 🏦 금융 정보 미리보기 */}
-                <div className="space-y-2 pt-2 border-t border-border">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <CreditCard className="w-3 h-3" />
-                    <span>금융 옵션</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-blue-50 dark:bg-blue-950/20 p-2 rounded">
-                      <div className="text-blue-600 dark:text-blue-400 font-medium">할부</div>
-                      <div className="font-mono font-bold">
-                        {(() => {
-                          const monthlyPayment = Math.round(vehicle.price * 10000 * 0.018);
-                          return `${(monthlyPayment / 10000).toFixed(0)}만원/월`;
-                        })()}
-                      </div>
-                      <div className="text-muted-foreground">60개월</div>
+                {/* 🆕 Phase 3: TCO 간단 표시 */}
+                {vehicle.tco && (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Calculator className="w-3 h-3" />
+                      <span>{vehicle.tco.ownershipYears}년 총 소유비용 (TCO)</span>
+                      <Badge variant="outline" className="text-xs ml-auto">
+                        신뢰도 {(vehicle.tco.confidence * 100).toFixed(0)}%
+                      </Badge>
                     </div>
 
-                    <div className="bg-purple-50 dark:bg-purple-950/20 p-2 rounded">
-                      <div className="text-purple-600 dark:text-purple-400 font-medium">리스</div>
-                      <div className="font-mono font-bold">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <span className="text-sm font-medium text-blue-900 dark:text-blue-100">총 소유비용</span>
+                        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                          {(vehicle.tco.total / 10000).toFixed(0)}만원
+                        </span>
+                      </div>
+
+                      {/* 가격 대비 TCO 비교 */}
+                      <div className="flex items-center gap-1 text-xs">
                         {(() => {
-                          const leasePayment = Math.round(vehicle.price * 10000 * 0.015);
-                          return `${(leasePayment / 10000).toFixed(0)}만원/월`;
+                          const priceDiff = vehicle.tco.total - (vehicle.price * 10000);
+                          const diffAmount = Math.abs(priceDiff / 10000).toFixed(0);
+                          return priceDiff < 0 ? (
+                            <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                              <TrendingDown className="w-3 h-3" />
+                              구매가 대비 {diffAmount}만원 절약!
+                            </span>
+                          ) : (
+                            <span className="text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                              <Info className="w-3 h-3" />
+                              구매가 외 {diffAmount}만원 추가 비용
+                            </span>
+                          );
                         })()}
                       </div>
-                      <div className="text-muted-foreground">36개월</div>
                     </div>
                   </div>
+                )}
 
-                  <div className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-950/20 p-2 rounded">
-                    <span className="text-green-600 dark:text-green-400">예상 보험료</span>
-                    <span className="font-medium">
-                      {Math.max(7, Math.round(vehicle.price * 0.3))}만원/월
-                    </span>
+                {/* 🏦 금융 정보 미리보기 (TCO 없을 때만 표시) */}
+                {!vehicle.tco && (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CreditCard className="w-3 h-3" />
+                      <span>금융 옵션</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-blue-50 dark:bg-blue-950/20 p-2 rounded">
+                        <div className="text-blue-600 dark:text-blue-400 font-medium">할부</div>
+                        <div className="font-mono font-bold">
+                          {(() => {
+                            const monthlyPayment = Math.round(vehicle.price * 10000 * 0.018);
+                            return `${(monthlyPayment / 10000).toFixed(0)}만원/월`;
+                          })()}
+                        </div>
+                        <div className="text-muted-foreground">60개월</div>
+                      </div>
+
+                      <div className="bg-purple-50 dark:bg-purple-950/20 p-2 rounded">
+                        <div className="text-purple-600 dark:text-purple-400 font-medium">리스</div>
+                        <div className="font-mono font-bold">
+                          {(() => {
+                            const leasePayment = Math.round(vehicle.price * 10000 * 0.015);
+                            return `${(leasePayment / 10000).toFixed(0)}만원/월`;
+                          })()}
+                        </div>
+                        <div className="text-muted-foreground">36개월</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-950/20 p-2 rounded">
+                      <span className="text-green-600 dark:text-green-400">예상 보험료</span>
+                      <span className="font-medium">
+                        {Math.max(7, Math.round(vehicle.price * 0.3))}만원/월
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex gap-1.5 pt-1">
+                  {/* 🆕 Phase 3: TCO 상세보기 버튼 (TCO 데이터가 있을 때만) */}
+                  {vehicle.tco && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
+                      onClick={() => handleViewTCO(vehicle)}
+                      data-testid={`button-tco-${vehicle.rank}`}
+                    >
+                      <Calculator className="w-3.5 h-3.5" />
+                      TCO 상세
+                    </Button>
+                  )}
+
                   <Button
                     size="sm"
                     className="flex-1 gap-1.5 text-xs h-8"
@@ -250,16 +331,18 @@ export default function VehicleRecommendations({
                     {isLoadingAnalysis ? '분석 중...' : '차량 진단'}
                   </Button>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
-                    onClick={() => handleFinanceConsultation(vehicle)}
-                    data-testid={`button-finance-${vehicle.rank}`}
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                    금융 상담
-                  </Button>
+                  {!vehicle.tco && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
+                      onClick={() => handleFinanceConsultation(vehicle)}
+                      data-testid={`button-finance-${vehicle.rank}`}
+                    >
+                      <Calculator className="w-3.5 h-3.5" />
+                      금융 상담
+                    </Button>
+                  )}
 
                   {vehicle.detailUrl && (
                     <Button
@@ -345,6 +428,18 @@ export default function VehicleRecommendations({
             mileage: selectedVehicleForFinance.mileage,
             fuelType: selectedVehicleForFinance.fuel
           }}
+        />
+      )}
+
+      {/* 🆕 Phase 3: TCO 상세 모달 */}
+      {selectedVehicleForTCO && (
+        <TCODetailModal
+          open={showTCOModal}
+          onClose={() => {
+            setShowTCOModal(false);
+            setSelectedVehicleForTCO(null);
+          }}
+          vehicle={selectedVehicleForTCO}
         />
       )}
     </>
