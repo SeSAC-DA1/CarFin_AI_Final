@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Calculator, TrendingDown, Info } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";

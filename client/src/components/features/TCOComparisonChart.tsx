@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { TrendingDown, Calculator, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { TrendingDown, Wallet, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 
 interface TCOComparisonChartProps {
@@ -93,7 +93,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-2xl">
-              <Calculator className="w-6 h-6 text-primary" />
+              <Wallet className="w-6 h-6 text-primary" />
               총 소유비용(TCO) 비교 분석
             </CardTitle>
             <CardDescription className="mt-2">
