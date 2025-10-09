@@ -299,7 +299,11 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
   sendMessage(session.ws, { type: 'progress', step: 'analyzing_needs', message: '🤖 멀티에이전트 시스템 가동... ' });
 
   console.time('[STEP 1/5] Database Query');
-  const allVehicles = await storage.searchVehicles({ limit: 1000, offset: 0 }) as Vehicle[];
+  // ⚡ 성능 최적화 + 다양성 확보:
+  // - 1000개 → 800개로 축소 (TOPSIS 계산 부하 20% 감소)
+  // - 랜덤 offset으로 다양한 차량 샘플링 (재추천 시 새로운 차량 노출)
+  const randomOffset = Math.floor(Math.random() * 30000); // 0-30000 랜덤 offset
+  const allVehicles = await storage.searchVehicles({ limit: 800, offset: randomOffset }) as Vehicle[];
   console.timeEnd('[STEP 1/5] Database Query');
   console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
