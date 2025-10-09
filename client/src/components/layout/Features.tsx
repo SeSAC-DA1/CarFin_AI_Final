@@ -1,7 +1,14 @@
-import { Brain, TrendingUp, Shield, Clock, Users, Sparkles, X, Check } from "lucide-react";
+import { Brain, TrendingUp, Shield, Clock, Users, Sparkles, Wallet, X, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const features = [
+  {
+    icon: Wallet,
+    title: "총 소유비용(TCO) 계산",
+    others: "차량 가격만 표시",
+    carfin: "법적 근거 기반 5가지 비용으로 3년 실제 비용 투명 공개",
+    badge: "Fintech 핵심"
+  },
   {
     icon: Brain,
     title: "3명의 AI 에이전트 협업",
@@ -14,20 +21,20 @@ const features = [
     title: "개인화 추천 시스템",
     others: "정적 추천 리스트",
     carfin: "RecSys 2019 Best Paper로 선호도 즉시 반영",
-    badge: "Alibaba 검증"
+    badge: "Alibaba"
   },
   {
     icon: Shield,
     title: "객관적 다기준 평가",
     others: "주관적 평가",
     carfin: "6가지 기준으로 정밀 분석하는 TOPSIS 방법론",
-    badge: "산업 표준"
+    badge: "TOPSIS"
   },
   {
     icon: Clock,
     title: "대용량 데이터 빠른 분석",
     others: "제한된 매물 검색",
-    carfin: "PostgreSQL + Redis로 12만대 이상 빠른 분석",
+    carfin: "PostgreSQL + Redis로 12만대 이상 3초 내 분석",
     badge: "빅데이터"
   },
   {
@@ -36,13 +43,6 @@ const features = [
     others: "단발성 질의응답",
     carfin: "AI가 이전 대화 기억하고 맥락 이해",
     badge: "컨텍스트"
-  },
-  {
-    icon: Sparkles,
-    title: "실제 매물 데이터 연동",
-    others: "일부 매물만 연동",
-    carfin: "엔카·차차차 실데이터 + 검증된 학술 알고리즘",
-    badge: "실데이터"
   }
 ];
 

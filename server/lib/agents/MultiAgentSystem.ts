@@ -314,16 +314,20 @@ export class MultiAgentSystem {
     userProfile?: any
   ): Promise<VehicleRecommendation[]> {
     console.log(`🎯 TOPSIS + TCO 평가 시작: ${vehicles.length}개 차량`);
+    console.log(`📊 사용자 프로필:`, JSON.stringify(userProfile, null, 2));
 
     // 1. 사용자 프로필을 TOPSIS 가중치로 변환
+    // 프론트엔드에서 최상위 레벨로 전송되므로 직접 접근
     const topsisProfile: UserPreferenceProfile = {
-      priceWeight: userProfile?.importance?.price || 0.20,
-      performanceWeight: userProfile?.importance?.performance || 0.20,
-      brandWeight: userProfile?.importance?.brand || 0.15,
-      fuelEfficiencyWeight: userProfile?.importance?.fuelEfficiency || 0.15,
-      safetyWeight: userProfile?.importance?.safety || 0.25,
-      designWeight: userProfile?.importance?.design || 0.05
+      priceWeight: (userProfile?.priceWeight ?? 5) / 10,  // 1-10 스케일 → 0-1 스케일
+      performanceWeight: (userProfile?.performanceWeight ?? 5) / 10,
+      brandWeight: (userProfile?.brandWeight ?? 5) / 10,
+      fuelEfficiencyWeight: (userProfile?.fuelEfficiencyWeight ?? 5) / 10,
+      safetyWeight: (userProfile?.safetyWeight ?? 5) / 10,
+      designWeight: (userProfile?.designWeight ?? 5) / 10
     };
+
+    console.log(`⚖️ TOPSIS 가중치:`, topsisProfile);
 
     // 2. TCO 계산용 주행 프로필
     const drivingProfile: UserDrivingProfile = {

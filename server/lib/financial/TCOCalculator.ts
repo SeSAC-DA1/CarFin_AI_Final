@@ -3,10 +3,10 @@
  * 총 소유 비용 계산기 - 5가지 비용 항목 통합
  *
  * 법률/연구 근거:
- * - 취득세: 지방세법 제11조
+ * - 취득세: 지방세법 제11조 (7%)
  * - 자동차세: 지방세법 제127조
  * - 정비/소모품: DOE/ANL 연구 데이터 (88원/km)
- * - 감가상각: 일반 감가율 15% (향후 회귀분석 확장)
+ * - 감가상각: 정률법 20% (한국회계기준 일반 적용률)
  * - 연료비: 공인 연비 + 현재 유가
  */
 
@@ -262,9 +262,9 @@ export class TCOCalculator {
   // ==========================================================================
 
   /**
-   * 감가상각 계산 (일반 감가율 적용)
+   * 감가상각 계산 (정률법 적용)
    *
-   * 현재: 일반 감가율 15% 적용
+   * 현재: 정률법 20% 적용 (한국회계기준 일반적 적용률)
    * 향후: DB 기반 회귀 분석으로 확장 예정
    *
    * @param vehiclePrice 차량 가격 (만원)
@@ -279,8 +279,8 @@ export class TCOCalculator {
     modelYear: number,
     ownershipYears: number
   ): number {
-    // 일반 감가율: 연간 15%
-    const depreciationRate = 0.15;
+    // 정률법 감가율: 연간 20% (한국회계기준 일반적 적용률)
+    const depreciationRate = 0.20;
 
     const currentValue = vehiclePrice * 10000;  // 만원 → 원
     const futureValue = currentValue * Math.pow(1 - depreciationRate, ownershipYears);
