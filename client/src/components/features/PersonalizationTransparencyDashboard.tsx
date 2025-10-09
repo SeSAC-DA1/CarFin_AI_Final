@@ -157,7 +157,7 @@ export default function PersonalizationTransparencyDashboard({
   const simulateProfileExtraction = async () => {
     setCurrentStep('profile_extraction');
 
-    await delay(500);
+    await delay(1200); // 500ms → 1200ms (사용자가 읽을 시간 확보)
 
     // 시뮬레이션된 프로필 (쿼리 기반)
     const extractedProfile: UserProfile = {
@@ -176,8 +176,8 @@ export default function PersonalizationTransparencyDashboard({
   };
 
   const animateProfileUpdate = async (targetProfile: UserProfile) => {
-    const steps = 20;
-    const delay = 50;
+    const steps = 30; // 20 → 30 단계로 증가
+    const delay = 80; // 50ms → 80ms (총 2.4초)
 
     for (let i = 1; i <= steps; i++) {
       const progress = i / steps;
@@ -199,7 +199,7 @@ export default function PersonalizationTransparencyDashboard({
   const simulateCandidateGeneration = async () => {
     setCurrentStep('candidate_generation');
 
-    await delay(300);
+    await delay(800); // 300ms → 800ms (후보 생성 시간 시각화)
 
     // 50개 후보 차량 시뮬레이션 (일부만 표시)
     const mockCandidates: VehicleCandidate[] = [
@@ -272,10 +272,10 @@ export default function PersonalizationTransparencyDashboard({
   const simulateReRankingProcess = async () => {
     setCurrentStep('re_ranking');
 
-    // 각 단계별 실행
+    // 각 단계별 실행 (단계 간 delay 증가)
     for (const step of reRankingSteps) {
       await executeReRankingStep(step.id);
-      await delay(400);
+      await delay(1000); // 400ms → 1000ms (각 단계를 명확히 보여줌)
     }
 
     // 최종 개인화 점수 계산 및 순위 재정렬
@@ -286,7 +286,7 @@ export default function PersonalizationTransparencyDashboard({
   const executeReRankingStep = async (stepId: string) => {
     updateStepStatus(stepId, 'processing');
 
-    await delay(300);
+    await delay(700); // 300ms → 700ms (각 세부 단계도 천천히)
 
     let result = '';
     switch (stepId) {
@@ -364,7 +364,7 @@ export default function PersonalizationTransparencyDashboard({
 
   const simulateResultsDisplay = async () => {
     setCurrentStep('results_display');
-    await delay(500);
+    await delay(1200); // 500ms → 1200ms (결과 표시 시간 확보)
     setCurrentStep('completed');
     setSimulationPhase(4);
   };

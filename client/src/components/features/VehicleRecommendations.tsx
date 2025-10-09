@@ -185,7 +185,7 @@ export default function VehicleRecommendations({
                     "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground",
                     "shadow-lg shadow-primary/30 hover:scale-110"
                   )}>
-                    {vehicle.matchScore}%
+                    {Math.round(vehicle.matchScore)}%
                   </Badge>
                 </div>
 
@@ -225,7 +225,7 @@ export default function VehicleRecommendations({
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">TOPSIS 점수</span>
-                    <span className="font-mono font-medium">{vehicle.topsisScore}/100</span>
+                    <span className="font-mono font-medium">{Math.round(vehicle.topsisScore)}점</span>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
@@ -254,20 +254,18 @@ export default function VehicleRecommendations({
                         </span>
                       </div>
 
-                      {/* 가격 대비 TCO 비교 */}
+                      {/* TCO vs 구매가 비교 (명확한 설명) */}
                       <div className="flex items-center gap-1 text-xs">
                         {(() => {
-                          const priceDiff = vehicle.tco.total - (vehicle.price * 10000);
-                          const diffAmount = Math.abs(priceDiff / 10000).toFixed(0);
-                          return priceDiff < 0 ? (
-                            <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
-                              <TrendingDown className="w-3 h-3" />
-                              구매가 대비 {diffAmount}만원 절약!
-                            </span>
-                          ) : (
-                            <span className="text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                          const purchasePrice = vehicle.price * 10000; // 구매가 (원)
+                          const totalCost = vehicle.tco.total; // TCO (원)
+                          const additionalCost = totalCost - purchasePrice; // 구매 후 추가 비용
+                          const additionalCostInManWon = Math.abs(additionalCost / 10000).toFixed(0);
+
+                          return (
+                            <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
                               <Info className="w-3 h-3" />
-                              구매가 외 {diffAmount}만원 추가 비용
+                              구매 후 {vehicle.tco.ownershipYears}년간 {additionalCostInManWon}만원 추가
                             </span>
                           );
                         })()}

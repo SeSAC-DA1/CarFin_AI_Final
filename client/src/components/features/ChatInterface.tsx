@@ -8,7 +8,6 @@ import QuickReplyButtons from "./QuickReplyButtons";
 import ProgressSteps from "@/components/ai/ProgressSteps";
 import MACRecCollaborationViewer from "@/components/ai/MACRecCollaborationViewer";
 import WelcomeFlow from "@/components/layout/WelcomeFlow";
-import AgentStatusPanel from "@/components/ai/AgentStatusPanel";
 import FeedbackSection from "@/components/layout/FeedbackSection";
 import LoadingSpinner from "@/components/ai/LoadingSpinner";
 import ChatSidebar from "@/components/layout/ChatSidebar";
@@ -147,10 +146,6 @@ export default function ChatInterface() {
     console.log('🎉 MACRec 협업 완료');
   };
 
-  const handleAgentPanelComplete = () => {
-    console.log('🎉 에이전트 패널 협업 완료');
-  };
-
   const handleFeedbackRecommend = (feedback: string) => {
     console.log('🔄 재추천 요청:', feedback);
     // 피드백을 포함한 새로운 메시지 전송
@@ -168,7 +163,7 @@ export default function ChatInterface() {
     <div className="h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col">
       <ProgressSteps steps={steps} />
 
-      {/* 3컬럼 레이아웃: 사이드바 + 메인 + 우측패널 */}
+      {/* 2컬럼 레이아웃: 왼쪽 사이드바 + 메인 채팅 영역 (우측 패널 제거로 채팅창 확대) */}
       <div className="flex-1 flex h-[calc(100vh-4rem)]">
         {/* 왼쪽 사이드바 */}
         <ChatSidebar
@@ -187,7 +182,7 @@ export default function ChatInterface() {
           }}
         />
 
-        {/* 메인 채팅 영역 */}
+        {/* 메인 채팅 영역 - 우측 패널 제거로 100% 활용 */}
         <div className="flex-1 flex flex-col bg-background/50">
           <div className="p-4 bg-card/80 backdrop-blur-sm rounded-t-2xl border border-b-0 border-card-border">
             <div className="flex items-center justify-between">
@@ -305,16 +300,7 @@ export default function ChatInterface() {
             <ChatInput onSend={handleSendMessage} />
           </div>
         </div>
-
-        {/* 우측 에이전트 패널 */}
-        <div className="w-80 bg-card/20 backdrop-blur-sm border-l border-border">
-          <AgentStatusPanel
-            isActive={showMACRecCollaboration || !!progress}
-            currentStep={progress?.step || undefined}
-            userQuery={currentUserQuery}
-            onComplete={handleAgentPanelComplete}
-          />
-        </div>
+        {/* ✅ Phase 1-1: 우측 에이전트 패널 제거 - 채팅창 확대 및 정보 과부화 해소 */}
       </div>
     </div>
   );
