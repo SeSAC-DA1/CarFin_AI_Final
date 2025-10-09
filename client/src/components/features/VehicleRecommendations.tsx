@@ -135,15 +135,14 @@ export default function VehicleRecommendations({
         </div>
 
         <div className="relative">
-          {/* 🎨 현대적 캐러셀 스타일 컨테이너 */}
-          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden"
-               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* ✅ Phase 2: 그리드 레이아웃 - 3개 차량 한눈에 비교 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {vehicles.map((vehicle) => (
             <Card
               key={vehicle.id}
               className={cn(
-                "flex-none w-80 overflow-hidden transition-all duration-500 snap-start",
-                "hover:scale-105 hover:shadow-xl hover:shadow-primary/20",
+                "overflow-hidden transition-all duration-300",
+                "hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20",
                 "border-card-border bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm",
                 // 순위별 특별 효과
                 vehicle.rank === 1 && "ring-2 ring-yellow-500/50 shadow-yellow-500/20",
@@ -152,7 +151,8 @@ export default function VehicleRecommendations({
               )}
               data-testid={`vehicle-card-${vehicle.rank}`}
             >
-              <div className="relative h-40">
+              {/* ✅ Phase 2: 이미지 높이 확대 (h-40 → h-48) */}
+              <div className="relative h-48">
                 <img
                   src={vehicle.image}
                   alt={vehicle.name}
@@ -196,12 +196,13 @@ export default function VehicleRecommendations({
                 </div>
               </div>
 
-              <div className="p-3 space-y-3">
-                <div className="font-mono text-xl font-bold text-primary">
+              {/* ✅ Phase 2: 패딩 확대 (p-3 → p-4), 간격 확대 (space-y-3 → space-y-3.5) */}
+              <div className="p-4 space-y-3.5">
+                <div className="font-mono text-2xl font-bold text-primary">
                   {vehicle.price.toLocaleString()}만원
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>{vehicle.year}년</span>
@@ -315,36 +316,49 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                <div className="flex gap-1.5 pt-1">
-                  {/* 🆕 Phase 5: 왜 추천? 버튼 */}
+                {/* ✅ Phase 2: 버튼 4개로 정리 (2줄 그리드) */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* 1. 추천 근거 설명 버튼 */}
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 gap-1.5 text-xs h-8 border-primary/30 text-primary hover:bg-primary/10"
+                    className="gap-1.5 text-xs h-9 border-primary/30 text-primary hover:bg-primary/10"
                     onClick={() => handleViewReason(vehicle)}
                     data-testid={`button-reason-${vehicle.rank}`}
                   >
                     <HelpCircle className="w-3.5 h-3.5" />
-                    왜 추천?
+                    추천 근거
                   </Button>
 
-                  {/* 🆕 Phase 3: TCO 상세보기 버튼 (TCO 데이터가 있을 때만) */}
-                  {vehicle.tco && (
+                  {/* 2. TCO 상세 버튼 */}
+                  {vehicle.tco ? (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
+                      className="gap-1.5 text-xs h-9 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950"
                       onClick={() => handleViewTCO(vehicle)}
                       data-testid={`button-tco-${vehicle.rank}`}
                     >
                       <Wallet className="w-3.5 h-3.5" />
                       TCO 상세
                     </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950"
+                      onClick={() => handleFinanceConsultation(vehicle)}
+                      data-testid={`button-finance-${vehicle.rank}`}
+                    >
+                      <Wallet className="w-3.5 h-3.5" />
+                      금융 정보
+                    </Button>
                   )}
 
+                  {/* 3. 차량 진단 및 세부 옵션 버튼 */}
                   <Button
                     size="sm"
-                    className="flex-1 gap-1.5 text-xs h-8"
+                    className="gap-1.5 text-xs h-9"
                     onClick={() => handleViewInsights(vehicle)}
                     disabled={isLoadingAnalysis}
                     data-testid={`button-view-insights-${vehicle.rank}`}
@@ -353,31 +367,29 @@ export default function VehicleRecommendations({
                     {isLoadingAnalysis ? '분석 중...' : '차량 진단'}
                   </Button>
 
-                  {!vehicle.tco && (
+                  {/* 4. 실구매 링크 */}
+                  {vehicle.detailUrl ? (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 gap-1.5 text-xs h-8 border-blue-200 text-blue-600 hover:bg-blue-50"
-                      onClick={() => handleFinanceConsultation(vehicle)}
-                      data-testid={`button-finance-${vehicle.rank}`}
-                    >
-                      <Wallet className="w-3.5 h-3.5" />
-                      금융 상담
-                    </Button>
-                  )}
-
-                  {vehicle.detailUrl && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-8"
+                      className="gap-1.5 text-xs h-9"
                       asChild
                       data-testid={`button-detail-url-${vehicle.rank}`}
                     >
                       <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3.5 h-3.5" />
-                        보기
+                        실구매
                       </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9"
+                      disabled
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      링크 없음
                     </Button>
                   )}
                 </div>
@@ -385,19 +397,7 @@ export default function VehicleRecommendations({
             </Card>
           ))}
           </div>
-
-          {/* 🎯 캐러셀 스크롤 인디케이터 */}
-          <div className="flex justify-center mt-4 gap-2">
-            {vehicles.map((_, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-300",
-                  index === 0 ? "bg-primary w-6" : "bg-primary/30"
-                )}
-              />
-            ))}
-          </div>
+          {/* ✅ Phase 2: 캐러셀 인디케이터 제거 (그리드 레이아웃이므로 불필요) */}
         </div>
       </div>
 
