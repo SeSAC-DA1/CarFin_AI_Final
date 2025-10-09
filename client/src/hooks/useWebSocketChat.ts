@@ -266,6 +266,9 @@ export function useWebSocketChat() {
   }, []);
 
   const sendMessage = useCallback((content: string) => {
+    console.log('[SEND] 메시지 전송 시도:', content.substring(0, 50));
+    console.log('[SEND] WebSocket 상태:', wsRef.current?.readyState, '(1=OPEN)');
+
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       // ProfileSetup에서 저장된 사용자 프로필 데이터 가져오기
       const savedProfile = localStorage.getItem('carfin_user_profile');
@@ -302,16 +305,24 @@ export function useWebSocketChat() {
               transmission: profileData.transmission
             }
           };
+          console.log('[SEND] 프로필 데이터 첨부:', userProfile ? '✅' : '❌');
         } catch (error) {
           console.warn('프로필 데이터 파싱 오류:', error);
         }
+      } else {
+        console.warn('[SEND] 프로필 데이터 없음 (ProfileSetup 건너뛰었을 수 있음)');
       }
 
-      wsRef.current.send(JSON.stringify({
+      const payload = {
         type: 'user_message',
         content,
         userProfile, // 프로필 데이터 포함
-      }));
+      };
+      console.log('[SEND] 전송 payload:', JSON.stringify(payload).substring(0, 200));
+      wsRef.current.send(JSON.stringify(payload));
+      console.log('[SEND] ✅ 메시지 전송 완료');
+    } else {
+      console.error('[SEND] ❌ WebSocket 연결 안 됨. 상태:', wsRef.current?.readyState);
     }
   }, []);
 

@@ -31,7 +31,19 @@ interface ChatSession {
 const sessions = new Map<string, ChatSession>();
 
 export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
-  console.log(`🔌 WebSocket 연결: ${sessionId}`);
+  console.log(`🔌 [${sessionId.substring(0, 8)}] WebSocket 연결 시작`);
+  console.log(`📊 [${sessionId.substring(0, 8)}] 현재 활성 세션 수:`, sessions.size);
+  console.log(`📡 [${sessionId.substring(0, 8)}] WebSocket.readyState:`, ws.readyState, '(1=OPEN)');
+
+  // 중복 세션 감지
+  if (sessions.has(sessionId)) {
+    console.warn(`⚠️ [${sessionId.substring(0, 8)}] 중복 세션 감지! 기존 세션 덮어쓰기`);
+    const oldSession = sessions.get(sessionId);
+    if (oldSession?.ws && oldSession.ws.readyState === WebSocket.OPEN) {
+      console.warn(`⚠️ [${sessionId.substring(0, 8)}] 기존 연결 강제 종료`);
+      oldSession.ws.close();
+    }
+  }
 
   const session: ChatSession = {
     sessionId,
@@ -47,20 +59,27 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
     timestamp: new Date(),
   });
 
-  ws.on('message', async (data: string) => {
+  ws.on('message', async (data) => {
+    const rawData = data.toString();
+    console.log(`🔔 [${sessionId.substring(0, 8)}] RAW 메시지 수신 (${typeof data}):`, rawData.substring(0, 100));
+    console.log(`📊 [${sessionId.substring(0, 8)}] WebSocket.readyState:`, ws.readyState);
+    console.log(`🆔 [${sessionId.substring(0, 8)}] Session exists:`, sessions.has(sessionId));
+
     try {
-      const message = JSON.parse(data);
-      console.log(`📨 [${sessionId.substring(0, 8)}] 메시지 수신:`, message.type);
+      const message = JSON.parse(rawData);
+      console.log(`📨 [${sessionId.substring(0, 8)}] 파싱 성공:`, message.type);
 
       if (message.type === 'user_message') {
-        console.log(`💬 [${sessionId.substring(0, 8)}] 사용자 메시지:`, message.content.substring(0, 50));
+        console.log(`💬 [${sessionId.substring(0, 8)}] 사용자 메시지 처리 시작:`, message.content.substring(0, 50));
         await handleUserMessage(sessionId, message.content, message.userProfile);
+        console.log(`✅ [${sessionId.substring(0, 8)}] 사용자 메시지 처리 완료`);
       } else if (message.type === 'get_insights') {
         console.log(`🔍 [${sessionId.substring(0, 8)}] Insights 요청:`, message.vehicleId);
         await handleGetInsights(sessionId, message.vehicleId);
       }
     } catch (error) {
-      console.error('WebSocket message error:', error);
+      console.error(`❌ [${sessionId.substring(0, 8)}] WebSocket message error:`, error);
+      console.error(`📄 [${sessionId.substring(0, 8)}] 실패한 메시지:`, rawData);
       sendMessage(ws, {
         type: 'error',
         content: '메시지 처리 중 오류가 발생했습니다.',
@@ -68,13 +87,14 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
     }
   });
 
-  ws.on('close', () => {
-    console.log(`🔌 WebSocket 연결 해제: ${sessionId}`);
+  ws.on('close', (code, reason) => {
+    console.log(`🔌 [${sessionId.substring(0, 8)}] WebSocket 연결 해제. Code:`, code, 'Reason:', reason?.toString());
     sessions.delete(sessionId);
+    console.log(`📊 남은 세션 수:`, sessions.size);
   });
 
   ws.on('error', (error) => {
-    console.error(`WebSocket error for ${sessionId}:`, error);
+    console.error(`❌ [${sessionId.substring(0, 8)}] WebSocket error:`, error);
   });
 }
 
