@@ -7,6 +7,9 @@ import type { VehicleFinancialInfo } from "@shared/types/financial";
 // 🆕 Phase 2: TOPSIS + TCO 통합
 import { rankVehiclesWithTOPSIS, UserDrivingProfile } from "../topsis/VehicleTOPSISAdapter";
 import { UserPreferenceProfile } from "../topsis/TOPSISEngine";
+// 🆕 Phase 5: 챗봇 흐름 개선 - 메시지 구체성 판단
+import { ProfileExtractor, ExtractedProfileUpdate } from "./ProfileExtractor";
+import { SmartQuestionEngine } from "./SmartQuestionEngine";
 
 export interface AgentMessage {
   agentId: string;
@@ -28,9 +31,13 @@ export interface VehicleRecommendation {
 
 export class MultiAgentSystem {
   private genAI: GoogleGenerativeAI;
+  private profileExtractor: ProfileExtractor;
+  private questionEngine: SmartQuestionEngine;
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
+    this.profileExtractor = new ProfileExtractor(apiKey);
+    this.questionEngine = new SmartQuestionEngine(apiKey);
   }
 
   async *collaborate(
@@ -41,13 +48,29 @@ export class MultiAgentSystem {
   ): AsyncGenerator<{ type: string; agent: string; content: string; data?: any }> {
     yield { type: "start", agent: "system", content: "멀티 에이전트 협업을 시작합니다..." };
 
+    // 🆕 Phase 5: 빠른 프로필 추출 및 구체성 판단
     yield { type: "agent_working", agent: "concierge", content: "사용자 요청을 분석하고 있습니다..." };
-    const userNeeds = await this.extractUserNeeds(userMessage);
-    yield { type: "agent_response", agent: "concierge", content: `사용자 니즈 파악: ${userNeeds}` };
+    const extractedProfile = this.profileExtractor.quickExtract(userMessage);
+    const isConcrete = this.isConcreteRequest(extractedProfile);
+    console.log(`🔍 프로필 추출 결과:`, extractedProfile, `| 구체적: ${isConcrete}`);
 
-    yield { type: "agent_working", agent: "needs_analyst", content: "라이프스타일과 선호도를 분석하고 있습니다..." };
-    const preferences = await this.analyzePreferences(userMessage, userNeeds);
-    yield { type: "agent_response", agent: "needs_analyst", content: `선호도 분석 완료: ${preferences}` };
+    let userNeeds = '';
+    let preferences = '';
+
+    if (isConcrete) {
+      // 구체적 요청 → 바로 검색 (extractUserNeeds, analyzePreferences 생략)
+      userNeeds = `구체적 요청: ${JSON.stringify(extractedProfile)}`;
+      preferences = '즉시 검색 가능';
+      yield { type: "agent_response", agent: "concierge", content: `요청하신 조건으로 차량을 검색하겠습니다!` };
+    } else {
+      // 모호한 요청 → 추가 정보 수집 필요
+      userNeeds = await this.extractUserNeeds(userMessage);
+      yield { type: "agent_response", agent: "concierge", content: `사용자 니즈 파악: ${userNeeds}` };
+
+      yield { type: "agent_working", agent: "needs_analyst", content: "라이프스타일과 선호도를 분석하고 있습니다..." };
+      preferences = await this.analyzePreferences(userMessage, userNeeds);
+      yield { type: "agent_response", agent: "needs_analyst", content: `선호도 분석 완료: ${preferences}` };
+    }
 
     yield { type: "agent_working", agent: "data_analyst", content: "차량 데이터를 검색하고 분석하고 있습니다..." };
     const filteredVehicles = this.filterVehicles(vehicles, userMessage);
@@ -82,6 +105,18 @@ export class MultiAgentSystem {
     yield { type: "complete", agent: "system", content: "협업 완료" };
   }
 
+  /**
+   * 메시지 구체성 판단 - 바로 검색 가능한지 확인
+   */
+  private isConcreteRequest(extractedProfile: ExtractedProfileUpdate): boolean {
+    const hasBudget = !!extractedProfile.budget;
+    const hasCarType = !!extractedProfile.carType;
+    const hasUsage = extractedProfile.usage && extractedProfile.usage.length > 0;
+
+    // 예산 OR 차종 OR (용도 + 기타 조건) 중 하나라도 있으면 구체적
+    return hasBudget || hasCarType || (hasUsage && Object.keys(extractedProfile).length >= 2);
+  }
+
   private async extractUserNeeds(message: string): Promise<string> {
     const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `다음 사용자 메시지에서 차량 구매 니즈를 간단히 추출하세요:\n\"${message}\"\n\n예산, 용도, 승차인원, 선호 차종 등을 파악하여 1-2문장으로 요약하세요.`;
@@ -102,8 +137,17 @@ export class MultiAgentSystem {
     const lowerMessage = message.toLowerCase();
     const currentYear = new Date().getFullYear();
 
+    // 예산 추출 (만원 단위) - "3000만원대" → 2500~3500만원 범위로 해석
     const priceMatch = message.match(/(\d+)만원?/);
-    const maxPrice = priceMatch && priceMatch[1] ? parseInt(priceMatch[1]) * 10000 : 5000; // 기본 5000만원
+    let minPrice = 0;
+    let maxPrice = 50000000; // 기본 5000만원
+
+    if (priceMatch && priceMatch[1]) {
+      const targetPrice = parseInt(priceMatch[1]) * 10000; // 만원 → 원
+      minPrice = targetPrice * 0.8; // -20%
+      maxPrice = targetPrice * 1.2; // +20%
+      console.log(`💰 예산 범위: ${minPrice.toLocaleString()}원 ~ ${maxPrice.toLocaleString()}원`);
+    }
 
     // 브랜드 필터링 (사용자가 특정 브랜드를 요청한 경우)
     const brandKeywords = {
@@ -162,6 +206,12 @@ export class MultiAgentSystem {
       }
     }
 
+    // 상용차 키워드 (제외 대상)
+    const commercialVehicleKeywords = [
+      'st1', '포터', '봉고', '다마스', '라보',
+      '화물', '트럭', '냉동', '탑차', '밴'
+    ];
+
     // 품질 기준 필터링
     const qualityFiltered = vehicles.filter(v => {
       // 브랜드 제외 필터
@@ -170,26 +220,47 @@ export class MultiAgentSystem {
       // 브랜드 필터 (사용자가 특정 브랜드 요청 시)
       if (requestedBrand && v.manufacturer !== requestedBrand) return false;
 
-      // 가격 필터
-      if (v.price && v.price > maxPrice * 10000) return false;
+      // 🚫 상용차 제외 필터 (모델명 또는 차종에 상용차 키워드 포함 시)
+      const modelLower = (v.model || '').toLowerCase();
+      const carTypeLower = (v.carType || '').toLowerCase();
+      const isCommercialVehicle = commercialVehicleKeywords.some(keyword =>
+        modelLower.includes(keyword) || carTypeLower.includes(keyword)
+      );
+      if (isCommercialVehicle) {
+        console.log(`🚫 상용차 제외: ${v.manufacturer} ${v.model} (${v.carType})`);
+        return false;
+      }
 
-      // 연식 필터 (10년 이내 차량 우선)
+      // 가격 필터 (원 단위로 직접 비교)
+      if (v.price && (v.price < minPrice || v.price > maxPrice)) return false;
+
+      // 연식 필터 (15년 이내 차량 우선)
       if (v.modelYear && v.modelYear < currentYear - 15) return false;
 
       // 주행거리 필터 (20만km 이하)
       if (v.distance && v.distance > 200000) return false;
 
-      // 차종 필터
-      if (lowerMessage.includes('suv') && v.carType !== 'SUV') return false;
-      if (lowerMessage.includes('세단') && v.carType !== '세단') return false;
+      // 차종 필터 (유연한 매칭: 포함 검사)
+      if (lowerMessage.includes('suv') || lowerMessage.includes('에스유브이')) {
+        const isSUV = carTypeLower.includes('suv') ||
+                      carTypeLower.includes('rv') ||
+                      carTypeLower.includes('스포츠');
+        if (!isSUV) return false;
+      }
+
+      if (lowerMessage.includes('세단')) {
+        const isSedan = carTypeLower.includes('세단') || carTypeLower.includes('sedan');
+        if (!isSedan) return false;
+      }
 
       // 연비 우선 시 소형차나 하이브리드 우선
       if (lowerMessage.includes('연비')) {
-        const isEfficientCar = v.carType === '경차' ||
-                              v.carType === '소형차' ||
+        const isEfficientCar = carTypeLower.includes('경차') ||
+                              carTypeLower.includes('소형') ||
                               v.fuelType?.includes('하이브리드') ||
-                              v.fuelType?.includes('LPG');
-        if (!isEfficientCar && v.carType === 'SUV') return false;
+                              v.fuelType?.includes('LPG') ||
+                              v.fuelType?.includes('전기');
+        if (!isEfficientCar && carTypeLower.includes('suv')) return false;
       }
 
       return true;
