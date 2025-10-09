@@ -231,6 +231,9 @@ export class DBStorage implements IStorage {
     if (filters.model) conditions.push(eq(vehiclesTable.model, filters.model));
     if (filters.location) conditions.push(eq(vehiclesTable.location, filters.location));
 
+    // 🚨 Phase 4: 리스/렌트 차량 제외 (일반 매물만 검색)
+    conditions.push(eq(vehiclesTable.sellType, '일반'));
+
     const limit = filters.limit || 10;
     const offset = filters.offset || 0;
 
