@@ -1,0 +1,16 @@
+# Node modules
+frontend/node_modules
+
+# Python
+**/__pycache__/
+backend/.venv
+backend/venv
+
+# scraper 폴더 무시
+data-pipeline/scraper/
+
+# Docker
+redis_data
+
+# 환경변수 
+.env
