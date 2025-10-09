@@ -151,8 +151,8 @@ export default function VehicleRecommendations({
               )}
               data-testid={`vehicle-card-${vehicle.rank}`}
             >
-              {/* ✅ Phase 2: 이미지 높이 확대 (h-40 → h-48) */}
-              <div className="relative h-48">
+              {/* ✅ Phase 3-1: 이미지 높이 확대 (h-48 → h-56, 세로 비율 개선) */}
+              <div className="relative h-56">
                 <img
                   src={vehicle.image}
                   alt={vehicle.name}
@@ -160,10 +160,11 @@ export default function VehicleRecommendations({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 
+                {/* ✅ Phase 3-1: 금메달 깜빡임 제거 (animate-pulse 삭제) */}
                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
                   <div className={cn(
                     "p-1.5 backdrop-blur-sm rounded-full transition-all duration-300",
-                    vehicle.rank === 1 && "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900 animate-pulse shadow-lg shadow-yellow-500/50",
+                    vehicle.rank === 1 && "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg shadow-yellow-500/50",
                     vehicle.rank === 2 && "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-900 shadow-lg shadow-gray-400/50",
                     vehicle.rank === 3 && "bg-gradient-to-br from-amber-400 to-amber-600 text-amber-900 shadow-lg shadow-amber-500/50"
                   )}>
@@ -171,7 +172,7 @@ export default function VehicleRecommendations({
                   </div>
                   <Badge className={cn(
                     "backdrop-blur-sm text-xs font-bold transition-all duration-300",
-                    vehicle.rank === 1 && "bg-gradient-to-r from-yellow-400/90 to-yellow-500/90 text-yellow-900 animate-pulse",
+                    vehicle.rank === 1 && "bg-gradient-to-r from-yellow-400/90 to-yellow-500/90 text-yellow-900",
                     vehicle.rank === 2 && "bg-gradient-to-r from-gray-300/90 to-gray-400/90 text-gray-900",
                     vehicle.rank === 3 && "bg-gradient-to-r from-amber-400/90 to-amber-500/90 text-amber-900"
                   )}>
@@ -179,11 +180,12 @@ export default function VehicleRecommendations({
                   </Badge>
                 </div>
 
+                {/* ✅ Phase 3-1: 매치 점수 배지 깜빡임 제거 (animate-bounce-in 삭제) */}
                 <div className="absolute top-2 right-2">
                   <Badge className={cn(
-                    "font-mono text-xs font-bold transition-all duration-300 animate-bounce-in",
+                    "font-mono text-xs font-bold transition-all duration-300",
                     "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground",
-                    "shadow-lg shadow-primary/30 hover:scale-110"
+                    "shadow-lg shadow-primary/30"
                   )}>
                     {Math.round(vehicle.matchScore)}%
                   </Badge>

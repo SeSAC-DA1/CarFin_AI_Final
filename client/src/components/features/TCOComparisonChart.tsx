@@ -16,18 +16,18 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
     return null;
   }
 
-  // 차트 데이터 준비
+  // ✅ Phase 3-2: 차트 데이터 준비 (원 → 만원 변환)
   const chartData = vehiclesWithTCO.map((vehicle, index) => {
     const tco = vehicle.tco!;
     return {
       name: `${index + 1}위\n${vehicle.manufacturer || vehicle.name.split(' ')[0]}`,
       fullName: `${vehicle.manufacturer || ''} ${vehicle.model || ''} (${vehicle.year})`,
-      취득세: tco.breakdown.acquisitionTax,
-      자동차세: tco.breakdown.vehicleTax,
-      정비비: tco.breakdown.maintenance,
-      감가상각: tco.breakdown.depreciation,
-      연료비: tco.breakdown.fuelCost,
-      총비용: tco.total,
+      취득세: Math.round(tco.breakdown.acquisitionTax / 10000),
+      자동차세: Math.round(tco.breakdown.vehicleTax / 10000),
+      정비비: Math.round(tco.breakdown.maintenance / 10000),
+      감가상각: Math.round(tco.breakdown.depreciation / 10000),
+      연료비: Math.round(tco.breakdown.fuelCost / 10000),
+      총비용: Math.round(tco.total / 10000),
       rank: index + 1
     };
   });
@@ -78,13 +78,13 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
     return null;
   };
 
-  // TCO 차이 계산
+  // ✅ Phase 3-2: TCO 차이 계산 (원 → 만원 변환)
   const tcoGap = vehiclesWithTCO.length >= 2
-    ? vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total
+    ? Math.round((vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) / 10000)
     : 0;
 
   const percentGap = vehiclesWithTCO.length >= 2
-    ? ((tcoGap / vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) * 100).toFixed(1)
+    ? ((vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) / vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total * 100).toFixed(1)
     : "0";
 
   return (
@@ -109,6 +109,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
       <CardContent className="space-y-6">
         {/* 주요 인사이트 */}
         <div className="grid md:grid-cols-3 gap-4">
+          {/* ✅ Phase 3-2: 최저 TCO 표시 (원 → 만원 변환) */}
           <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
@@ -116,7 +117,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                 <div>
                   <p className="text-xs text-blue-700 dark:text-blue-400 mb-1">최저 TCO (추천)</p>
                   <p className="text-lg font-bold text-blue-900 dark:text-blue-300">
-                    {vehiclesWithTCO[vehiclesWithTCO.length - 1]?.tco?.total.toLocaleString()}만원
+                    {Math.round(vehiclesWithTCO[vehiclesWithTCO.length - 1]?.tco?.total / 10000).toLocaleString()}만원
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-500">
                     {vehiclesWithTCO[vehiclesWithTCO.length - 1]?.manufacturer} {vehiclesWithTCO[vehiclesWithTCO.length - 1]?.model}
