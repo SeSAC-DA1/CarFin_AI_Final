@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { TrendingDown, Wallet, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
@@ -215,42 +215,111 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
           })}
         </div>
 
-        {/* ✅ Phase 4: 개선된 차트 (명확한 X축 레이블) */}
-        <div className="w-full h-[450px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis
-                dataKey="name"
-                angle={-15}
-                textAnchor="end"
-                height={80}
-                tick={{ fontSize: 13, fontWeight: 600 }}
-                interval={0}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                label={{ value: '비용 (만원)', angle: -90, position: 'insideLeft', fontSize: 13 }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ paddingTop: '20px', fontSize: '13px' }}
-                iconType="square"
-              />
-              <Bar dataKey="취득세" stackId="a" fill={colors.취득세} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="자동차세" stackId="a" fill={colors.자동차세} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="정비비" stackId="a" fill={colors.정비비} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="감가상각" stackId="a" fill={colors.감가상각} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="연료비" stackId="a" fill={colors.연료비} radius={[4, 4, 0, 0]}>
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} stroke={rankColors[index]} strokeWidth={2} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* ✅ Phase 5: 도넛 차트로 변경 (3개 나란히 비교) */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {vehiclesWithTCO.map((vehicle, vehicleIndex) => {
+            const tco = vehicle.tco!;
+            const pieData = [
+              { name: '취득세', value: Math.round(tco.breakdown.acquisitionTax / 10000), color: colors.취득세 },
+              { name: '자동차세', value: Math.round(tco.breakdown.vehicleTax / 10000), color: colors.자동차세 },
+              { name: '정비비', value: Math.round(tco.breakdown.maintenance / 10000), color: colors.정비비 },
+              { name: '감가상각', value: Math.round(tco.breakdown.depreciation / 10000), color: colors.감가상각 },
+              { name: '연료비', value: Math.round(tco.breakdown.fuelCost / 10000), color: colors.연료비 }
+            ];
+
+            const isLowest = vehicleIndex === vehiclesWithTCO.length - 1;
+
+            return (
+              <div key={vehicle.id} className="space-y-3">
+                {/* 순위 및 차량명 */}
+                <div className="text-center space-y-2">
+                  <Badge className={cn(
+                    "text-sm font-bold px-3 py-1",
+                    vehicleIndex === 0 && "bg-yellow-500 text-yellow-900",
+                    vehicleIndex === 1 && "bg-gray-400 text-gray-900",
+                    vehicleIndex === 2 && "bg-amber-600 text-amber-900"
+                  )}>
+                    {vehicleIndex + 1}위
+                  </Badge>
+                  <p className="font-semibold text-sm">
+                    {vehicle.manufacturer} {vehicle.model}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ({vehicle.year})
+                  </p>
+                </div>
+
+                {/* 도넛 차트 */}
+                <div className="h-[280px] relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => `${value.toLocaleString()}만원`}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          border: '1px solid #ccc',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  {/* 중앙 총비용 표시 */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">총 소유비용</p>
+                      <p className={cn(
+                        "text-xl font-bold",
+                        isLowest ? "text-green-600" : "text-primary"
+                      )}>
+                        {Math.round(tco.total / 10000).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">만원</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 비용 상세 */}
+                <div className="space-y-1 text-xs">
+                  {pieData.map((item) => (
+                    <div key={item.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-muted-foreground">{item.name}</span>
+                      </div>
+                      <span className="font-semibold">{item.value.toLocaleString()}만원</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 최저 TCO 배지 */}
+                {isLowest && (
+                  <div className="pt-2">
+                    <Badge className="w-full justify-center bg-green-500 text-white">
+                      ✅ 최저 TCO
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 범례 설명 */}
