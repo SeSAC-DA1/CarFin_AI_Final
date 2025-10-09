@@ -215,28 +215,29 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
           })}
         </div>
 
-        {/* 차트 */}
-        <div className="w-full h-[400px]">
+        {/* ✅ Phase 4: 개선된 차트 (명확한 X축 레이블) */}
+        <div className="w-full h-[450px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis
                 dataKey="name"
-                angle={0}
-                textAnchor="middle"
-                height={60}
-                tick={{ fontSize: 12 }}
+                angle={-15}
+                textAnchor="end"
+                height={80}
+                tick={{ fontSize: 13, fontWeight: 600 }}
+                interval={0}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
-                label={{ value: '비용 (만원)', angle: -90, position: 'insideLeft', fontSize: 12 }}
+                label={{ value: '비용 (만원)', angle: -90, position: 'insideLeft', fontSize: 13 }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend
-                wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '13px' }}
                 iconType="square"
               />
               <Bar dataKey="취득세" stackId="a" fill={colors.취득세} radius={[0, 0, 0, 0]} />
@@ -245,7 +246,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
               <Bar dataKey="감가상각" stackId="a" fill={colors.감가상각} radius={[0, 0, 0, 0]} />
               <Bar dataKey="연료비" stackId="a" fill={colors.연료비} radius={[4, 4, 0, 0]}>
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} stroke={rankColors[index]} strokeWidth={3} />
+                  <Cell key={`cell-${index}`} stroke={rankColors[index]} strokeWidth={2} />
                 ))}
               </Bar>
             </BarChart>
