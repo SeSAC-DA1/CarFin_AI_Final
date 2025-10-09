@@ -107,6 +107,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🆕 차량 옵션 조회 (option_masters JOIN)
+  app.get("/api/vehicles/:id/options", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const options = await storage.getVehicleOptions(vehicleId);
+      return res.json({ vehicleId, options });
+    } catch (error) {
+      console.error('옵션 조회 실패:', error);
+      return res.status(500).json({ error: "Failed to get vehicle options" });
+    }
+  });
+
+  // 🆕 차량 보험 이력 조회
+  app.get("/api/vehicles/:id/insurance", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const insurance = await storage.getVehicleInsurance(vehicleId);
+      if (!insurance) {
+        return res.status(404).json({ error: "Insurance history not found" });
+      }
+      return res.json(insurance);
+    } catch (error) {
+      console.error('보험 이력 조회 실패:', error);
+      return res.status(500).json({ error: "Failed to get insurance history" });
+    }
+  });
+
+  // 🆕 차량 점검 이력 조회
+  app.get("/api/vehicles/:id/inspection", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const inspection = await storage.getVehicleInspection(vehicleId);
+      if (!inspection) {
+        return res.status(404).json({ error: "Inspection history not found" });
+      }
+      return res.json(inspection);
+    } catch (error) {
+      console.error('점검 이력 조회 실패:', error);
+      return res.status(500).json({ error: "Failed to get inspection history" });
+    }
+  });
+
   app.post("/api/vehicles", async (req, res) => {
     try {
       const validatedData = insertVehicleSchema.parse(req.body);

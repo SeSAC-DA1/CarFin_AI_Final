@@ -25,7 +25,7 @@ import {
 // Re-export for other modules
 export type { Vehicle, VehicleSearchFilters };
 import { randomUUID } from "crypto";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 export interface IStorage {
@@ -42,6 +42,11 @@ export interface IStorage {
   } | undefined>;
   createVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
   getVehicleCount(): Promise<number>;
+
+  // 🆕 AWS RDS 추가 기능
+  getVehicleOptions(vehicleId: number): Promise<string[]>;
+  getVehicleInsurance(vehicleId: number): Promise<any>;
+  getVehicleInspection(vehicleId: number): Promise<any>;
 
   getReviewsByModel(model: string): Promise<HyundaiReview[]>;
 
@@ -157,6 +162,21 @@ export class MemStorage implements IStorage {
     return this.vehicles.size;
   }
 
+  async getVehicleOptions(_vehicleId: number): Promise<string[]> {
+    // MemStorage doesn't have option_masters table
+    return [];
+  }
+
+  async getVehicleInsurance(_vehicleId: number): Promise<any> {
+    // MemStorage doesn't have insurance_history table
+    return null;
+  }
+
+  async getVehicleInspection(_vehicleId: number): Promise<any> {
+    // MemStorage doesn't have inspections table
+    return null;
+  }
+
   async getReviewsByModel(_model: string): Promise<HyundaiReview[]> {
     // MemStorage doesn't store reviews.
     return [];
@@ -270,6 +290,98 @@ export class DBStorage implements IStorage {
 
   async getConversationsBySession(sessionId: string): Promise<Conversation[]> {
     return db.select().from(conversationsTable).where(eq(conversationsTable.sessionId, sessionId));
+  }
+
+  // 🆕 AWS RDS 추가 기능 구현
+  async getVehicleOptions(vehicleId: number): Promise<string[]> {
+    try {
+      const query = `
+        SELECT om.option_name
+        FROM vehicle_options vo
+        JOIN option_masters om ON vo.option_master_id = om.option_master_id
+        WHERE vo.vehicle_id = $1
+        ORDER BY om.option_group, om.option_name
+      `;
+      const result = await pool.query(query, [vehicleId]);
+      return result.rows.map((r: any) => r.option_name);
+    } catch (error) {
+      console.error('옵션 조회 에러:', error);
+      return [];
+    }
+  }
+
+  async getVehicleInsurance(vehicleId: number): Promise<any> {
+    try {
+      const query = `
+        SELECT
+          vehicle_id,
+          platform,
+          my_accident_cnt,
+          other_accident_cnt,
+          my_accident_cost,
+          other_accident_cost,
+          total_accident_cnt,
+          total_loss_cnt,
+          total_loss_date,
+          robber_cnt,
+          robber_date,
+          flood_total_loss_cnt,
+          flood_part_loss_cnt,
+          flood_date,
+          owner_change_cnt,
+          car_no_change_cnt,
+          government,
+          business,
+          rental,
+          loan,
+          not_join_periods
+        FROM insurance_history
+        WHERE vehicle_id = $1
+        LIMIT 1
+      `;
+      const result = await pool.query(query, [vehicleId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('보험 이력 조회 에러:', error);
+      return null;
+    }
+  }
+
+  async getVehicleInspection(vehicleId: number): Promise<any> {
+    try {
+      const query = `
+        SELECT
+          inspection_id,
+          vehicle_id,
+          platform,
+          inspected_at,
+          valid_from,
+          valid_to,
+          mileage_at_inspect,
+          accident_history,
+          simple_repair,
+          waterlog,
+          fire_history,
+          tuning_exist,
+          recall_applicable,
+          recall_fulfilled,
+          engine_check_ok,
+          trans_check_ok,
+          guaranty_type,
+          image_front,
+          image_rear,
+          remarks
+        FROM inspections
+        WHERE vehicle_id = $1
+        ORDER BY inspected_at DESC
+        LIMIT 1
+      `;
+      const result = await pool.query(query, [vehicleId]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('점검 이력 조회 에러:', error);
+      return null;
+    }
   }
 }
 
