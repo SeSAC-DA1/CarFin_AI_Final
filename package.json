@@ -112,6 +112,7 @@
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
+    "@marp-team/marp-cli": "^4.2.3",
     "@playwright/test": "^1.55.1",
     "@replit/vite-plugin-cartographer": "^0.3.1",
     "@replit/vite-plugin-dev-banner": "^0.1.1",

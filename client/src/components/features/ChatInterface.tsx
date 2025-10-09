@@ -5,7 +5,7 @@ import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
 import VehicleRecommendations from "./VehicleRecommendations";
 import QuickReplyButtons from "./QuickReplyButtons";
-import ProgressSteps from "@/components/ai/ProgressSteps";
+import MACRecProgressPanel from "@/components/ai/MACRecProgressPanel";
 import MACRecCollaborationViewer from "@/components/ai/MACRecCollaborationViewer";
 import WelcomeFlow from "@/components/layout/WelcomeFlow";
 import FeedbackSection from "@/components/layout/FeedbackSection";
@@ -32,6 +32,7 @@ export default function ChatInterface() {
   const [currentUserQuery, setCurrentUserQuery] = useState<string>('');
   const [showWelcome, setShowWelcome] = useState(messages.length === 0);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isMACRecPanelOpen, setIsMACRecPanelOpen] = useState(false);
 
   // 🎯 사용자 친화적 진행 단계 (간소화)
   const steps = useMemo(() => {
@@ -161,9 +162,14 @@ export default function ChatInterface() {
 
   return (
     <div className="h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col">
-      <ProgressSteps steps={steps} />
+      {/* ✅ Phase 1.5: 토글 가능한 MACRec 프로토콜 사이드바 */}
+      <MACRecProgressPanel
+        steps={steps}
+        isOpen={isMACRecPanelOpen}
+        onToggle={() => setIsMACRecPanelOpen(!isMACRecPanelOpen)}
+      />
 
-      {/* 2컬럼 레이아웃: 왼쪽 사이드바 + 메인 채팅 영역 (우측 패널 제거로 채팅창 확대) */}
+      {/* 2컬럼 레이아웃: 왼쪽 사이드바 + 메인 채팅 영역 */}
       <div className="flex-1 flex h-[calc(100vh-4rem)]">
         {/* 왼쪽 사이드바 */}
         <ChatSidebar
