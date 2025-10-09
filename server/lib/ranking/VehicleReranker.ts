@@ -120,12 +120,15 @@ export class VehicleReranker {
       }
     }
 
+    // 🎯 Phase 4: 차량 다양성 확보 (동일 모델 페널티 적용)
+    const diversityResults = this.applyDiversityPenalty(allResults);
+
     // 최종 점수 기준 정렬 및 상위 15대 선별
-    const finalResults = allResults
+    const finalResults = diversityResults
       .sort((a, b) => b.score - a.score)
       .slice(0, 15);
 
-    console.log(`✅ 2단계 리랭킹 완료: ${finalResults.length}대 최종 선별`);
+    console.log(`✅ 2단계 리랭킹 완료: ${finalResults.length}대 최종 선별 (다양성 페널티 적용)`);
     return finalResults;
   }
 
@@ -476,5 +479,48 @@ ${vehicleList}${comprehensiveSummary}
         ]
       };
     }).sort((a, b) => b.score - a.score);
+  }
+
+  /**
+   * 🎯 Phase 4: 차량 다양성 페널티 적용
+   * 동일 제조사-모델 반복 시 점수 감소로 다양한 추천 보장
+   */
+  private applyDiversityPenalty(results: RerankingResult[]): RerankingResult[] {
+    const modelCount = new Map<string, number>();
+
+    console.log(`🎨 차량 다양성 페널티 적용 시작: ${results.length}대`);
+
+    // 점수 순으로 정렬 후 다양성 페널티 적용
+    const sortedResults = [...results].sort((a, b) => b.score - a.score);
+
+    const adjustedResults = sortedResults.map((result) => {
+      const modelKey = `${result.vehicle.manufacturer}_${result.vehicle.model}`;
+      const currentCount = modelCount.get(modelKey) || 0;
+
+      // 동일 모델 2번째부터 페널티 적용 (점수 × 0.9, 0.8, 0.7...)
+      let penaltyMultiplier = 1.0;
+      if (currentCount > 0) {
+        penaltyMultiplier = 1.0 - (currentCount * 0.15); // 15%씩 감소
+        penaltyMultiplier = Math.max(0.4, penaltyMultiplier); // 최대 60% 페널티
+      }
+
+      modelCount.set(modelKey, currentCount + 1);
+
+      const adjustedScore = result.score * penaltyMultiplier;
+
+      if (penaltyMultiplier < 1.0) {
+        console.log(`  📉 다양성 페널티: ${modelKey} (${currentCount + 1}번째) - ${result.score.toFixed(1)} → ${adjustedScore.toFixed(1)} (×${penaltyMultiplier.toFixed(2)})`);
+      }
+
+      return {
+        ...result,
+        score: adjustedScore
+      };
+    });
+
+    const uniqueModels = modelCount.size;
+    console.log(`✅ 다양성 페널티 적용 완료: ${uniqueModels}개 고유 모델`);
+
+    return adjustedResults;
   }
 }

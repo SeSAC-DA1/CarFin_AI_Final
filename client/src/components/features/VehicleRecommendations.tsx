@@ -151,12 +151,12 @@ export default function VehicleRecommendations({
               )}
               data-testid={`vehicle-card-${vehicle.rank}`}
             >
-              {/* ✅ Phase 3-1: 이미지 높이 확대 (h-48 → h-56, 세로 비율 개선) */}
-              <div className="relative h-56">
+              {/* ✅ Phase 4: 이미지 높이 추가 확대 + 전체 표시 (h-56 → h-64, object-cover → object-contain) */}
+              <div className="relative h-64 bg-gray-100 dark:bg-gray-800">
                 <img
                   src={vehicle.image}
                   alt={vehicle.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 
@@ -228,7 +228,7 @@ export default function VehicleRecommendations({
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">TOPSIS 점수</span>
-                    <span className="font-mono font-medium">{Math.round(vehicle.topsisScore)}점</span>
+                    <span className="font-mono font-medium">{vehicle.topsisScore.toFixed(1)}점</span>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
