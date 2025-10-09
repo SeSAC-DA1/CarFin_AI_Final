@@ -17,12 +17,16 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
     return null;
   }
 
-  // ✅ Phase 3-2: 차트 데이터 준비 (원 → 만원 변환)
+  // ✅ Phase 4: 차트 데이터 준비 (원 → 만원 변환) + 차량 구분 명확화
   const chartData = vehiclesWithTCO.map((vehicle, index) => {
     const tco = vehicle.tco!;
+    const manufacturer = vehicle.manufacturer || vehicle.name.split(' ')[0] || '알 수 없음';
+    const model = vehicle.model || vehicle.name.split(' ').slice(1).join(' ') || '';
+    const shortLabel = model.length > 8 ? model.substring(0, 8) : model; // 모델명 8자 제한
+
     return {
-      name: `${index + 1}위\n${vehicle.manufacturer || vehicle.name.split(' ')[0]}`,
-      fullName: `${vehicle.manufacturer || ''} ${vehicle.model || ''} (${vehicle.year})`,
+      name: `${index + 1}위\n${manufacturer} ${shortLabel}`,
+      fullName: `${manufacturer} ${model} (${vehicle.year})`,
       취득세: Math.round(tco.breakdown.acquisitionTax / 10000),
       자동차세: Math.round(tco.breakdown.vehicleTax / 10000),
       정비비: Math.round(tco.breakdown.maintenance / 10000),
@@ -176,7 +180,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                     "p-2 rounded-lg text-xs",
                     isLowest
                       ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400"
-                      : "bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400"
+                      : "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400"
                   )}>
                     {isLowest ? (
                       <div className="flex items-center gap-1">
@@ -190,7 +194,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                           <span className="font-bold">+{Math.round(diffFromLowest / 10000).toLocaleString()}만원</span>
                         </div>
                         <div className="text-[10px] opacity-80">
-                          ({percentDiff}% 비쌈)
+                          (+{percentDiff}% 차이)
                         </div>
                       </div>
                     )}
