@@ -310,9 +310,11 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     } else if (step.type === 'recommendations' && step.data) {
       const vehicles = step.data.vehicles.map((rec: VehicleRecommendation) => ({
         ...rec.vehicle,
+        rank: rec.rank, // ✅ 랭킹 추가!
         image: getVehicleImage(rec.vehicle.manufacturer, rec.vehicle.photo),
         topsisScore: rec.topsisScore,
         matchingScore: rec.matchingScore,
+        matchScore: rec.matchingScore, // ✅ matchScore도 추가 (프론트 호환성)
         reason: rec.reason,
         pros: rec.pros,
         cons: rec.cons

@@ -168,28 +168,8 @@ export default function ChatInterface() {
     <div className="h-screen bg-gradient-to-b from-primary/5 to-background flex flex-col">
       <ProgressSteps steps={steps} />
 
-      {/* 3컬럼 레이아웃: 사이드바 + 메인 + 우측패널 */}
+      {/* 심플 2컬럼 레이아웃: 메인 + 우측패널 (사이드바 제거) */}
       <div className="flex-1 flex h-[calc(100vh-4rem)]">
-        {/* 왼쪽 사이드바 */}
-        <ChatSidebar
-          currentSessionId={currentSessionId}
-          onNewChat={() => {
-            setShowWelcome(true);
-            setCurrentUserQuery('');
-            setCurrentSessionId(null);
-            // 새 채팅 시작
-          }}
-          onSelectConversation={(id) => {
-            console.log('Selected conversation:', id);
-            // TODO: 선택된 대화 로드 로직 구현
-            setCurrentSessionId(id);
-          }}
-          onQuickAction={(query) => {
-            // 빠른 액션으로 메시지 전송
-            handleSendMessage(query);
-          }}
-        />
-
         {/* 메인 채팅 영역 */}
         <div className="flex-1 flex flex-col bg-background/50">
           <div className="p-4 bg-card/80 backdrop-blur-sm rounded-t-2xl border border-b-0 border-card-border">
@@ -204,7 +184,7 @@ export default function ChatInterface() {
                     {showMACRecCollaboration && <Sparkles className="w-4 h-4 text-primary animate-pulse" />}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {showMACRecCollaboration ? 'MACRec 멀티에이전트 협업 중...' : '15만대 매물 실시간 분석'}
+                    {showMACRecCollaboration ? '분석 중...' : '12만대 이상 실시간 분석'}
                   </p>
                 </div>
               </div>
@@ -241,20 +221,8 @@ export default function ChatInterface() {
                   <MessageBubble key={index} {...message} />
                 ))}
 
-
-                {/* MACRec 멀티에이전트 협업 뷰어 (기존) */}
-                {showMACRecCollaboration && currentUserQuery && (
-                  <div className="animate-slide-up" data-testid="macrec-collaboration">
-                    <MACRecCollaborationViewer
-                      query={currentUserQuery}
-                      isActive={showMACRecCollaboration}
-                      onComplete={handleMACRecComplete}
-                      className="mb-4"
-                    />
-                  </div>
-                )}
-
-                {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
+                {/* 심플한 로딩 표시 */}
+                {progress && progress.step !== 'completed' && (
                   <div className="animate-fade-in">
                     <LoadingSpinner
                       message={progress.message}
@@ -265,32 +233,12 @@ export default function ChatInterface() {
                 )}
 
                 {vehicles.length > 0 && (
-                  <div className="animate-slide-up space-y-6" data-testid="vehicles-container">
-                    {/* 💬 AI 메시지 */}
-                    <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-card-border">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-bold">AI</span>
-                        </div>
-                        <span className="text-sm font-medium">CarFin AI</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        🎉 <strong>{currentUserQuery}</strong>에 맞는 최고의 차량 {vehicles.length}대를 찾았어요!
-                      </p>
-                    </div>
-
-                    {/* 🚗 차량 추천 카드 */}
+                  <div className="animate-slide-up space-y-4" data-testid="vehicles-container">
+                    {/* 🚗 차량 추천 카드 (심플) */}
                     <VehicleRecommendations
                       vehicles={vehicles}
                       userQuery={currentUserQuery}
-                      showPersonalization={true}
-                    />
-
-                    {/* 피드백 섹션 - 분석 후에 표시 */}
-                    <FeedbackSection
-                      vehicles={vehicles}
-                      onRecommend={handleFeedbackRecommend}
-                      onSatisfied={handleFeedbackSatisfied}
+                      showPersonalization={false}
                     />
                   </div>
                 )}
@@ -310,15 +258,6 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* 우측 에이전트 패널 */}
-        <div className="w-80 bg-card/20 backdrop-blur-sm border-l border-border">
-          <AgentStatusPanel
-            isActive={showMACRecCollaboration || !!progress}
-            currentStep={progress?.step || undefined}
-            userQuery={currentUserQuery}
-            onComplete={handleAgentPanelComplete}
-          />
-        </div>
       </div>
     </div>
   );
