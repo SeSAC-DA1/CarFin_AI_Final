@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -21,7 +22,8 @@ import {
   Users,
   MapPin,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Wallet
 } from 'lucide-react';
 
 interface ProfileData {
@@ -287,7 +289,7 @@ export default function ProfileSetup() {
       id: 5,
       title: "차량을 얼마나 사용하실 예정인가요?",
       description: "정확한 총 소유비용(TCO) 계산을 위해 필요해요",
-      icon: <Calculator className="w-8 h-8 text-primary" />,
+      icon: <Wallet className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8 max-w-md mx-auto">
           <div className="space-y-4">

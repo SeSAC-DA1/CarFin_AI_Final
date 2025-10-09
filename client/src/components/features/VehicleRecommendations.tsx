@@ -1,13 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
 import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
 import TCODetailModal from "./TCODetailModal";
 import TCOComparisonChart from "./TCOComparisonChart";
+import RecommendationReasonModal from "./RecommendationReasonModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -68,6 +69,10 @@ export default function VehicleRecommendations({
   const [showTCOModal, setShowTCOModal] = useState(false);
   const [selectedVehicleForTCO, setSelectedVehicleForTCO] = useState<Vehicle | null>(null);
 
+  // 🆕 Phase 5: 추천 이유 모달 상태
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedVehicleForReason, setSelectedVehicleForReason] = useState<Vehicle | null>(null);
+
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
@@ -86,6 +91,12 @@ export default function VehicleRecommendations({
   const handleViewTCO = (vehicle: Vehicle) => {
     setSelectedVehicleForTCO(vehicle);
     setShowTCOModal(true);
+  };
+
+  // 🆕 Phase 5: 추천 이유 모달 핸들러
+  const handleViewReason = (vehicle: Vehicle) => {
+    setSelectedVehicleForReason(vehicle);
+    setShowReasonModal(true);
   };
 
   // 개인화 대시보드 자동 표시
@@ -228,7 +239,7 @@ export default function VehicleRecommendations({
                 {vehicle.tco && (
                   <div className="space-y-2 pt-2 border-t border-border">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Calculator className="w-3 h-3" />
+                      <Wallet className="w-3 h-3" />
                       <span>{vehicle.tco.ownershipYears}년 총 소유비용 (TCO)</span>
                       <Badge variant="outline" className="text-xs ml-auto">
                         신뢰도 {(vehicle.tco.confidence * 100).toFixed(0)}%
@@ -307,6 +318,18 @@ export default function VehicleRecommendations({
                 )}
 
                 <div className="flex gap-1.5 pt-1">
+                  {/* 🆕 Phase 5: 왜 추천? 버튼 */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-1.5 text-xs h-8 border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => handleViewReason(vehicle)}
+                    data-testid={`button-reason-${vehicle.rank}`}
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    왜 추천?
+                  </Button>
+
                   {/* 🆕 Phase 3: TCO 상세보기 버튼 (TCO 데이터가 있을 때만) */}
                   {vehicle.tco && (
                     <Button
@@ -316,7 +339,7 @@ export default function VehicleRecommendations({
                       onClick={() => handleViewTCO(vehicle)}
                       data-testid={`button-tco-${vehicle.rank}`}
                     >
-                      <Calculator className="w-3.5 h-3.5" />
+                      <Wallet className="w-3.5 h-3.5" />
                       TCO 상세
                     </Button>
                   )}
@@ -340,7 +363,7 @@ export default function VehicleRecommendations({
                       onClick={() => handleFinanceConsultation(vehicle)}
                       data-testid={`button-finance-${vehicle.rank}`}
                     >
-                      <Calculator className="w-3.5 h-3.5" />
+                      <Wallet className="w-3.5 h-3.5" />
                       금융 상담
                     </Button>
                   )}
@@ -450,6 +473,16 @@ export default function VehicleRecommendations({
           vehicle={selectedVehicleForTCO}
         />
       )}
+
+      {/* 🆕 Phase 5: 추천 이유 모달 */}
+      <RecommendationReasonModal
+        vehicle={selectedVehicleForReason}
+        isOpen={showReasonModal}
+        onClose={() => {
+          setShowReasonModal(false);
+          setSelectedVehicleForReason(null);
+        }}
+      />
     </>
   );
 }

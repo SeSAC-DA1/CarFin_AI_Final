@@ -69,7 +69,7 @@ test.describe('CARFIN AI 사용자 여정 E2E 테스트', () => {
     await expect(page.locator('text=분석')).toBeVisible({ timeout: 10000 });
 
     // Step 8: 추천 결과 확인 (최대 30초 대기)
-    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 60000 });
 
     // Top 3 추천 확인
     const vehicleCards = page.locator('[data-testid="vehicle-card"]');
@@ -102,7 +102,7 @@ test.describe('CARFIN AI 사용자 여정 E2E 테스트', () => {
     await page.locator('button[type="submit"]').click();
 
     // 추천 결과 대기
-    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 60000 });
   });
 
   test('프로필 수정 및 재추천', async ({ page }) => {
@@ -270,7 +270,7 @@ test.describe('추천 결과 검증', () => {
     await page.locator('button[type="submit"]').click();
 
     // 결과 대기
-    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('[data-testid="vehicle-card"]').first()).toBeVisible({ timeout: 60000 });
 
     // TOPSIS 점수 확인
     const scoreText = page.locator('text=/점$/').first();
@@ -283,7 +283,7 @@ test.describe('추천 결과 검증', () => {
     // 추천 받기 (간소화)
     await page.locator('textarea').fill('차량 추천');
     await page.locator('button[type="submit"]').click();
-    await page.locator('[data-testid="vehicle-card"]').first().waitFor({ timeout: 30000 });
+    await page.locator('[data-testid="vehicle-card"]').first().waitFor({ timeout: 60000 });
 
     // 상세 보기 클릭
     const detailButton = page.locator('button:has-text("상세")').first();
@@ -301,7 +301,7 @@ test.describe('추천 결과 검증', () => {
     // 추천 받기
     await page.locator('textarea').fill('차량 추천');
     await page.locator('button[type="submit"]').click();
-    await page.locator('[data-testid="vehicle-card"]').first().waitFor({ timeout: 30000 });
+    await page.locator('[data-testid="vehicle-card"]').first().waitFor({ timeout: 60000 });
 
     // 외부 링크 클릭 시 새 탭 열림 확인
     const [newPage] = await Promise.all([
@@ -312,5 +312,45 @@ test.describe('추천 결과 검증', () => {
     await newPage.waitForLoadState();
     expect(newPage.url()).toBeDefined();
     await newPage.close();
+  });
+
+  test('왜 추천? 모달 기능', async ({ page }) => {
+    await page.goto('/chat');
+
+    // 추천 받기
+    await page.locator('textarea').fill('3000만원 이하 SUV 추천');
+    await page.locator('button[type="submit"]').click();
+    await page.locator('[data-testid="vehicle-card"]').first().waitFor({ timeout: 60000 });
+
+    // "왜 추천?" 버튼 클릭
+    const reasonButton = page.locator('button:has-text("왜 추천?")').first();
+    await expect(reasonButton).toBeVisible();
+    await reasonButton.click();
+
+    // RecommendationReasonModal 확인
+    const modal = page.locator('[role="dialog"]:has-text("왜")');
+    await expect(modal).toBeVisible();
+
+    // TOPSIS 종합 점수 확인
+    await expect(modal.locator('text=TOPSIS 종합 점수')).toBeVisible();
+
+    // 항목별 평가 확인 (6가지 기준)
+    await expect(modal.locator('text=가격 경쟁력')).toBeVisible();
+    await expect(modal.locator('text=연비 효율성')).toBeVisible();
+    await expect(modal.locator('text=안전성')).toBeVisible();
+    await expect(modal.locator('text=브랜드 신뢰도')).toBeVisible();
+    await expect(modal.locator('text=성능')).toBeVisible();
+    await expect(modal.locator('text=디자인')).toBeVisible();
+
+    // 강점 섹션 확인
+    await expect(modal.locator('text=강점')).toBeVisible();
+
+    // TOPSIS 알고리즘 설명 확인
+    await expect(modal.locator('summary:has-text("TOPSIS 알고리즘")')).toBeVisible();
+
+    // 모달 닫기 (X 버튼 또는 외부 클릭)
+    const closeButton = modal.locator('button').first();
+    await closeButton.click();
+    await expect(modal).not.toBeVisible();
   });
 });

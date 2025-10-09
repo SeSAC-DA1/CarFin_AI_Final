@@ -50,10 +50,13 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
   ws.on('message', async (data: string) => {
     try {
       const message = JSON.parse(data);
+      console.log(`📨 [${sessionId.substring(0, 8)}] 메시지 수신:`, message.type);
 
       if (message.type === 'user_message') {
+        console.log(`💬 [${sessionId.substring(0, 8)}] 사용자 메시지:`, message.content.substring(0, 50));
         await handleUserMessage(sessionId, message.content, message.userProfile);
       } else if (message.type === 'get_insights') {
+        console.log(`🔍 [${sessionId.substring(0, 8)}] Insights 요청:`, message.vehicleId);
         await handleGetInsights(sessionId, message.vehicleId);
       }
     } catch (error) {
@@ -291,23 +294,33 @@ function updateSessionProfile(session: ChatSession, update: ExtractedProfileUpda
 
 async function handleMultiAgentRecommendation(session: ChatSession, userMessage: string) {
   const startTime = Date.now();
+  console.time('[TOTAL] Recommendation');
+
   sendMessage(session.ws, { type: 'progress', step: 'analyzing_needs', message: '🤖 멀티에이전트 시스템 가동... ' });
 
+  console.time('[STEP 1/5] Database Query');
   const allVehicles = await storage.searchVehicles({ limit: 1000, offset: 0 }) as Vehicle[];
-  const multiAgentSystem = new MultiAgentSystem(process.env.GOOGLE_API_KEY!); 
-
+  console.timeEnd('[STEP 1/5] Database Query');
   console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
+  console.time('[STEP 2/5] MultiAgent System Init');
+  const multiAgentSystem = new MultiAgentSystem(process.env.GOOGLE_API_KEY!);
+  console.timeEnd('[STEP 2/5] MultiAgent System Init');
+
+  console.time('[STEP 3/5] MultiAgent Collaboration');
   const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles, [], session.userProfile);
 
   for await (const step of collaborationStream) {
-    console.log(`🤖 ${step.agent}: ${step.type}`);
+    console.log(`🤖 [${session.sessionId.substring(0, 8)}] ${step.agent}: ${step.type}`);
 
     if (step.type === 'agent_working') {
       sendMessage(session.ws, { type: 'progress', step: step.agent, message: step.content });
     } else if (step.type === 'agent_response') {
       sendMessage(session.ws, { type: 'agent_message', agent: step.agent, content: step.content, timestamp: new Date() });
     } else if (step.type === 'recommendations' && step.data) {
+      console.timeEnd('[STEP 3/5] MultiAgent Collaboration');
+      console.time('[STEP 4/5] Vehicle Data Mapping');
+
       const vehicles = step.data.vehicles.map((rec: VehicleRecommendation) => ({
         ...rec.vehicle,
         rank: rec.rank, // ✅ 랭킹 추가!
@@ -320,14 +333,20 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
         cons: rec.cons
       }));
 
+      console.timeEnd('[STEP 4/5] Vehicle Data Mapping');
+      console.time('[STEP 5/5] Send Results');
       sendMessage(session.ws, { type: 'vehicles', vehicles: vehicles, timestamp: new Date() });
+      console.timeEnd('[STEP 5/5] Send Results');
 
       const totalTime = Date.now() - startTime;
-      console.log(`✅ 추천 완료: ${totalTime}ms`);
+      console.timeEnd('[TOTAL] Recommendation');
+      console.log(`✅ [${session.sessionId.substring(0, 8)}] 추천 완료: ${totalTime}ms (${vehicles.length}대)`);
       sendMessage(session.ws, { type: 'progress', step: 'completed', message: `🎉 AI 추천 완료! (${totalTime}ms)` });
       return;
     }
   }
+
+  console.warn(`⚠️ [${session.sessionId.substring(0, 8)}] MultiAgent 협업 완료되었지만 추천 결과 없음`);
 }
 
 async function handleGetInsights(sessionId: string, vehicleId: string) {
