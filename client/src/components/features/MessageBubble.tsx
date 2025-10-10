@@ -108,15 +108,6 @@ const agentConfig: Record<string, {
     bgGradient: "bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20",
     dotColor: "bg-emerald-500",
     ringColor: "ring-emerald-500/20"
-  },
-  concierge: {
-    icon: Award,
-    name: "종합 추천",
-    role: "최종 추천 생성",
-    color: "text-indigo-600",
-    bgGradient: "bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/30 dark:to-indigo-900/20",
-    dotColor: "bg-indigo-500",
-    ringColor: "ring-indigo-500/20"
   }
 };
 

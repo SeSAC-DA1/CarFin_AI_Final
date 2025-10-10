@@ -10,6 +10,7 @@ import TCODetailModal from "./TCODetailModal";
 import TCOComparisonChart from "./TCOComparisonChart";
 import RecommendationReasonModal from "./RecommendationReasonModal";
 import FinancingComparisonCard from "./FinancingComparisonCard";
+import FinancingOptionsModal from "./FinancingOptionsModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -87,6 +88,10 @@ export default function VehicleRecommendations({
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [selectedVehicleForReason, setSelectedVehicleForReason] = useState<Vehicle | null>(null);
 
+  // 🆕 Phase 6-4: 금융 옵션 모달 상태
+  const [showFinancingModal, setShowFinancingModal] = useState(false);
+  const [selectedVehicleForFinancing, setSelectedVehicleForFinancing] = useState<Vehicle | null>(null);
+
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
@@ -111,6 +116,12 @@ export default function VehicleRecommendations({
   const handleViewReason = (vehicle: Vehicle) => {
     setSelectedVehicleForReason(vehicle);
     setShowReasonModal(true);
+  };
+
+  // 🆕 Phase 6-4: 금융 옵션 모달 핸들러
+  const handleViewFinancing = (vehicle: Vehicle) => {
+    setSelectedVehicleForFinancing(vehicle);
+    setShowFinancingModal(true);
   };
 
   // 개인화 대시보드 자동 표시
@@ -332,7 +343,7 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                {/* ✅ Phase 2: 버튼 4개로 정리 (2줄 그리드) */}
+                {/* ✅ Phase 6-4: 버튼 확장 (금융 옵션 추가) */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   {/* 1. 추천 근거 설명 버튼 */}
                   <Button
@@ -383,29 +394,59 @@ export default function VehicleRecommendations({
                     {isLoadingAnalysis ? '분석 중...' : '차량 진단'}
                   </Button>
 
-                  {/* 4. 실구매 링크 */}
-                  {vehicle.detailUrl ? (
+                  {/* 4. 🆕 Phase 6-4: 금융 옵션 버튼 (financingOptions 있을 때만 표시) */}
+                  {vehicle.financingOptions ? (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 text-xs h-9"
+                      className="gap-1.5 text-xs h-9 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                      onClick={() => handleViewFinancing(vehicle)}
+                      data-testid={`button-financing-${vehicle.rank}`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      금융 옵션
+                    </Button>
+                  ) : (
+                    // 5. 실구매 링크 (금융 옵션 없을 때만 표시)
+                    vehicle.detailUrl ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs h-9"
+                        asChild
+                        data-testid={`button-detail-url-${vehicle.rank}`}
+                      >
+                        <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          실구매
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs h-9"
+                        disabled
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        링크 없음
+                      </Button>
+                    )
+                  )}
+
+                  {/* 6. 실구매 링크 (금융 옵션 있을 때는 별도 행에 표시) */}
+                  {vehicle.financingOptions && vehicle.detailUrl && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9 col-span-2"
                       asChild
                       data-testid={`button-detail-url-${vehicle.rank}`}
                     >
                       <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3.5 h-3.5" />
-                        실구매
+                        실구매 링크 보기
                       </a>
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9"
-                      disabled
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      링크 없음
                     </Button>
                   )}
                 </div>
@@ -421,35 +462,6 @@ export default function VehicleRecommendations({
       {vehicles.some(v => v.tco) && (
         <div className="mt-8 animate-slide-up">
           <TCOComparisonChart vehicles={vehicles} />
-        </div>
-      )}
-
-      {/* 🆕 Phase 3-E: 금융 옵션 비교 카드 */}
-      {vehicles.some(v => v.financingOptions) && (
-        <div className="mt-8 space-y-6 animate-slide-up">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                맞춤 금융 옵션
-              </span>
-            </h2>
-            <p className="text-muted-foreground">
-              일시불/할부/리스 비교 분석
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {vehicles
-              .filter(v => v.financingOptions)
-              .map(vehicle => (
-                <FinancingComparisonCard
-                  key={vehicle.id}
-                  vehicleName={vehicle.name}
-                  vehiclePrice={vehicle.price}
-                  financingOptions={vehicle.financingOptions}
-                />
-              ))}
-          </div>
         </div>
       )}
 
@@ -529,6 +541,20 @@ export default function VehicleRecommendations({
           setSelectedVehicleForReason(null);
         }}
       />
+
+      {/* 🆕 Phase 6-4: 금융 옵션 모달 */}
+      {selectedVehicleForFinancing && selectedVehicleForFinancing.financingOptions && (
+        <FinancingOptionsModal
+          isOpen={showFinancingModal}
+          onClose={() => {
+            setShowFinancingModal(false);
+            setSelectedVehicleForFinancing(null);
+          }}
+          vehicleName={selectedVehicleForFinancing.name}
+          vehiclePrice={selectedVehicleForFinancing.price}
+          financingOptions={selectedVehicleForFinancing.financingOptions}
+        />
+      )}
     </>
   );
 }
