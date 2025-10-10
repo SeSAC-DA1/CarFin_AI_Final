@@ -157,12 +157,12 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     console.log(`📊 프로필 완성도: ${completenessReport.completenessScore}%`);
     console.log(`📋 현재 프로필:`, JSON.stringify(session.rawProfile, null, 2));
 
-    // ✅ 핵심 개선: 최소 정보가 있으면 즉시 추천
+    // ✅ 핵심 개선: 충분한 정보가 있어야 추천 (더 엄격한 조건)
+    // "연비 좋은 차"처럼 단일 조건만으로는 부족 → 추가 질문 유도
     const hasMinimalInfo = session.rawProfile && (
-      session.rawProfile.budget?.length > 0 ||
-      session.rawProfile.usage?.length > 0 ||
-      session.rawProfile.carType ||
-      userMessage.length > 10  // 사용자가 의미있는 메시지를 보냈다면
+      (session.rawProfile.budget?.length > 0 && session.rawProfile.usage?.length > 0) || // 예산 + 용도
+      (session.rawProfile.budget?.length > 0 && session.rawProfile.carType) ||          // 예산 + 차종
+      (session.rawProfile.usage?.length > 0 && session.rawProfile.carType)              // 용도 + 차종
     );
 
     if (hasMinimalInfo) {
