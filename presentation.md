@@ -627,60 +627,60 @@ Manager Agent (조율)
 
 ---
 
-## 🚀 AI Agent 고도화 로드맵 (Reactive → Cognitive)
+## 🚀 AI Agent 고도화 로드맵 (수정됨)
 
-### 목표: Cognitive Agent 90.8/100 달성
+### 목표: MACRec 논문 충실 구현 (13% → 80%)
 
 <div class="columns">
 
 <div>
 
-#### 📊 현재 상태 (77.5/100)
+#### 📊 현재 상태 (Google 기준)
 
-**AI Agent 평가**:
-- ✅ 자율성: 85/100 (우수)
-- ✅ 목표지향: 90/100 (우수)
-- ✅ 도구사용: 95/100 (매우 우수)
-- ⚠️ 적응성: 75/100 (보통)
-- ⚠️ 추론능력: 80/100 (보통)
-- 🔴 **메모리: 40/100 (약점)**
+**Agent Level**: Level 2 (Multi-Agent Basic) - **34%**
 
-**등급**: Reactive Agent
+**문제점**:
+- ❌ **MACRec 구현**: 13% (매우 낮음!)
+  - Task Decomposition: 0% (고정 플로우)
+  - Parallel Execution: 0% (순차 실행)
+  - Result Aggregation: 40% (단순 반환)
 
-**치명적 약점**:
-- 세션 종료 시 대화 기록 소실
-- 사용자 피드백 학습 불가
-- Agent 간 협업/토론 부재
+- ❌ **Agent 협업**: 순차 실행만 (병렬 아님)
+- ❌ **메모리**: 세션만 (영구 저장 없음)
+
+**Google 다중 에이전트 평가**: **50/100**
 
 </div>
 
 <div>
 
-#### 🎯 Phase 1: Memory & Learning (1주)
+#### 🎯 Phase 1: MACRec 충실 구현 (2주)
 
-**핵심 개선**:
-- 대화 기록 영구 저장 (PostgreSQL)
-- 선호도 학습 시스템
-- 컨텍스트 인식 대화
+**핵심 개선** (Google Agent 구성 요소):
+- ✅ Task Decomposition (동적 계획)
+- ✅ Parallel Execution (병렬 실행)
+- ✅ Agent Communication Protocol
 
 **효과**:
-- Memory: 40 → **85점** (+45)
-- Adaptability: 75 → 82점 (+7)
-- **총점: 77.5 → 85.8점**
+- MACRec 구현: 13% → **80%** (+67%p)
+- 응답 속도: 2.3초 → **1.2초** (48% 향상)
+- Agent Level: Level 2 (34%) → **Level 2 (95%)**
+- Google 평가: 50/100 → **70/100**
 
 **데모 시나리오**:
 ```
-사용자: "3000만원대 SUV"
-AI: [3대 추천]
-
-사용자: "너무 비싸"
-AI: "예산을 2,500만원으로 조정했습니다 ✅"
-    "이전에 '현대차 별로'라고 하셨으니 제외했습니다 ✅"
+[Manager] 작업 분해: 3개 Agent 병렬 실행
+[0.4초] User Analyst: "가족용 니즈 분석 완료"
+[0.5초] Searcher: "387대 후보 발견"
+[0.6초] Evaluator: "안전성 평가 완료"
+[1.2초] Top 3 추천 완료 ⚡
 ```
 
 </div>
 
 </div>
+
+---
 
 ---
 
@@ -690,65 +690,67 @@ AI: "예산을 2,500만원으로 조정했습니다 ✅"
 
 <div>
 
-#### 🎯 Phase 2: Agent Deliberation (2주)
+#### 🎯 Phase 2: Memory Management (2주)
 
-**핵심 개선**:
-- Agent 간 토론 프로토콜 (3 rounds)
-- 충돌 감지 및 해결
-- 대안 제시 시스템
+**핵심 개선** (Google Agent 구성 요소):
+- Conversation Storage (대화 기록 영구 저장)
+- Reflection Mechanism (패턴 학습)
+- Context-Aware Recommendations
 
 **효과**:
-- Reasoning: 80 → **90점** (+10)
-- Adaptability: 82 → **90점** (+8)
-- **총점: 85.8 → 89.2점**
+- Agent Level: Level 2 (95%) → **Level 3 (60%)**
+- Memory 구성 요소: 10% → **85%**
+- 추천 정확도: 85% → **92%** (학습 효과)
+- Google 평가: 70/100 → **80/100**
 
 **데모 시나리오**:
 ```
-User Analyst: "가족용이므로 7인승 필수"
-Searcher: "예산 부족! 7인승은 5대뿐"
-Manager: "충돌 감지! 3가지 대안:"
-  1️⃣ 예산 상향 (3,000 → 3,200만원)
-  2️⃣ 6인승 타협
-  3️⃣ 연식 낮추기 (2020 → 2019년식)
+사용자: "3000만원대 SUV"
+AI: [3대 추천]
+
+[다음 세션]
+사용자: "차량 다시 찾아줘"
+AI: "이전에 현대차를 3번 거부하셨으니 제외했습니다 ✅"
+    "예산을 평균 200만원 낮추는 패턴이 있어 2,800만원으로 검색 ✅"
 ```
 
 </div>
 
 <div>
 
-#### 🎯 Phase 3: Self-Improvement (3주)
+#### ⚠️ Agentic RAG: 불필요!
 
-**핵심 개선**:
-- A/B Testing 인프라
-- 자동 성능 분석 (매일 자정)
-- 전략 자동 최적화
+**Google 자료 핵심 메시지**:
+> "에이전트 도입 전에 **검색 성능 개선**이 먼저"
 
-**효과**:
-- Autonomy: 85 → **95점** (+10)
-- **총점: 89.2 → 90.8점**
-- **등급: Cognitive Agent** ✅
+**현재 검색 성능**:
+- ✅ 재현율 (Recall): **95%+** (SQL 정확)
+- ✅ 정밀도 (Precision): **90%+** (TOPSIS)
+- ✅ 속도: **2.3초** (빠름)
 
-**자동 최적화 로직**:
-```
-전략 A: 전환율 12%
-전략 B: 전환율 18% ← 우승
-전략 C: 전환율 15%
+**Google RAG 개선 6가지 체크**:
+1. ✅ Chunk 분할: Row 단위
+2. ✅ 메타데이터: brand, price 등
+3. ❌ 임베딩: 불필요 (SQL 사용)
+4. ❌ 벡터 DB: 불필요 (PostgreSQL)
+5. ✅ Ranker: TOPSIS 있음
+6. ✅ Grounding: DB 직접 조회
 
-[자정 1시] AI가 자동으로 전략 B 선택
-[자정 1시] 새로운 실험 전략 생성
-```
+**결론**: **Agentic RAG = over-engineering**
+- 비용만 증가 (임베딩 API, Vector DB)
+- 성능 저하 (근사 vs 정확)
+- **리뷰 데이터 전까지 불필요!**
 
 </div>
 
 </div>
 
 <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px;">
-<strong>🎯 핵심 전략</strong>: LangChain/RAG보다 <strong>Agent 지능 강화</strong>를 우선! (메모리 → 협업 → 자기개선)
+<strong>🎯 핵심 전략</strong>: <strong>MACRec 논문 충실 구현</strong>이 먼저! (13% → 80%)
 </div>
 
-<div style="margin-top: 10px; padding: 15px; background: #fef3c7; border-radius: 8px;">
-<strong>⚠️ LangChain/RAG 도입 시기</strong>: Phase 4 (리뷰 데이터 추가 시) - 현재는 over-engineering
-</div>
+<div style="margin-top: 10px; padding: 15px; background: #fee2e2; border-radius: 8px;">
+<strong>🔴 Agentic RAG</strong>: 리뷰 데이터 추가 전까지 **100% over-engineering** (현재 검색 성능 95%+)</div>
 
 ---
 
@@ -906,20 +908,20 @@ A. LocalStorage 기반 프로필 저장 (서버 미전송). 추천 시에만 익
 #### AI/LLM 기술 관련
 
 **Q4. 왜 LangChain/LangGraph를 사용하지 않았나요?**
-A. PoC 단계에서는 논문 직접 구현으로 알고리즘 이해도 증명. **v1.0 목표: Agent 지능 강화가 우선**. LangChain은 Phase 4 (선택적 - 프롬프트 관리 편의성).
+A. PoC 단계에서는 논문 직접 구현으로 알고리즘 이해도 증명. **v1.0 목표: MACRec 논문 충실 구현이 우선** (13% → 80%). LangChain은 Phase 3 이후 (선택적 - 프롬프트 관리 편의성).
 
 **Q5. RAG/벡터DB가 없는데 문제 없나요?**
-A. **현재는 over-engineering**. 구조화된 데이터(SQL)로 정확하고 빠른 필터링. RAG는 **리뷰 데이터 추가 시**에만 필요 (Phase 5). **상황에 맞는 기술 선택 능력 증명**.
+A. **100% over-engineering!** 구조화된 데이터(SQL)로 재현율 95%+ 달성. Google 가이드: "검색 성능 개선이 에이전트보다 먼저". RAG는 **리뷰 데이터 추가 시**에만 필요. **상황에 맞는 기술 선택 능력 증명**.
 
 **Q6. 진짜 "AI 에이전트"라고 부를 수 있나요?**
-A. **현재 Reactive Agent (77.5/100)**. 하지만 **Phase 1-3 완료 시 Cognitive Agent (90.8/100) 달성 가능!** 메모리(+45점) → Agent 협업(+10점) → 자기개선(+10점).
+A. **현재 Level 2 - Multi-Agent Basic (34%)** (Google 기준). 하지만 **MACRec 논문 충실 구현 시 (13% → 80%)로 Level 2 완성 (95%)**. 병렬 실행 → 동적 분해 → 협업 프로토콜.
 
-**Q7. Agent 점수를 어떻게 높일 계획인가요?**
-A. **3단계 고도화**:
-  - Phase 1 (1주): 대화 기록 저장 + 선호도 학습 → Memory 40→85점
-  - Phase 2 (2주): Agent 토론 + 충돌 해결 → Reasoning 80→90점
-  - Phase 3 (3주): A/B Testing + 자동 최적화 → Autonomy 85→95점
-  **총점: 77.5 → 90.8점 (Cognitive Agent)** ✅
+**Q7. MACRec 구현을 어떻게 개선할 계획인가요?**
+A. **핵심 문제**: 순차 실행 (await 체인) → 병렬 실행 (Promise.all) 전환 필요!
+  - **Task Decomposition**: Manager가 동적 작업 분해 (고정 플로우 → AI 계획)
+  - **Parallel Execution**: Agent 동시 실행 (2.3초 → 1.2초, 48% 향상)
+  - **Result Aggregation**: 협의 기반 종합 (단순 반환 → 합의 알고리즘)
+  **MACRec 구현: 13% → 80% ✅**
 
 **Q8. E2E 경험이 정말 있나요?**
 A. 9단계 전 과정 수행 (92/100점). 문제 정의 → PoC → 데이터 파이프라인 → 모델 통합 → 구현 → 테스트 → 배포 → 모니터링. GitHub 공개로 검증 가능.
@@ -930,7 +932,7 @@ A. 171개 단위 테스트 작성. MACRec (36개), Alibaba (20개), TOPSIS (85�
 #### 향후 계획
 
 **Q10. 확장 계획은?**
-A. **Phase 1-3 (필수)**: Agent 지능 강화 (Memory → 협업 → 자기개선) → **Phase 4-5 (선택)**: 리뷰 데이터 수집 → RAG 구현. **LangChain/RAG보다 Agent 지능이 먼저!**
+A. **Phase 1 (필수, 2주)**: MACRec 논문 충실 구현 (13% → 80%) → **Phase 2 (조건부, 2주)**: Memory 관리 (세션 기억 + 학습) → **Phase 3 (선택)**: 리뷰 데이터 추가 시 RAG. **MACRec 논문 기반 구현이 최우선!**
 
 </div>
 
