@@ -111,7 +111,14 @@ export class MultiAgentSystem {
           } else if (task.agent === 'searcher') {
             return await this.searcher.execute(task, vehicles);
           } else if (task.agent === 'evaluator') {
-            return await this.evaluator.execute(task, vehicles, userProfile);
+            // 🐛 Fix: Evaluator는 Searcher 결과 필요 (병렬 실행에서도 의존성 확인)
+            const searcherResult = allResults.find(r => r.agent === 'searcher');
+            if (!searcherResult) {
+              console.warn('⚠️ Evaluator가 병렬 실행되었지만 Searcher 결과 없음, 전체 차량 사용');
+            }
+            const candidateVehicles = searcherResult?.output || vehicles;
+            console.log(`🔍 Evaluator에 전달: ${candidateVehicles.length}대 차량`);
+            return await this.evaluator.execute(task, candidateVehicles, userProfile);
           }
 
           throw new Error(`Unknown agent: ${task.agent}`);
