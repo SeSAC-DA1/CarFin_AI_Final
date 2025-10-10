@@ -227,10 +227,22 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     }
   } catch (error) {
     console.error('🚨 시스템 오류:', error);
+
+    // 🎨 UX 개선: 구체적이고 도움이 되는 에러 메시지
+    const helpfulMessage = `죄송합니다. 추천 중 문제가 발생했어요 😅
+
+다시 한 번 말씀해주시거나, 다음 정보를 알려주시면 더 정확하게 추천드릴 수 있어요:
+
+💰 **예산**: 얼마 정도 생각하고 계세요? (예: 3000만원 이하)
+🚗 **차종**: 어떤 차종을 원하세요? (예: 세단, SUV, 경차)
+🎯 **용도**: 주로 어떻게 사용하실 건가요? (예: 출퇴근, 가족용)
+
+편하게 말씀해주시면 다시 찾아드릴게요! 😊`;
+
     sendMessage(session.ws, {
       type: 'agent_message',
-      agent: 'system',
-      content: '죄송합니다. 잠시 문제가 발생했습니다. 어떤 차량을 찾고 계신지 다시 말씀해주시겠어요?',
+      agent: 'concierge',
+      content: helpfulMessage,
       timestamp: new Date(),
     });
   }
@@ -332,7 +344,8 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
   console.timeEnd('[STEP 2/5] MultiAgent System Init');
 
   console.time('[STEP 3/5] MultiAgent Collaboration');
-  const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles, [], session.userProfile);
+  // 🐛 Fix: rawProfile 전달 (대화 맥락 누적)
+  const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicles, [], session.rawProfile);
 
   for await (const step of collaborationStream) {
     console.log(`🤖 [${session.sessionId.substring(0, 8)}] ${step.agent}: ${step.type}`);

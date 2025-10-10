@@ -67,9 +67,10 @@ export class MultiAgentSystem {
     userMessage: string,
     vehicles: Vehicle[],
     reviews: HyundaiReview[] = [],
-    userProfile?: any
+    rawProfile?: any  // 🐛 Fix: 누적 프로필 전달 (session.rawProfile)
   ): AsyncGenerator<{ type: string; agent: string; content: string; data?: any }> {
     console.log(`🚀 MACRec Protocol 시작: ${vehicles.length}대 차량, ${userMessage.length}자 메시지`);
+    console.log(`📊 누적 프로필:`, JSON.stringify(rawProfile, null, 2));
 
     yield { type: "start", agent: "system", content: "MACRec 멀티에이전트 협업 시작..." };
 
@@ -78,7 +79,13 @@ export class MultiAgentSystem {
     // ═══════════════════════════════════════════════════════════════
     yield { type: "agent_working", agent: "manager", content: "🎯 Task Decomposition: 작업 분해 중..." };
 
-    const extractedProfile = this.profileExtractor.quickExtract(userMessage);
+    // 🐛 Fix: 누적 프로필 + 현재 메시지 분석 병합
+    const currentMessageProfile = this.profileExtractor.quickExtract(userMessage);
+    const extractedProfile = rawProfile
+      ? { ...rawProfile, ...currentMessageProfile }  // 누적 프로필 우선, 현재 메시지로 오버라이드
+      : currentMessageProfile;  // 첫 메시지는 현재 메시지만
+
+    console.log(`✅ 병합된 프로필:`, JSON.stringify(extractedProfile, null, 2));
     const tasks = await this.manager.decompose(userMessage, extractedProfile);
 
     yield {
