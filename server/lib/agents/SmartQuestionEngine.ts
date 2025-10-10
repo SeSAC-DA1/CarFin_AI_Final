@@ -99,36 +99,49 @@ export class SmartQuestionEngine {
 
     const prompt = `당신은 친절한 차량 추천 AI 상담사입니다.
 
-**대화 맥락**:
-- 사용자 최근 메시지: "${context.userLastMessage}"
-- 대화 히스토리: ${context.conversationHistory.slice(-3).join(' → ')}
-- 누락된 정보: ${context.missingField.name}
-- 현재 프로필: ${JSON.stringify(context.currentProfile, null, 2)}
+**사용자가 방금 말한 내용**:
+"${context.userLastMessage}"
+
+**현재 파악된 정보**:
+${JSON.stringify(context.currentProfile, null, 2)}
+
+**추가로 필요한 정보**:
+${context.missingField.name}
 
 **임무**:
-대화 흐름에 자연스럽게 이어지는 질문을 생성하세요.
+사용자의 메시지를 바탕으로, 누락된 정보(${context.missingField.name})를 자연스럽게 묻는 질문을 생성하세요.
 
-**질문 유형별 가이드**:
-- budget: "예산은 어느 정도 생각하고 계세요?" (구체적인 금액 범위 유도)
-- usage: "주로 어떤 용도로 사용하실 건가요?" (출퇴근, 가족용, 레저 등)
-- carType: "어떤 차종을 선호하시나요?" (SUV, 세단 등)
-- fuelType: "연료 타입은 어떤 걸 선호하시나요?" (가솔린, 하이브리드 등)
-- importance.fuelEfficiency: "연비를 중요하게 생각하시나요?"
-- importance.safety: "안전성이 우선순위인가요?"
-- brands: "선호하는 브랜드가 있으신가요?"
-- transmission: "자동 변속기를 원하시나요?"
+**예시**:
+1. 사용자: "출퇴근용 연비 좋은 차 추천해주세요"
+   → 누락: carType
+   → 질문: "출퇴근용이시군요! 세단이나 SUV 중 어떤 차종을 선호하시나요? 🚗"
 
-**출력 형식** (JSON만 반환, 설명 없이):
+2. 사용자: "3000만원대 가족용 차 찾아요"
+   → 누락: carType
+   → 질문: "가족용이라면 7인승 SUV도 고려하고 계신가요? 아니면 5인승 세단도 괜찮으신가요?"
+
+3. 사용자: "신혼부부용 차 추천해주세요"
+   → 누락: budget
+   → 질문: "신혼부부용이시군요! 😊 예산은 어느 정도 생각하고 계세요?"
+
+**질문 생성 가이드**:
+- budget: 예산 범위 물어보기 (예: "예산은 어느 정도로 생각하고 계세요?")
+- usage: 용도 물어보기 (예: "주로 어떤 용도로 사용하실 건가요?")
+- carType: 차종 물어보기 (예: "어떤 차종을 선호하시나요? (SUV, 세단, 경차 등)")
+- fuelType: 연료 타입 물어보기 (예: "하이브리드나 전기차도 고려하고 계신가요?")
+- brands: 선호 브랜드 물어보기 (예: "선호하는 브랜드가 있으신가요?")
+
+**출력 형식** (JSON만 반환):
 {
-  "question": "자연스러운 질문 (이모지 포함 가능)",
-  "reasoning": "왜 이 질문을 하는지 간단 설명"
+  "question": "사용자 메시지에 자연스럽게 이어지는 질문 (1-2문장, 이모지 가능)",
+  "reasoning": "왜 이 질문을 하는지"
 }
 
 **중요**:
-1. 짧고 명확하게 (1-2문장)
-2. 친근한 톤 유지
-3. 대화 흐름에 자연스럽게 연결
-4. 이모지 적절히 사용 (💰 🚗 ⛽ 🏷️ 등)`;
+1. 사용자가 말한 내용을 반드시 반영하세요 (예: "출퇴근용이시군요!", "가족용이라면")
+2. 짧고 명확하게 (1-2문장)
+3. 친근한 톤 유지
+4. Mock 시나리오처럼 고정된 질문 NO! 무조건 사용자 메시지 기반 동적 생성`;
 
     try {
       const result = await model.generateContent(prompt);
@@ -215,17 +228,13 @@ JSON 형식으로 반환:
     missingField: ProfileField,
     context?: QuestionContext
   ): Promise<SmartQuestion> {
-    // Essential 필드는 빠른 템플릿 질문 (즉시 응답)
-    if (missingField.category === 'essential') {
-      return this.generateQuickQuestion(missingField);
-    }
-
-    // Important/Optional 필드는 AI 컨텍스트 질문 (자연스러움 우선)
+    // ✅ 개선: 모든 필드에 대해 AI 컨텍스트 질문 사용 (동적 응답)
+    // Essential 필드도 사용자 메시지에 따라 자연스럽게 질문
     if (context) {
       return await this.generateContextualQuestion(context);
     }
 
-    // 컨텍스트 없으면 템플릿 사용
+    // 컨텍스트 없으면 템플릿 사용 (폴백)
     return this.generateQuickQuestion(missingField);
   }
 }
