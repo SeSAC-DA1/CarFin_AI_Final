@@ -1,0 +1,188 @@
+import type { Vehicle } from "@shared/types/vehicle";
+import type { AgentTask, AgentResult } from "./ManagerAgent";
+
+/**
+ * Searcher Agent - MACRec Protocol
+ *
+ * 역할:
+ * 1. 차량 데이터베이스 검색
+ * 2. 필터링 (가격, 연식, 주행거리)
+ * 3. 브랜드 다양성 확보
+ */
+export class SearcherAgent {
+  private agentId = 'searcher';
+
+  /**
+   * Execute Agent Task
+   */
+  async execute(task: AgentTask, vehicles: Vehicle[]): Promise<AgentResult> {
+    const startTime = Date.now();
+
+    console.log(`🔍 Searcher Agent: ${task.action} 시작 (${vehicles.length}대 검색)`);
+
+    try {
+      let output: any;
+
+      switch (task.action) {
+        case 'filter_vehicles':
+          output = await this.filterVehicles(vehicles, task.input.criteria, task.input.userMessage);
+          break;
+
+        case 'search_by_criteria':
+          output = await this.searchByCriteria(vehicles, task.input);
+          break;
+
+        default:
+          throw new Error(`Unknown action: ${task.action}`);
+      }
+
+      const executionTime = Date.now() - startTime;
+
+      console.log(`✅ Searcher Agent: ${output.length}대 발견 (${executionTime}ms)`);
+
+      return {
+        taskId: task.taskId,
+        agent: this.agentId,
+        success: true,
+        output,
+        executionTime,
+        timestamp: new Date()
+      };
+
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      console.error(`❌ Searcher Agent: ${task.action} 실패`, error);
+
+      return {
+        taskId: task.taskId,
+        agent: this.agentId,
+        success: false,
+        output: { error: error instanceof Error ? error.message : 'Unknown error' },
+        executionTime,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Filter Vehicles (차량 필터링)
+   */
+  private filterVehicles(vehicles: Vehicle[], criteria: any, userMessage?: string): Vehicle[] {
+    const currentYear = new Date().getFullYear();
+
+    // 예산 범위 설정
+    let minPrice = 0;
+    let maxPrice = 5000; // 만원 단위
+
+    if (criteria.budget && Array.isArray(criteria.budget)) {
+      minPrice = criteria.budget[0] || 0;
+      maxPrice = criteria.budget[1] || 5000;
+    } else if (userMessage) {
+      // 메시지에서 예산 추출
+      const priceMatch = userMessage.match(/(\d+)만원?/);
+      if (priceMatch && priceMatch[1]) {
+        const targetPrice = parseInt(priceMatch[1]);
+        minPrice = Math.floor(targetPrice * 0.8);
+        maxPrice = Math.ceil(targetPrice * 1.2);
+      }
+    }
+
+    console.log(`💰 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원`);
+
+    // 상용차 키워드 (제외 대상)
+    const commercialVehicleKeywords = [
+      'st1', '포터', '봉고', '다마스', '라보',
+      '화물', '트럭', '냉동', '탑차', '밴'
+    ];
+
+    // 필터링
+    const filtered = vehicles.filter(v => {
+      // 상용차 제외
+      const modelLower = (v.model || '').toLowerCase();
+      const carTypeLower = (v.carType || '').toLowerCase();
+      const isCommercialVehicle = commercialVehicleKeywords.some(keyword =>
+        modelLower.includes(keyword) || carTypeLower.includes(keyword)
+      );
+      if (isCommercialVehicle) return false;
+
+      // 가격 필터
+      if (v.price && (v.price < minPrice || v.price > maxPrice)) return false;
+
+      // 연식 필터 (15년 이내)
+      if (v.modelYear && v.modelYear < currentYear - 15) return false;
+
+      // 주행거리 필터 (20만km 이하)
+      if (v.distance && v.distance > 200000) return false;
+
+      // 차종 필터
+      if (criteria.carType) {
+        const requestedType = criteria.carType.toLowerCase();
+        if (requestedType === 'suv') {
+          const isSUV = carTypeLower.includes('suv') ||
+                        carTypeLower.includes('rv') ||
+                        carTypeLower.includes('스포츠');
+          if (!isSUV) return false;
+        } else if (requestedType === '세단') {
+          const isSedan = carTypeLower.includes('세단') || carTypeLower.includes('sedan');
+          if (!isSedan) return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 품질 점수로 정렬
+    const sorted = filtered.sort((a, b) => {
+      const aScore = (a.modelYear || 2000) * 0.7 - (a.distance || 0) * 0.00001;
+      const bScore = (b.modelYear || 2000) * 0.7 - (b.distance || 0) * 0.00001;
+      return bScore - aScore;
+    });
+
+    // 브랜드 다양성 확보
+    const brandDiverse = this.ensureBrandDiversity(sorted, 50);
+
+    console.log(`🎨 브랜드 다양성: ${brandDiverse.length}대 선택`);
+
+    return brandDiverse;
+  }
+
+  /**
+   * Search By Criteria (기준 기반 검색)
+   */
+  private searchByCriteria(vehicles: Vehicle[], criteria: any): Vehicle[] {
+    return this.filterVehicles(vehicles, criteria);
+  }
+
+  /**
+   * Ensure Brand Diversity (브랜드 다양성 확보)
+   */
+  private ensureBrandDiversity(vehicles: Vehicle[], maxCount: number): Vehicle[] {
+    const brandMap = new Map<string, Vehicle[]>();
+
+    // 브랜드별로 그룹화
+    for (const vehicle of vehicles) {
+      const brand = vehicle.manufacturer || '기타';
+      if (!brandMap.has(brand)) {
+        brandMap.set(brand, []);
+      }
+      brandMap.get(brand)!.push(vehicle);
+    }
+
+    // 라운드 로빈 방식으로 선택
+    const brandDiverseVehicles: Vehicle[] = [];
+    const maxPerBrand = Math.ceil(maxCount / Math.max(brandMap.size, 1));
+    let round = 0;
+
+    while (brandDiverseVehicles.length < maxCount && round < maxPerBrand) {
+      for (const [brand, vehicleList] of brandMap) {
+        if (vehicleList[round]) {
+          brandDiverseVehicles.push(vehicleList[round]);
+          if (brandDiverseVehicles.length >= maxCount) break;
+        }
+      }
+      round++;
+    }
+
+    return brandDiverseVehicles.slice(0, maxCount);
+  }
+}

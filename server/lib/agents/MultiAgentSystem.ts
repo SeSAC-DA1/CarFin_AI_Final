@@ -10,6 +10,11 @@ import { UserPreferenceProfile } from "../topsis/TOPSISEngine";
 // 🆕 Phase 5: 챗봇 흐름 개선 - 메시지 구체성 판단
 import { ProfileExtractor, ExtractedProfileUpdate } from "./ProfileExtractor";
 import { SmartQuestionEngine } from "./SmartQuestionEngine";
+// 🆕 Phase 1: MACRec Protocol Implementation
+import { ManagerAgent, AgentTask, AgentResult } from "./ManagerAgent";
+import { UserAnalystAgent } from "./UserAnalystAgent";
+import { SearcherAgent } from "./SearcherAgent";
+import { EvaluatorAgent } from "./EvaluatorAgent";
 
 export interface AgentMessage {
   agentId: string;
@@ -34,10 +39,22 @@ export class MultiAgentSystem {
   private profileExtractor: ProfileExtractor;
   private questionEngine: SmartQuestionEngine;
 
+  // 🆕 Phase 1: MACRec Agents
+  private manager: ManagerAgent;
+  private userAnalyst: UserAnalystAgent;
+  private searcher: SearcherAgent;
+  private evaluator: EvaluatorAgent;
+
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.profileExtractor = new ProfileExtractor(apiKey);
     this.questionEngine = new SmartQuestionEngine(apiKey);
+
+    // MACRec Agents 초기화
+    this.manager = new ManagerAgent(apiKey);
+    this.userAnalyst = new UserAnalystAgent(apiKey);
+    this.searcher = new SearcherAgent();
+    this.evaluator = new EvaluatorAgent();
   }
 
   async *collaborate(
@@ -46,63 +63,146 @@ export class MultiAgentSystem {
     reviews: HyundaiReview[] = [],
     userProfile?: any
   ): AsyncGenerator<{ type: string; agent: string; content: string; data?: any }> {
-    yield { type: "start", agent: "system", content: "멀티 에이전트 협업을 시작합니다..." };
+    console.log(`🚀 MACRec Protocol 시작: ${vehicles.length}대 차량, ${userMessage.length}자 메시지`);
 
-    // 🆕 Phase 5: 빠른 프로필 추출 및 구체성 판단
-    yield { type: "agent_working", agent: "concierge", content: "사용자 요청을 분석하고 있습니다..." };
+    yield { type: "start", agent: "system", content: "MACRec 멀티에이전트 협업 시작..." };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Phase 1: Task Decomposition (Manager Agent)
+    // ═══════════════════════════════════════════════════════════════
+    yield { type: "agent_working", agent: "manager", content: "🎯 Task Decomposition: 작업 분해 중..." };
+
     const extractedProfile = this.profileExtractor.quickExtract(userMessage);
-    const isConcrete = this.isConcreteRequest(extractedProfile);
-    console.log(`🔍 프로필 추출 결과:`, extractedProfile, `| 구체적: ${isConcrete}`);
+    const tasks = await this.manager.decompose(userMessage, extractedProfile);
 
-    let userNeeds = '';
-    let preferences = '';
+    yield {
+      type: "agent_response",
+      agent: "manager",
+      content: `✅ ${tasks.length}개 작업 분해 완료: ${tasks.map(t => t.agent).join(', ')}`
+    };
 
-    if (isConcrete) {
-      // 구체적 요청 → 바로 검색 (extractUserNeeds, analyzePreferences 생략)
-      userNeeds = `구체적 요청: ${JSON.stringify(extractedProfile)}`;
-      preferences = '즉시 검색 가능';
-      yield { type: "agent_response", agent: "concierge", content: `요청하신 조건으로 차량을 검색하겠습니다!` };
-    } else {
-      // 모호한 요청 → 추가 정보 수집 필요
-      userNeeds = await this.extractUserNeeds(userMessage);
-      yield { type: "agent_response", agent: "concierge", content: `사용자 니즈 파악: ${userNeeds}` };
+    // ═══════════════════════════════════════════════════════════════
+    // Phase 2: Parallel Execution (Agents 병렬 실행)
+    // ═══════════════════════════════════════════════════════════════
+    const { parallel, sequential } = this.manager.identifyParallelTasks(tasks);
 
-      yield { type: "agent_working", agent: "needs_analyst", content: "라이프스타일과 선호도를 분석하고 있습니다..." };
-      preferences = await this.analyzePreferences(userMessage, userNeeds);
-      yield { type: "agent_response", agent: "needs_analyst", content: `선호도 분석 완료: ${preferences}` };
+    const allResults: AgentResult[] = [];
+
+    // Round 0: 병렬 실행 가능한 작업들
+    if (parallel.length > 0 && parallel[0].length > 0) {
+      yield {
+        type: "agent_working",
+        agent: "manager",
+        content: `🔀 Parallel Execution: ${parallel[0].length}개 에이전트 동시 실행 중...`
+      };
+
+      const parallelResults = await Promise.all(
+        parallel[0].map(async (task) => {
+          console.log(`⚡ 병렬 실행: ${task.agent} - ${task.action}`);
+
+          if (task.agent === 'user_analyst') {
+            return await this.userAnalyst.execute(task);
+          } else if (task.agent === 'searcher') {
+            return await this.searcher.execute(task, vehicles);
+          } else if (task.agent === 'evaluator') {
+            return await this.evaluator.execute(task, vehicles, userProfile);
+          }
+
+          throw new Error(`Unknown agent: ${task.agent}`);
+        })
+      );
+
+      allResults.push(...parallelResults);
+
+      yield {
+        type: "agent_response",
+        agent: "manager",
+        content: `✅ 병렬 실행 완료: ${parallelResults.filter(r => r.success).length}/${parallelResults.length} 성공`
+      };
     }
 
-    yield { type: "agent_working", agent: "data_analyst", content: "차량 데이터를 검색하고 분석하고 있습니다..." };
-    const filteredVehicles = this.filterVehicles(vehicles, userMessage);
-    yield { type: "agent_response", agent: "data_analyst", content: `${filteredVehicles.length}개의 매칭 차량을 발견했습니다` };
+    // Round 1+: 순차 실행 필요한 작업들
+    for (const task of sequential) {
+      yield {
+        type: "agent_working",
+        agent: task.agent,
+        content: `➡️ Sequential: ${task.agent} - ${task.action} 실행 중...`
+      };
 
-    // 🆕 Phase 2: TOPSIS + TCO 기반 평가
-    yield { type: "agent_working", agent: "concierge", content: "TOPSIS 알고리즘 + TCO(총 소유비용)으로 차량을 평가하고 있습니다..." };
-    const rankedVehicles = await this.rankVehiclesWithTOPSIS(filteredVehicles, userMessage, preferences, reviews, userProfile);
+      let result: AgentResult;
 
-    const top3 = rankedVehicles.slice(0, 3);
+      if (task.agent === 'user_analyst') {
+        // 이전 결과를 input에 추가
+        const prevResults = allResults.filter(r => task.dependencies.includes(r.taskId));
+        task.input.previousNeeds = prevResults[0]?.output;
+        result = await this.userAnalyst.execute(task);
+      } else if (task.agent === 'searcher') {
+        result = await this.searcher.execute(task, vehicles);
+      } else if (task.agent === 'evaluator') {
+        // Searcher 결과를 Evaluator에 전달
+        const searcherResult = allResults.find(r => r.agent === 'searcher');
+        const candidateVehicles = searcherResult?.output || vehicles;
+        result = await this.evaluator.execute(task, candidateVehicles, userProfile);
+      } else {
+        throw new Error(`Unknown agent: ${task.agent}`);
+      }
 
-    // 🏦 금융 전문 에이전트 추가
-    yield { type: "agent_working", agent: "financial_advisor", content: "추천 차량별 맞춤 금융 상품을 분석하고 있습니다..." };
+      allResults.push(result);
+
+      if (result.success) {
+        yield {
+          type: "agent_response",
+          agent: task.agent,
+          content: `✅ ${task.action} 완료 (${result.executionTime}ms)`
+        };
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Phase 3: Result Aggregation (Manager Agent)
+    // ═══════════════════════════════════════════════════════════════
+    yield { type: "agent_working", agent: "manager", content: "🧩 Result Aggregation: 결과 합의 중..." };
+
+    const consensus = await this.manager.aggregate(allResults);
+
+    yield {
+      type: "agent_response",
+      agent: "manager",
+      content: `✅ 합의 완료: Top ${consensus.rankedVehicles.length}개 차량 선정`
+    };
+
+    const top3 = consensus.rankedVehicles.slice(0, 3);
+
+    // ═══════════════════════════════════════════════════════════════
+    // Financial Analysis (기존 로직 유지)
+    // ═══════════════════════════════════════════════════════════════
+    yield { type: "agent_working", agent: "financial_advisor", content: "금융 상품 분석 중..." };
     const financialAnalysis = await this.analyzeFinancialOptions(top3, userMessage, userProfile);
-    yield { type: "agent_response", agent: "financial_advisor", content: `금융 상품 분석 완료: 할부 vs 리스 비교, 총 소유비용 계산 완료` };
+    yield { type: "agent_response", agent: "financial_advisor", content: `금융 분석 완료` };
 
-    // 🎯 종합 추천 (차량 + 금융)
-    yield { type: "agent_working", agent: "concierge", content: "차량 추천과 금융 옵션을 종합하여 최종 분석 중..." };
+    yield { type: "agent_working", agent: "concierge", content: "종합 추천 생성 중..." };
     const finalRecommendations = await this.generateComprehensiveRecommendation(top3, financialAnalysis, userMessage);
 
     yield {
       type: "recommendations",
       agent: "concierge",
-      content: "차량 추천 및 금융 상담이 완료되었습니다",
+      content: "MACRec 추천 완료",
       data: {
         vehicles: top3,
         financialAnalysis,
-        comprehensiveAdvice: finalRecommendations
+        comprehensiveAdvice: finalRecommendations,
+        macrecMetadata: {
+          totalTasks: tasks.length,
+          parallelTasks: parallel[0]?.length || 0,
+          sequentialTasks: sequential.length,
+          totalExecutionTime: consensus.aggregationMetadata.avgExecutionTime
+        }
       }
     };
 
-    yield { type: "complete", agent: "system", content: "협업 완료" };
+    console.log(`✅ MACRec Protocol 완료: ${top3.length}개 추천, ${allResults.length}개 에이전트 결과`);
+
+    yield { type: "complete", agent: "system", content: "MACRec 협업 완료" };
   }
 
   /**
