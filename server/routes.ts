@@ -149,6 +149,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🆕 Phase 6-3: 차량 진단 모달용 전체 상세 정보 (3개 테이블 JOIN)
+  app.get("/api/vehicles/:id/full-details", async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+
+      // 병렬 조회로 성능 최적화
+      const [vehicle, insurance, inspection, options] = await Promise.all([
+        storage.getVehicleById(vehicleId),
+        storage.getVehicleInsurance(vehicleId),
+        storage.getVehicleInspection(vehicleId),
+        storage.getVehicleOptions(vehicleId)
+      ]);
+
+      if (!vehicle) {
+        return res.status(404).json({ error: "Vehicle not found" });
+      }
+
+      return res.json({
+        vehicle,
+        insurance,
+        inspection,
+        options: options || []
+      });
+    } catch (error) {
+      console.error('차량 상세 정보 조회 실패:', error);
+      return res.status(500).json({ error: "Failed to get full vehicle details" });
+    }
+  });
+
   app.post("/api/vehicles", async (req, res) => {
     try {
       const validatedData = insertVehicleSchema.parse(req.body);

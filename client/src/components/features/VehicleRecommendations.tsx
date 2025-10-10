@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import TOPSISAnalysisModal from "./TOPSISAnalysisModal";
+import VehicleInsightDashboard from "./VehicleInsightDashboard";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
 import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
 import TCODetailModal from "./TCODetailModal";
@@ -433,9 +433,9 @@ export default function VehicleRecommendations({
       )}
 
 
-      {/* TOPSIS 상세 분석 모달 (Fallback) */}
+      {/* 🆕 Phase 6-3: 차량 진단 대시보드 (6개 탭 + RDS 통합) */}
       {selectedVehicleForTOPSIS && (
-        <TOPSISAnalysisModal
+        <VehicleInsightDashboard
           isOpen={showTOPSISModal}
           onClose={() => {
             setShowTOPSISModal(false);
@@ -443,11 +443,14 @@ export default function VehicleRecommendations({
           }}
           vehicle={{
             id: selectedVehicleForTOPSIS.id.toString(),
+            vehicleId: typeof selectedVehicleForTOPSIS.id === 'number' ? selectedVehicleForTOPSIS.id : parseInt(selectedVehicleForTOPSIS.id as string),
             manufacturer: selectedVehicleForTOPSIS.manufacturer || selectedVehicleForTOPSIS.name.split(' ')[0] || '알 수 없음',
             model: selectedVehicleForTOPSIS.model || selectedVehicleForTOPSIS.name.split(' ')[1] || selectedVehicleForTOPSIS.name,
+            modelYear: selectedVehicleForTOPSIS.year,
             year: selectedVehicleForTOPSIS.year,
             price: selectedVehicleForTOPSIS.price,
             mileage: selectedVehicleForTOPSIS.mileage,
+            distance: selectedVehicleForTOPSIS.mileage,
             fuelType: selectedVehicleForTOPSIS.fuel,
             location: selectedVehicleForTOPSIS.location || '알 수 없음'
           }}
