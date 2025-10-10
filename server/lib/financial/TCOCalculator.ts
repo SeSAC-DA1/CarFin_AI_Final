@@ -39,6 +39,20 @@ export interface TCOResult {
   warnings: string[];        // 경고 메시지
 }
 
+/**
+ * 연도별 TCO 타임라인 (Phase 6-1 추가)
+ */
+export interface TCOYearlyBreakdown {
+  year: number;              // 0, 1, 2, 3...
+  acquisitionTax: number;    // 해당 연도 취득세 (0년차만 발생)
+  vehicleTax: number;        // 해당 연도 자동차세
+  maintenance: number;       // 해당 연도 정비비
+  depreciation: number;      // 해당 연도 감가상각
+  fuelCost: number;          // 해당 연도 연료비
+  yearTotal: number;         // 해당 연도 총비용
+  cumulative: number;        // 누적 총비용
+}
+
 // ============================================================================
 // Constants
 // ============================================================================
@@ -373,5 +387,92 @@ export class TCOCalculator {
     // }
 
     return Math.min(confidence, 1.0);
+  }
+
+  // ==========================================================================
+  // Phase 6-1: 연도별 TCO 타임라인 계산
+  // ==========================================================================
+
+  /**
+   * 연도별 TCO 타임라인 계산
+   *
+   * Area Chart 시각화를 위한 연도별 breakdown 제공
+   *
+   * @param input TCO 입력 데이터
+   * @returns 연도별 TCO breakdown 배열
+   */
+  static async calculateTimeline(input: TCOInput): Promise<TCOYearlyBreakdown[]> {
+    const { vehicle, annualKm, ownershipYears, currentYear } = input;
+    const timeline: TCOYearlyBreakdown[] = [];
+
+    console.log(`📊 TCO 타임라인 계산 시작: ${ownershipYears}년`);
+
+    // 배기량 추정
+    let displacement = vehicle.displacement;
+    if (!displacement) {
+      displacement = this.estimateDisplacement(vehicle);
+    }
+
+    // 취득세 (0년차 1회만 발생)
+    const acquisitionTax = this.calculateAcquisitionTax(vehicle.price);
+
+    // 연료비 정보
+    const fuelPrice = DEFAULT_FUEL_PRICES[vehicle.fuelType] || DEFAULT_FUEL_PRICES["가솔린"];
+    const fuelEfficiency = DEFAULT_FUEL_EFFICIENCY[vehicle.fuelType] || DEFAULT_FUEL_EFFICIENCY["가솔린"];
+    const annualFuelCost = Math.round((annualKm / fuelEfficiency) * fuelPrice);
+
+    // 정비비 (연간 고정)
+    const annualMaintenance = annualKm * 88;
+
+    // 감가상각 (정률법 20%)
+    const depreciationRate = 0.20;
+    const currentValue = vehicle.price * 10000;
+
+    let cumulativeTotal = 0;
+
+    // 연도별 계산
+    for (let year = 0; year <= ownershipYears; year++) {
+      // 자동차세 (차령 감액 적용)
+      const vehicleAge = (currentYear - vehicle.modelYear) + year;
+      const baseRate = displacement <= 1600 ? 140 : 200;
+      const baseTax = displacement * baseRate * 1.3;
+
+      let ageDiscount = 0;
+      if (vehicleAge >= 3) {
+        const yearsForDiscount = vehicleAge - 2;
+        ageDiscount = Math.min(yearsForDiscount * 0.05, 0.5);
+      }
+      const yearlyVehicleTax = Math.round(baseTax * (1 - ageDiscount));
+
+      // 감가상각 (연간)
+      const valueAtYearStart = currentValue * Math.pow(1 - depreciationRate, year);
+      const valueAtYearEnd = currentValue * Math.pow(1 - depreciationRate, year + 1);
+      const yearlyDepreciation = Math.round(valueAtYearStart - valueAtYearEnd);
+
+      // 연도별 총합
+      const yearTotal =
+        (year === 0 ? acquisitionTax : 0) +
+        (year === 0 ? 0 : yearlyVehicleTax) +  // 0년차는 자동차세 없음
+        (year === 0 ? 0 : annualMaintenance) +  // 0년차는 정비비 없음
+        yearlyDepreciation +
+        (year === 0 ? 0 : annualFuelCost);  // 0년차는 연료비 없음
+
+      cumulativeTotal += yearTotal;
+
+      timeline.push({
+        year,
+        acquisitionTax: year === 0 ? acquisitionTax : 0,
+        vehicleTax: year === 0 ? 0 : yearlyVehicleTax,
+        maintenance: year === 0 ? 0 : annualMaintenance,
+        depreciation: yearlyDepreciation,
+        fuelCost: year === 0 ? 0 : annualFuelCost,
+        yearTotal,
+        cumulative: cumulativeTotal
+      });
+
+      console.log(`  📅 ${year}년차: ${yearTotal.toLocaleString()}원 (누적: ${cumulativeTotal.toLocaleString()}원)`);
+    }
+
+    return timeline;
   }
 }

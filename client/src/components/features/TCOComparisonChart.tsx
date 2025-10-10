@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { TrendingDown, Wallet, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { TrendingDown, Wallet, Info, Award } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
 
@@ -11,31 +11,11 @@ interface TCOComparisonChartProps {
 
 export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps) {
   // TCO 데이터가 있는 차량만 필터링
-  const vehiclesWithTCO = vehicles.filter(v => v.tco);
+  const vehiclesWithTCO = vehicles.filter(v => v.tco && v.tco.timeline);
 
   if (vehiclesWithTCO.length === 0) {
     return null;
   }
-
-  // ✅ Phase 4: 차트 데이터 준비 (원 → 만원 변환) + 차량 구분 명확화
-  const chartData = vehiclesWithTCO.map((vehicle, index) => {
-    const tco = vehicle.tco!;
-    const manufacturer = vehicle.manufacturer || vehicle.name.split(' ')[0] || '알 수 없음';
-    const model = vehicle.model || vehicle.name.split(' ').slice(1).join(' ') || '';
-    const shortLabel = model.length > 8 ? model.substring(0, 8) : model; // 모델명 8자 제한
-
-    return {
-      name: `${index + 1}위\n${manufacturer} ${shortLabel}`,
-      fullName: `${manufacturer} ${model} (${vehicle.year})`,
-      취득세: Math.round(tco.breakdown.acquisitionTax / 10000),
-      자동차세: Math.round(tco.breakdown.vehicleTax / 10000),
-      정비비: Math.round(tco.breakdown.maintenance / 10000),
-      감가상각: Math.round(tco.breakdown.depreciation / 10000),
-      연료비: Math.round(tco.breakdown.fuelCost / 10000),
-      총비용: Math.round(tco.total / 10000),
-      rank: index + 1
-    };
-  });
 
   // 색상 정의
   const colors = {
@@ -46,23 +26,45 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
     연료비: "#10B981"  // green
   };
 
-  const rankColors = ["#F59E0B", "#94A3B8", "#D97706"]; // 금, 은, 동
+  const vehicleColors = ["#F59E0B", "#3B82F6", "#EF4444"]; // 1위, 2위, 3위
+  const rankColors = ["text-yellow-500", "text-blue-500", "text-red-500"];
+  const rankBgColors = ["bg-yellow-500", "bg-blue-500", "bg-red-500"];
+  const rankLabels = ["🥇 1위", "🥈 2위", "🥉 3위"];
+
+  // ✅ Phase 6-1: Area Chart 타임라인 데이터 준비
+  const timelineData = vehiclesWithTCO[0].tco!.timeline!.map((_, yearIndex) => {
+    const dataPoint: any = {
+      year: `${yearIndex}년차`
+    };
+
+    vehiclesWithTCO.forEach((vehicle, vIndex) => {
+      const yearData = vehicle.tco!.timeline![yearIndex];
+      const vehicleName = `${vehicle.rank}위`;
+      dataPoint[vehicleName] = Math.round(yearData.cumulative / 10000);
+    });
+
+    return dataPoint;
+  });
+
+  // 최저 TCO 차량 찾기
+  const lowestTCOIndex = vehiclesWithTCO.reduce((minIndex, vehicle, index, array) => {
+    return vehicle.tco!.total < array[minIndex].tco!.total ? index : minIndex;
+  }, 0);
 
   // 커스텀 툴팁
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
       return (
         <Card className="border-2 shadow-lg">
-          <CardContent className="p-4 space-y-2">
-            <p className="font-bold text-sm mb-2">{data.fullName}</p>
+          <CardContent className="p-3 space-y-1">
+            <p className="font-bold text-sm mb-2">{payload[0].payload.year}</p>
             <div className="space-y-1 text-xs">
-              {payload.map((entry: any) => (
+              {payload.map((entry: any, index: number) => (
                 <div key={entry.dataKey} className="flex items-center justify-between gap-4">
                   <span className="flex items-center gap-2">
                     <span
-                      className="w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: entry.color }}
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: entry.stroke }}
                     />
                     {entry.dataKey}
                   </span>
@@ -70,27 +72,12 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                 </div>
               ))}
             </div>
-            <div className="pt-2 border-t border-border mt-2">
-              <div className="flex items-center justify-between font-bold">
-                <span>총 소유비용</span>
-                <span className="text-primary">{data.총비용.toLocaleString()}만원</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
       );
     }
     return null;
   };
-
-  // ✅ Phase 3-2: TCO 차이 계산 (원 → 만원 변환)
-  const tcoGap = vehiclesWithTCO.length >= 2
-    ? Math.round((vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) / 10000)
-    : 0;
-
-  const percentGap = vehiclesWithTCO.length >= 2
-    ? ((vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) / vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total * 100).toFixed(1)
-    : "0";
 
   return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
@@ -101,302 +88,207 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
               <Wallet className="w-6 h-6 text-primary" />
               총 소유비용(TCO) 비교 분석
             </CardTitle>
-            <CardDescription className="mt-2">
-              {vehiclesWithTCO[0]?.tco?.ownershipYears || 3}년 보유 시 실제로 드는 총 비용을 5가지 항목으로 비교합니다
+            <CardDescription className="mt-2 text-sm">
+              {vehiclesWithTCO[0].tco!.ownershipYears}년 보유 시 누적 비용 추이 (취득세, 자동차세, 정비비, 감가상각, 연료비 포함)
             </CardDescription>
           </div>
-          <Badge className="bg-green-500/10 text-green-600 border-green-200">
-            핀테크 혁신
-          </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* ✅ Phase 3-3: 3개 차량 비교 카드 (1단: 명확한 비교) */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {vehiclesWithTCO.map((vehicle, index) => {
-            const isLowest = index === vehiclesWithTCO.length - 1;
-            const diffFromLowest = vehicle.tco!.total - vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total;
-            const percentDiff = vehiclesWithTCO.length > 1
-              ? ((diffFromLowest / vehiclesWithTCO[vehiclesWithTCO.length - 1].tco!.total) * 100).toFixed(1)
-              : "0";
+        {/* ✅ Phase 6-1: Area Chart - 연도별 누적 비용 추이 */}
+        <div className="bg-background/50 p-4 rounded-lg border border-border">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <TrendingDown className="w-4 h-4" />
+            {vehiclesWithTCO[0].tco!.ownershipYears}년간 누적 비용 추이
+          </h3>
 
-            // 가장 저렴한 비용 항목 찾기
-            const breakdown = vehicle.tco!.breakdown;
-            const costs = [
-              { name: "연료비", value: breakdown.fuelCost },
-              { name: "감가상각", value: breakdown.depreciation },
-              { name: "정비비", value: breakdown.maintenance }
-            ];
-            const lowestCost = costs.reduce((min, cost) => cost.value < min.value ? cost : min);
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={timelineData}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+              <XAxis
+                dataKey="year"
+                tick={{ fontSize: 12 }}
+                stroke="#888"
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                stroke="#888"
+                tickFormatter={(value) => `${(value / 100).toFixed(0)}백만원`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                wrapperStyle={{ paddingTop: '20px' }}
+                iconType="circle"
+              />
+              {vehiclesWithTCO.map((vehicle, index) => (
+                <Area
+                  key={vehicle.id}
+                  type="monotone"
+                  dataKey={`${vehicle.rank}위`}
+                  stackId="1"
+                  stroke={vehicleColors[index]}
+                  fill={vehicleColors[index]}
+                  fillOpacity={0.6}
+                  strokeWidth={3}
+                />
+              ))}
+            </AreaChart>
+          </ResponsiveContainer>
+
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-2 text-xs">
+              <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-blue-700 dark:text-blue-300">
+                <strong>차트 해석:</strong> 영역이 넓을수록 누적 비용이 높습니다.
+                시간이 지날수록 감가상각과 연료비가 누적되어 총 소유비용이 증가합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ✅ Phase 6-1: 3개 요약 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {vehiclesWithTCO.map((vehicle, index) => {
+            const tco = vehicle.tco!;
+            const isLowest = index === lowestTCOIndex;
+            const manufacturer = vehicle.manufacturer || vehicle.name.split(' ')[0] || '알 수 없음';
+            const model = vehicle.model || vehicle.name.split(' ').slice(1).join(' ') || '';
+
+            // vs 1위 차이 계산
+            const diffFrom1st = index === 0
+              ? 0
+              : Math.round((tco.total - vehiclesWithTCO[0].tco!.total) / 10000);
+            const percentDiffFrom1st = index === 0
+              ? 0
+              : ((tco.total - vehiclesWithTCO[0].tco!.total) / vehiclesWithTCO[0].tco!.total * 100);
 
             return (
               <Card
                 key={vehicle.id}
                 className={cn(
-                  "transition-all duration-300",
-                  isLowest
-                    ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-500 shadow-lg shadow-green-500/20"
-                    : "bg-card border-border"
+                  "relative overflow-hidden transition-all duration-300",
+                  isLowest && "ring-2 ring-green-500 shadow-lg shadow-green-500/20"
                 )}
               >
                 <CardContent className="p-4 space-y-3">
                   {/* 순위 배지 */}
                   <div className="flex items-center justify-between">
-                    <Badge className={cn(
-                      "text-xs font-bold",
-                      index === 0 && "bg-yellow-500 text-yellow-900",
-                      index === 1 && "bg-gray-400 text-gray-900",
-                      index === 2 && "bg-amber-600 text-amber-900"
-                    )}>
-                      {index + 1}위
+                    <Badge
+                      className={cn(
+                        "text-sm font-bold",
+                        index === 0 && "bg-yellow-500 text-yellow-900",
+                        index === 1 && "bg-blue-500 text-blue-900",
+                        index === 2 && "bg-red-500 text-red-900"
+                      )}
+                    >
+                      {rankLabels[index]}
                     </Badge>
                     {isLowest && (
-                      <Badge className="bg-green-500 text-white text-xs">최저 TCO</Badge>
+                      <Badge className="bg-green-500 text-white">
+                        ✅ 최저 TCO
+                      </Badge>
                     )}
                   </div>
 
-                  {/* 차량 정보 */}
+                  {/* 차량명 */}
                   <div>
-                    <p className="font-semibold text-sm truncate">
-                      {vehicle.manufacturer || vehicle.name.split(' ')[0]}
+                    <p className="font-bold text-base">
+                      {manufacturer} {model}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {vehicle.model || vehicle.name} ({vehicle.year})
+                      {vehicle.year}년 • {vehicle.fuel}
                     </p>
                   </div>
 
                   {/* 총 TCO */}
                   <div className="pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-1">총 소유비용</p>
-                    <p className="text-2xl font-bold text-primary">
-                      {Math.round(vehicle.tco!.total / 10000).toLocaleString()}
-                      <span className="text-sm font-normal text-muted-foreground ml-1">만원</span>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {tco.ownershipYears}년 총 소유비용
+                    </p>
+                    <p className={cn(
+                      "text-2xl font-bold",
+                      isLowest ? "text-green-600" : "text-primary"
+                    )}>
+                      {(tco.total / 10000).toFixed(0)}
+                      <span className="text-sm ml-1">만원</span>
                     </p>
                   </div>
 
-                  {/* 최저 대비 차이 */}
-                  <div className={cn(
-                    "p-2 rounded-lg text-xs",
-                    isLowest
-                      ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400"
-                      : "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400"
-                  )}>
-                    {isLowest ? (
-                      <div className="flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span className="font-semibold">가장 저렴</span>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span>최저 대비</span>
-                          <span className="font-bold">+{Math.round(diffFromLowest / 10000).toLocaleString()}만원</span>
+                  {/* 5개 항목 미니 바 차트 */}
+                  <div className="space-y-1.5">
+                    {[
+                      { name: '취득세', value: tco.breakdown.acquisitionTax, color: colors.취득세 },
+                      { name: '자동차세', value: tco.breakdown.vehicleTax, color: colors.자동차세 },
+                      { name: '정비비', value: tco.breakdown.maintenance, color: colors.정비비 },
+                      { name: '감가상각', value: tco.breakdown.depreciation, color: colors.감가상각 },
+                      { name: '연료비', value: tco.breakdown.fuelCost, color: colors.연료비 }
+                    ].map((item) => {
+                      const percentage = (item.value / tco.total) * 100;
+                      return (
+                        <div key={item.name} className="space-y-0.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="flex items-center gap-1.5">
+                              <span
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="text-muted-foreground">{item.name}</span>
+                            </span>
+                            <span className="font-semibold">
+                              {Math.round(item.value / 10000)}만원
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div
+                              className="h-1.5 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: item.color
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="text-[10px] opacity-80">
-                          (+{percentDiff}% 차이)
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
 
-                  {/* 강점 */}
-                  <div className="pt-2 border-t border-border">
-                    <p className="text-[10px] text-muted-foreground mb-1">비용 강점</p>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-                        {lowestCost.name} 낮음
-                      </Badge>
+                  {/* vs 1위 비교 */}
+                  {index !== 0 && (
+                    <div className="pt-2 border-t border-border">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">vs 1위</span>
+                        <span className={cn(
+                          "font-bold",
+                          diffFrom1st > 0 ? "text-red-600" : "text-green-600"
+                        )}>
+                          {diffFrom1st > 0 ? '+' : ''}{diffFrom1st}만원 ({percentDiffFrom1st > 0 ? '+' : ''}{percentDiffFrom1st.toFixed(1)}%)
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {index === 0 && (
+                    <div className="pt-2 border-t border-border">
+                      <div className="flex items-center justify-center gap-1 text-xs text-green-600 font-semibold">
+                        <Award className="w-3 h-3" />
+                        <span>가장 경제적인 선택</span>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* ✅ Phase 5: 도넛 차트로 변경 (3개 나란히 비교) */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {vehiclesWithTCO.map((vehicle, vehicleIndex) => {
-            const tco = vehicle.tco!;
-            const pieData = [
-              { name: '취득세', value: Math.round(tco.breakdown.acquisitionTax / 10000), color: colors.취득세 },
-              { name: '자동차세', value: Math.round(tco.breakdown.vehicleTax / 10000), color: colors.자동차세 },
-              { name: '정비비', value: Math.round(tco.breakdown.maintenance / 10000), color: colors.정비비 },
-              { name: '감가상각', value: Math.round(tco.breakdown.depreciation / 10000), color: colors.감가상각 },
-              { name: '연료비', value: Math.round(tco.breakdown.fuelCost / 10000), color: colors.연료비 }
-            ];
-
-            const isLowest = vehicleIndex === vehiclesWithTCO.length - 1;
-
-            return (
-              <div key={vehicle.id} className="space-y-3">
-                {/* 순위 및 차량명 */}
-                <div className="text-center space-y-2">
-                  <Badge className={cn(
-                    "text-sm font-bold px-3 py-1",
-                    vehicleIndex === 0 && "bg-yellow-500 text-yellow-900",
-                    vehicleIndex === 1 && "bg-gray-400 text-gray-900",
-                    vehicleIndex === 2 && "bg-amber-600 text-amber-900"
-                  )}>
-                    {vehicleIndex + 1}위
-                  </Badge>
-                  <p className="font-semibold text-sm">
-                    {vehicle.manufacturer} {vehicle.model}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    ({vehicle.year})
-                  </p>
-                </div>
-
-                {/* 도넛 차트 */}
-                <div className="h-[280px] relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value: number) => `${value.toLocaleString()}만원`}
-                        contentStyle={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          fontSize: '12px'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-
-                  {/* 중앙 총비용 표시 */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">총 소유비용</p>
-                      <p className={cn(
-                        "text-xl font-bold",
-                        isLowest ? "text-green-600" : "text-primary"
-                      )}>
-                        {Math.round(tco.total / 10000).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">만원</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 비용 상세 */}
-                <div className="space-y-1 text-xs">
-                  {pieData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-sm"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-muted-foreground">{item.name}</span>
-                      </div>
-                      <span className="font-semibold">{item.value.toLocaleString()}만원</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 최저 TCO 배지 */}
-                {isLowest && (
-                  <div className="pt-2">
-                    <Badge className="w-full justify-center bg-green-500 text-white">
-                      ✅ 최저 TCO
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 범례 설명 */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-border">
-          {Object.entries(colors).map(([key, color]) => (
-            <div key={key} className="flex items-center gap-2">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-xs text-muted-foreground">{key}</span>
-            </div>
-          ))}
-        </div>
-
         {/* 법적 근거 */}
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p className="font-semibold text-foreground">법적 근거 기반 정확한 계산</p>
-                <ul className="space-y-0.5 ml-4">
-                  <li>• 취득세/자동차세: 지방세법 제11조, 제127조</li>
-                  <li>• 정비비: DOE/ANL 표준 88원/km</li>
-                  <li>• 감가상각: 정률법 20% (한국회계기준)</li>
-                  <li>• 연료비: 실시간 유가 + 차종별 연비</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ✅ Phase 3-3: 핵심 인사이트 (3단: 왜 저렴한가?) */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-2 border-green-500/30">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-              <div className="space-y-3 flex-1">
-                <p className="text-base font-bold text-foreground">
-                  💰 {vehiclesWithTCO[vehiclesWithTCO.length - 1]?.manufacturer} 선택 시 최대 {Math.abs(tcoGap).toLocaleString()}만원 절약
-                </p>
-
-                {vehiclesWithTCO.length >= 2 && (() => {
-                  const lowest = vehiclesWithTCO[vehiclesWithTCO.length - 1];
-                  const highest = vehiclesWithTCO[0];
-
-                  // 비용 항목별 차이 계산
-                  const depreciationDiff = Math.round((highest.tco!.breakdown.depreciation - lowest.tco!.breakdown.depreciation) / 10000);
-                  const fuelDiff = Math.round((highest.tco!.breakdown.fuelCost - lowest.tco!.breakdown.fuelCost) / 10000);
-                  const maintenanceDiff = Math.round((highest.tco!.breakdown.maintenance - lowest.tco!.breakdown.maintenance) / 10000);
-
-                  const differences = [
-                    { name: "감가상각", diff: depreciationDiff },
-                    { name: "연료비", diff: fuelDiff },
-                    { name: "정비비", diff: maintenanceDiff }
-                  ].filter(item => item.diff > 0).sort((a, b) => b.diff - a.diff);
-
-                  return (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">절약 이유:</span> {differences.slice(0, 2).map(d => `${d.name} ${d.diff.toLocaleString()}만원`).join(' + ')}
-                      </p>
-
-                      <div className="flex items-center gap-2 text-xs bg-white/50 dark:bg-black/20 p-2 rounded">
-                        <Info className="w-4 h-4 text-blue-600" />
-                        <span className="text-muted-foreground">
-                          차량 가격만 비교하면 놓칠 수 있는 {vehiclesWithTCO[0]?.tco?.ownershipYears}년간의 <span className="font-semibold text-foreground">실제 총비용</span>을 보여드립니다.
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="p-3 bg-muted/30 rounded-lg border border-border">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong>📖 계산 근거:</strong> 취득세(지방세법 제11조, 7%), 자동차세(지방세법 제127조, 차령 감액 적용),
+            정비비(DOE/ANL 88원/km), 감가상각(정률법 20%), 연료비(평균 연비 × 현재 유가)
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

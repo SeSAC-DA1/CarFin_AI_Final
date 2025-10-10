@@ -359,7 +359,9 @@ export class MultiAgentSystem {
             total: tcoTotal,
             breakdown: tcoData,
             confidence: r.alternative.metadata.tcoConfidence || 0.7,
-            ownershipYears: drivingProfile.ownershipYears
+            ownershipYears: drivingProfile.ownershipYears,
+            // 🆕 Phase 6-1: TCO 타임라인
+            timeline: r.alternative.metadata.tcoTimeline
           } : undefined
         },
         rank: r.rank,

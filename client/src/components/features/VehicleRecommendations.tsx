@@ -39,6 +39,17 @@ export interface Vehicle {
     };
     confidence: number;
     ownershipYears: number;
+    // 🆕 Phase 6-1: 연도별 타임라인
+    timeline?: Array<{
+      year: number;
+      acquisitionTax: number;
+      vehicleTax: number;
+      maintenance: number;
+      depreciation: number;
+      fuelCost: number;
+      yearTotal: number;
+      cumulative: number;
+    }>;
   };
 }
 

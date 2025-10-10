@@ -96,12 +96,17 @@ export async function convertVehicleToTOPSISAlternative(
   const brandValue = BRAND_VALUE_MAP[vehicle.manufacturer || ''] || 70;
 
   // 🆕 TCO 계산
-  const tcoResult = await TCOCalculator.calculate({
+  const tcoInput = {
     vehicle,
     annualKm: userDrivingProfile?.annualKm || 15000,
     ownershipYears: userDrivingProfile?.ownershipYears || 3,
     currentYear: new Date().getFullYear()
-  });
+  };
+
+  const tcoResult = await TCOCalculator.calculate(tcoInput);
+
+  // 🆕 Phase 6-1: TCO 타임라인 계산
+  const tcoTimeline = await TCOCalculator.calculateTimeline(tcoInput);
 
   return {
     id: vehicle.vehicleId.toString(),
@@ -118,7 +123,8 @@ export async function convertVehicleToTOPSISAlternative(
       vehicle,
       tcoBreakdown: tcoResult.breakdown,    // 🆕 TCO 상세 정보
       tcoConfidence: tcoResult.confidence,  // 🆕 TCO 신뢰도
-      tcoWarnings: tcoResult.warnings        // 🆕 TCO 경고
+      tcoWarnings: tcoResult.warnings,      // 🆕 TCO 경고
+      tcoTimeline: tcoTimeline              // 🆕 Phase 6-1: TCO 타임라인
     },
   };
 }
