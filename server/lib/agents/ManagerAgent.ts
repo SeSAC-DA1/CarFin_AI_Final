@@ -246,6 +246,142 @@ export class ManagerAgent {
   }
 
   /**
+   * 🆕 Phase 3-E: Voting-Based Result Aggregation (투표 기반 합의)
+   *
+   * MACRec Consensus Protocol:
+   * - 각 에이전트의 추천 결과를 투표로 집계
+   * - 에이전트별 가중치 적용 (User Analyst: 0.3, Searcher: 0.3, Evaluator: 0.4)
+   * - 충돌 해결 및 합의 수준 평가
+   *
+   * @param agentRecommendations - 각 에이전트의 추천 결과 배열
+   * @returns ConsensusResult - 투표 기반 최종 합의 결과
+   */
+  async voteBasedAggregation(agentRecommendations: {
+    agent: string;
+    recommendations: Array<{ vehicleId: number; rank: number; score: number; reason?: string }>;
+  }[]): Promise<any> {
+    console.log(`🗳️ Manager Agent: 투표 기반 합의 시작 (${agentRecommendations.length}개 에이전트)`);
+
+    const startTime = Date.now();
+
+    // 에이전트 가중치 (MACRec 논문 기반)
+    const agentWeights: Record<string, number> = {
+      'user_analyst': 0.30,  // 사용자 니즈 분석 (30%)
+      'searcher': 0.30,      // 브랜드 다양성 확보 (30%)
+      'evaluator': 0.40      // TOPSIS 객관적 평가 (40%)
+    };
+
+    // 1. 모든 추천 차량 수집
+    const allVehicleIds = new Set<number>();
+    agentRecommendations.forEach(ar => {
+      ar.recommendations.forEach(rec => allVehicleIds.add(rec.vehicleId));
+    });
+
+    console.log(`📋 총 후보 차량: ${allVehicleIds.size}대`);
+
+    // 2. 각 차량별로 투표 집계
+    const votingResults: any[] = [];
+
+    for (const vehicleId of allVehicleIds) {
+      const votes: any[] = [];
+      let weightedScore = 0;
+
+      // 각 에이전트의 투표 수집
+      agentRecommendations.forEach(ar => {
+        const rec = ar.recommendations.find(r => r.vehicleId === vehicleId);
+
+        if (rec) {
+          const agentWeight = agentWeights[ar.agent] || 0.33;
+          const voteScore = rec.score * agentWeight;
+
+          votes.push({
+            agent: ar.agent,
+            rank: rec.rank,
+            score: rec.score,
+            agentWeight,
+            reason: rec.reason || ''
+          });
+
+          weightedScore += voteScore;
+        }
+      });
+
+      // 합의 수준 판단
+      let agreement: 'unanimous' | 'majority' | 'conflict';
+      if (votes.length === agentRecommendations.length) {
+        // 모든 에이전트가 추천 → unanimous
+        const rankVariance = this.calculateVariance(votes.map(v => v.rank));
+        agreement = rankVariance < 1.0 ? 'unanimous' : 'majority';
+      } else if (votes.length >= Math.ceil(agentRecommendations.length / 2)) {
+        // 절반 이상 추천 → majority
+        agreement = 'majority';
+      } else {
+        // 절반 미만 → conflict
+        agreement = 'conflict';
+      }
+
+      votingResults.push({
+        vehicleId,
+        votes,
+        weightedScore,
+        agreement
+      });
+    }
+
+    // 3. 가중 점수로 정렬 (내림차순)
+    votingResults.sort((a, b) => b.weightedScore - a.weightedScore);
+
+    console.log(`🔝 Top 5 차량 (가중 점수):`);
+    votingResults.slice(0, 5).forEach((vr, idx) => {
+      console.log(`  ${idx + 1}. 차량 #${vr.vehicleId} - Score: ${vr.weightedScore.toFixed(2)} (${vr.agreement})`);
+    });
+
+    // 4. 합의 메타데이터 계산
+    const unanimousCount = votingResults.filter(vr => vr.agreement === 'unanimous').length;
+    const majorityCount = votingResults.filter(vr => vr.agreement === 'majority').length;
+    const conflictCount = votingResults.filter(vr => vr.agreement === 'conflict').length;
+
+    // 평균 합의 점수 (0-1 스케일)
+    const avgAgreementScore = votingResults.reduce((sum, vr) => {
+      const voteRatio = vr.votes.length / agentRecommendations.length;
+      return sum + voteRatio;
+    }, 0) / votingResults.length;
+
+    const executionTime = Date.now() - startTime;
+
+    // 5. ConsensusResult 구성
+    const consensusResult = {
+      votingResults,  // 전체 투표 결과
+      votingMetadata: {
+        totalVotes: votingResults.length,
+        unanimousCount,
+        majorityCount,
+        conflictCount,
+        avgAgreementScore,
+        executionTime
+      }
+    };
+
+    console.log(`✅ Manager Agent: 투표 합의 완료 (${executionTime}ms)`);
+    console.log(`   - Unanimous: ${unanimousCount}대`);
+    console.log(`   - Majority: ${majorityCount}대`);
+    console.log(`   - Conflict: ${conflictCount}대`);
+    console.log(`   - Avg Agreement: ${(avgAgreementScore * 100).toFixed(1)}%`);
+
+    return consensusResult;
+  }
+
+  /**
+   * 분산 계산 (합의 수준 판단용)
+   */
+  private calculateVariance(numbers: number[]): number {
+    if (numbers.length === 0) return 0;
+    const mean = numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
+    const variance = numbers.reduce((sum, n) => sum + Math.pow(n - mean, 2), 0) / numbers.length;
+    return variance;
+  }
+
+  /**
    * Task Priority Sorting (우선순위 정렬)
    */
   sortTasksByPriority(tasks: AgentTask[]): AgentTask[] {

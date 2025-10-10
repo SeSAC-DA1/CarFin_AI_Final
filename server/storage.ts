@@ -231,8 +231,15 @@ export class DBStorage implements IStorage {
     if (filters.model) conditions.push(eq(vehiclesTable.model, filters.model));
     if (filters.location) conditions.push(eq(vehiclesTable.location, filters.location));
 
-    // 🚨 Phase 4: 리스/렌트 차량 제외 (일반 매물만 검색)
-    conditions.push(eq(vehiclesTable.sellType, '일반'));
+    // 🆕 Phase 3-E: 조건부 sellType 필터링 (역호환성 유지)
+    if (filters.sellType && filters.sellType !== 'all') {
+      // 특정 타입 지정 시 해당 타입만 검색 ('일반', '리스', '렌트')
+      conditions.push(eq(vehiclesTable.sellType, filters.sellType));
+    } else if (!filters.sellType) {
+      // 기본값: 일반 매물만 검색 (기존 동작 유지)
+      conditions.push(eq(vehiclesTable.sellType, '일반'));
+    }
+    // sellType === 'all' → 조건 추가 안 함 (모든 타입 검색 가능)
 
     const limit = filters.limit || 10;
     const offset = filters.offset || 0;

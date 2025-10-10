@@ -277,6 +277,18 @@ export function useWebSocketChat() {
       if (savedProfile) {
         try {
           const profileData = JSON.parse(savedProfile);
+
+          // 🆕 Phase 3-E: 연령대 문자열 → 숫자 변환
+          const ageStringToNumber = (ageStr: string): number => {
+            if (!ageStr) return 35; // 기본값
+            if (ageStr.includes('20대')) return 25;
+            if (ageStr.includes('30대')) return 35;
+            if (ageStr.includes('40대')) return 45;
+            if (ageStr.includes('50대')) return 55;
+            if (ageStr.includes('60대')) return 65;
+            return 35;
+          };
+
           // ProfileSetup 데이터를 백엔드 UserPreferenceProfile 형식으로 변환
           userProfile = {
             priceWeight: profileData.importance?.price || 5,
@@ -303,9 +315,21 @@ export function useWebSocketChat() {
               vehicleTypes: profileData.vehicleTypes || [],
               fuelType: profileData.fuelType,
               transmission: profileData.transmission
-            }
+            },
+            // 🆕 Phase 4: TCO 개인화
+            annualKm: profileData.annualKm || 15000,
+            ownershipYears: profileData.ownershipYears || 3,
+            // 🆕 Phase 3-E: 금융 프로필 (FinancialAdvisorAgent용)
+            age: ageStringToNumber(profileData.age),  // 숫자로 변환
+            monthlyIncome: profileData.monthlyIncome ? profileData.monthlyIncome * 10000 : undefined,  // 만원 → 원
+            hasOtherLoans: profileData.hasOtherLoans
           };
           console.log('[SEND] 프로필 데이터 첨부:', userProfile ? '✅' : '❌');
+          console.log('[SEND] 금융 프로필:', {
+            age: userProfile.age,
+            monthlyIncome: userProfile.monthlyIncome,
+            hasOtherLoans: userProfile.hasOtherLoans
+          });
         } catch (error) {
           console.warn('프로필 데이터 파싱 오류:', error);
         }

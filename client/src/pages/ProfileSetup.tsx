@@ -58,6 +58,10 @@ interface ProfileData {
   // 🆕 Phase 4: TCO 개인화
   annualKm: number;       // 연간 주행거리
   ownershipYears: number; // 보유 예정 기간
+
+  // 🆕 Phase 3-E: 금융 프로필
+  monthlyIncome?: number;    // 월 소득 (선택)
+  hasOtherLoans?: boolean;   // 기타 대출 여부 (선택)
 }
 
 interface ProfileStep {
@@ -89,7 +93,9 @@ export default function ProfileSetup() {
       brand: 5
     },
     annualKm: 15000,        // 기본값: 연간 1.5만 km
-    ownershipYears: 3       // 기본값: 3년
+    ownershipYears: 3,      // 기본값: 3년
+    monthlyIncome: undefined,  // 🆕 Phase 3-E: 선택 필드
+    hasOtherLoans: undefined   // 🆕 Phase 3-E: 선택 필드
   });
 
   const updateProfile = (field: string, value: any) => {
@@ -372,6 +378,116 @@ export default function ProfileSetup() {
                 <p className="text-blue-700 dark:text-blue-300 text-xs">
                   취득세, 자동차세, 정비비, 감가상각, 연료비를 모두 고려하여
                   {profileData.ownershipYears}년간 실제로 드는 총 비용을 알려드려요.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 6,
+      title: "금융 정보 (선택사항)",
+      description: "더 정확한 할부/리스 추천을 위해 입력해주세요",
+      icon: <Wallet className="w-8 h-8 text-primary" />,
+      content: (
+        <div className="space-y-8 max-w-md mx-auto">
+          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 mb-6">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  💡 이 단계는 선택사항입니다
+                </p>
+                <p className="text-blue-700 dark:text-blue-300 text-xs">
+                  금융 정보를 입력하시면 월 소득 대비 적정한 할부/리스 옵션을 추천해드려요.
+                  건너뛰셔도 차량 추천은 정상적으로 받으실 수 있어요.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">월 소득 (선택)</Label>
+            <p className="text-sm text-muted-foreground">
+              월 평균 소득을 입력하시면 부담 없는 금융 옵션을 추천해드려요
+            </p>
+            <div className="space-y-3">
+              <Input
+                type="number"
+                placeholder="예: 300 (만원 단위)"
+                value={profileData.monthlyIncome || ''}
+                onChange={(e) => updateProfile('monthlyIncome', e.target.value ? parseInt(e.target.value) : undefined)}
+                className="text-lg"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                {[200, 300, 400, 500].map((income) => (
+                  <Button
+                    key={income}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateProfile('monthlyIncome', income)}
+                    className="text-xs"
+                  >
+                    {income}만원
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">기타 대출 여부 (선택)</Label>
+            <p className="text-sm text-muted-foreground">
+              현재 상환 중인 대출이 있으신가요?
+            </p>
+            <RadioGroup
+              value={profileData.hasOtherLoans === undefined ? 'unknown' : profileData.hasOtherLoans.toString()}
+              onValueChange={(value) => {
+                if (value === 'unknown') {
+                  updateProfile('hasOtherLoans', undefined);
+                } else {
+                  updateProfile('hasOtherLoans', value === 'true');
+                }
+              }}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="false" id="loan-no" />
+                  <Label htmlFor="loan-no" className="flex-1 cursor-pointer">
+                    <div className="font-medium">없음</div>
+                    <div className="text-xs text-muted-foreground">상환 중인 대출이 없어요</div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="true" id="loan-yes" />
+                  <Label htmlFor="loan-yes" className="flex-1 cursor-pointer">
+                    <div className="font-medium">있음</div>
+                    <div className="text-xs text-muted-foreground">대출을 상환 중이에요</div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value="unknown" id="loan-unknown" />
+                  <Label htmlFor="loan-unknown" className="flex-1 cursor-pointer">
+                    <div className="font-medium">입력하지 않음</div>
+                    <div className="text-xs text-muted-foreground">이 정보는 건너뛸게요</div>
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+                  🔒 개인정보 보호
+                </p>
+                <p className="text-amber-700 dark:text-amber-300 text-xs">
+                  입력하신 금융 정보는 추천 계산에만 사용되며 저장되지 않아요.
                 </p>
               </div>
             </div>

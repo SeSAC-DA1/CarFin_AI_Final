@@ -9,6 +9,7 @@ import VehicleFinanceDashboard from "./VehicleFinanceDashboard";
 import TCODetailModal from "./TCODetailModal";
 import TCOComparisonChart from "./TCOComparisonChart";
 import RecommendationReasonModal from "./RecommendationReasonModal";
+import FinancingComparisonCard from "./FinancingComparisonCard";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -51,6 +52,8 @@ export interface Vehicle {
       cumulative: number;
     }>;
   };
+  // 🆕 Phase 3-E: 금융 옵션
+  financingOptions?: any;
 }
 
 interface VehicleRecommendationsProps {
@@ -418,6 +421,35 @@ export default function VehicleRecommendations({
       {vehicles.some(v => v.tco) && (
         <div className="mt-8 animate-slide-up">
           <TCOComparisonChart vehicles={vehicles} />
+        </div>
+      )}
+
+      {/* 🆕 Phase 3-E: 금융 옵션 비교 카드 */}
+      {vehicles.some(v => v.financingOptions) && (
+        <div className="mt-8 space-y-6 animate-slide-up">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
+                맞춤 금융 옵션
+              </span>
+            </h2>
+            <p className="text-muted-foreground">
+              일시불/할부/리스 비교 분석
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {vehicles
+              .filter(v => v.financingOptions)
+              .map(vehicle => (
+                <FinancingComparisonCard
+                  key={vehicle.id}
+                  vehicleName={vehicle.name}
+                  vehiclePrice={vehicle.price}
+                  financingOptions={vehicle.financingOptions}
+                />
+              ))}
+          </div>
         </div>
       )}
 

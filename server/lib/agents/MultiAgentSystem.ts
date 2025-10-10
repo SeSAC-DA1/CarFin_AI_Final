@@ -15,6 +15,8 @@ import { ManagerAgent, AgentTask, AgentResult } from "./ManagerAgent";
 import { UserAnalystAgent } from "./UserAnalystAgent";
 import { SearcherAgent } from "./SearcherAgent";
 import { EvaluatorAgent } from "./EvaluatorAgent";
+// 🆕 Phase 3-E: Financial Advisor Agent
+import { FinancialAdvisorAgent } from "./FinancialAdvisorAgent";
 
 export interface AgentMessage {
   agentId: string;
@@ -44,6 +46,8 @@ export class MultiAgentSystem {
   private userAnalyst: UserAnalystAgent;
   private searcher: SearcherAgent;
   private evaluator: EvaluatorAgent;
+  // 🆕 Phase 3-E: Financial Advisor Agent
+  private financialAdvisor: FinancialAdvisorAgent;
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -55,6 +59,8 @@ export class MultiAgentSystem {
     this.userAnalyst = new UserAnalystAgent(apiKey);
     this.searcher = new SearcherAgent();
     this.evaluator = new EvaluatorAgent();
+    // 🆕 Phase 3-E: Financial Advisor 초기화
+    this.financialAdvisor = new FinancialAdvisorAgent();
   }
 
   async *collaborate(
@@ -174,22 +180,31 @@ export class MultiAgentSystem {
     const top3 = consensus.rankedVehicles.slice(0, 3);
 
     // ═══════════════════════════════════════════════════════════════
-    // Financial Analysis (기존 로직 유지)
+    // 🆕 Phase 3-E: Financial Advisor Agent Integration
     // ═══════════════════════════════════════════════════════════════
-    yield { type: "agent_working", agent: "financial_advisor", content: "금융 상품 분석 중..." };
-    const financialAnalysis = await this.analyzeFinancialOptions(top3, userMessage, userProfile);
-    yield { type: "agent_response", agent: "financial_advisor", content: `금융 분석 완료` };
+    yield { type: "agent_working", agent: "financial_advisor", content: "💰 Financial Advisor: 금융 상품 분석 중..." };
+
+    // Top 3 차량에 대해 FinancialAdvisorAgent로 금융 옵션 분석
+    const financialEnrichedRecommendations = await this.enrichWithFinancialOptions(top3, userProfile);
+
+    yield {
+      type: "agent_response",
+      agent: "financial_advisor",
+      content: `✅ 금융 옵션 분석 완료 (일시불/할부/리스 비교)`
+    };
 
     yield { type: "agent_working", agent: "concierge", content: "종합 추천 생성 중..." };
-    const finalRecommendations = await this.generateComprehensiveRecommendation(top3, financialAnalysis, userMessage);
+    const finalRecommendations = await this.generateComprehensiveRecommendation(
+      financialEnrichedRecommendations,
+      userMessage
+    );
 
     yield {
       type: "recommendations",
       agent: "concierge",
       content: "MACRec 추천 완료",
       data: {
-        vehicles: top3,
-        financialAnalysis,
+        vehicles: financialEnrichedRecommendations,  // 🆕 금융 옵션 포함된 추천
         comprehensiveAdvice: finalRecommendations,
         macrecMetadata: {
           totalTasks: tasks.length,
@@ -624,15 +639,106 @@ export class MultiAgentSystem {
     }
   }
 
-  // 🎯 종합 추천 생성
+  /**
+   * 🆕 Phase 3-E: Top 3 차량에 금융 옵션 추가
+   *
+   * 🛡️ 에러 핸들링 강화:
+   * - TCO 없어도 금융 옵션 계산 시도 (FinancialAdvisor fallback 활용)
+   * - 개별 차량 실패해도 다른 차량 계속 처리
+   * - 최소 1개 이상 성공 보장
+   */
+  private async enrichWithFinancialOptions(
+    recommendations: VehicleRecommendation[],
+    userProfile?: any
+  ): Promise<VehicleRecommendation[]> {
+    console.log(`💰 FinancialAdvisorAgent: ${recommendations.length}대 차량 금융 분석 시작`);
+
+    const enrichedRecommendations: VehicleRecommendation[] = [];
+    let successCount = 0;
+    let skipCount = 0;
+    let failCount = 0;
+
+    for (const rec of recommendations) {
+      try {
+        // TCO 데이터 추출 (없어도 FinancialAdvisor가 fallback 생성)
+        const tcoBreakdown = rec.vehicle.tco?.breakdown || null;
+
+        if (!tcoBreakdown) {
+          console.warn(`⚠️ 차량 ${rec.vehicle.vehicleId} TCO 데이터 없음, fallback 사용`);
+        }
+
+        // UserDrivingProfile 구성 (기본값 제공으로 안전성 확보)
+        const drivingProfile = {
+          annualKm: userProfile?.annualKm || 15000,
+          ownershipYears: userProfile?.ownershipYears || 5,
+          age: userProfile?.age || 35,
+          monthlyIncome: userProfile?.monthlyIncome || undefined,
+          hasOtherLoans: userProfile?.hasOtherLoans || false
+        };
+
+        // FinancialAdvisorAgent로 금융 옵션 계산
+        // FinancialAdvisor 내부에서 에러 핸들링하여 최소 1개 옵션 반환 보장
+        const financingOptions = await this.financialAdvisor.recommendFinancing(
+          rec.vehicle,
+          tcoBreakdown as any,  // null도 허용 (내부 fallback)
+          drivingProfile
+        );
+
+        // VehicleRecommendation에 financingOptions 추가
+        enrichedRecommendations.push({
+          ...rec,
+          vehicle: {
+            ...rec.vehicle,
+            financingOptions  // 🆕 Phase 3-E: 금융 옵션 추가
+          }
+        });
+
+        successCount++;
+        console.log(`✅ 차량 ${rec.vehicle.vehicleId} 금융 옵션 추가 완료`);
+
+      } catch (error) {
+        console.error(`❌ 차량 ${rec.vehicle.vehicleId} 금융 분석 실패:`, error);
+
+        // 금융 옵션 없이도 차량 추천은 표시
+        enrichedRecommendations.push(rec);
+        failCount++;
+      }
+    }
+
+    console.log(`💰 FinancialAdvisorAgent: 금융 분석 완료`);
+    console.log(`   - 성공: ${successCount}대`);
+    console.log(`   - 스킵: ${skipCount}대`);
+    console.log(`   - 실패: ${failCount}대`);
+    console.log(`   - 총: ${enrichedRecommendations.length}대`);
+
+    // 최소 1개 이상 추천 보장
+    if (enrichedRecommendations.length === 0) {
+      console.error('⚠️ 모든 차량 금융 분석 실패, 원본 추천 반환');
+      return recommendations;
+    }
+
+    return enrichedRecommendations;
+  }
+
+  // 🎯 종합 추천 생성 (Updated for Phase 3-E)
   private async generateComprehensiveRecommendation(
     vehicles: VehicleRecommendation[],
-    financialAnalysis: any,
     userMessage: string
   ): Promise<string> {
     const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `종합 자동차 구매 및 금융 상담사로서 최종 조언을 제공하세요.\n\n사용자 요청: \"${userMessage}\"\n\n차량 추천 결과:\n${vehicles.map(v => `${v.rank}위: ${v.vehicle.manufacturer} ${v.vehicle.model} (${v.vehicle.modelYear}년) - ${v.reason}`).join('\n')}\n\n금융 분석 결과:\n${JSON.stringify(financialAnalysis, null, 2)}\n\n다음 형식으로 종합 조언을 제공하세요:\n\n1. **최종 추천 차량**: 1위 차량과 그 이유\n2. **최적 금융 방법**: 할부 vs 리스 중 추천 옵션\n3. **예산 계획**: 월 지출 예상액과 준비사항\n4. **주의사항**: 구매 전 확인할 점들\n5. **다음 단계**: 구체적인 액션 아이템\n\n전문적이면서도 친근한 톤으로 2-3문단 내외로 작성하세요.`;
+    // 금융 옵션 요약 생성
+    const financialSummary = vehicles.map(v => {
+      const financing = v.vehicle.financingOptions;
+      if (!financing) return '금융 옵션 없음';
+
+      const best = financing.bestRecommendation;
+      const typeLabel = best.type === 'cash' ? '일시불' : best.type === 'loan' ? '할부' : '리스';
+
+      return `${v.rank}위 (${v.vehicle.manufacturer} ${v.vehicle.model}): ${typeLabel} 추천 (${best.recommendation.reason})`;
+    }).join('\n');
+
+    const prompt = `종합 자동차 구매 및 금융 상담사로서 최종 조언을 제공하세요.\n\n사용자 요청: \"${userMessage}\"\n\n차량 추천 결과:\n${vehicles.map(v => `${v.rank}위: ${v.vehicle.manufacturer} ${v.vehicle.model} (${v.vehicle.modelYear}년) - ${v.reason}`).join('\n')}\n\n금융 옵션 추천:\n${financialSummary}\n\n다음 형식으로 종합 조언을 제공하세요:\n\n1. **최종 추천 차량**: 1위 차량과 그 이유\n2. **최적 금융 방법**: 일시불/할부/리스 중 추천 옵션\n3. **예산 계획**: 월 지출 예상액과 준비사항\n4. **주의사항**: 구매 전 확인할 점들\n5. **다음 단계**: 구체적인 액션 아이템\n\n전문적이면서도 친근한 톤으로 2-3문단 내외로 작성하세요.`;
 
     const result = await model.generateContent(prompt);
     return result.response.text();
