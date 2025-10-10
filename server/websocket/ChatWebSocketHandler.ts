@@ -359,7 +359,18 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
 
       console.timeEnd('[STEP 4/5] Vehicle Data Mapping');
       console.time('[STEP 5/5] Send Results');
-      sendMessage(session.ws, { type: 'vehicles', vehicles: vehicles, timestamp: new Date() });
+      // 🐛 Fix: type을 'recommendations'로 그대로 전달 (프론트엔드 호환)
+      sendMessage(session.ws, {
+        type: 'recommendations',
+        agent: step.agent,
+        content: step.content,
+        data: {
+          vehicles: vehicles,
+          comprehensiveAdvice: step.data.comprehensiveAdvice,
+          macrecMetadata: step.data.macrecMetadata
+        },
+        timestamp: new Date()
+      });
       console.timeEnd('[STEP 5/5] Send Results');
 
       const totalTime = Date.now() - startTime;
