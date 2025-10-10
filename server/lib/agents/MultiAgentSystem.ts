@@ -140,13 +140,13 @@ export class MultiAgentSystem {
     // 예산 추출 (만원 단위) - "3000만원대" → 2500~3500만원 범위로 해석
     const priceMatch = message.match(/(\d+)만원?/);
     let minPrice = 0;
-    let maxPrice = 50000000; // 기본 5000만원
+    let maxPrice = 5000; // 기본 5000만원 (DB는 만원 단위)
 
     if (priceMatch && priceMatch[1]) {
-      const targetPrice = parseInt(priceMatch[1]) * 10000; // 만원 → 원
-      minPrice = targetPrice * 0.8; // -20%
-      maxPrice = targetPrice * 1.2; // +20%
-      console.log(`💰 예산 범위: ${minPrice.toLocaleString()}원 ~ ${maxPrice.toLocaleString()}원`);
+      const targetPrice = parseInt(priceMatch[1]); // 만원 단위 그대로
+      minPrice = Math.floor(targetPrice * 0.8); // -20%
+      maxPrice = Math.ceil(targetPrice * 1.2); // +20%
+      console.log(`💰 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원 (DB 만원 단위)`);
     }
 
     // 브랜드 필터링 (사용자가 특정 브랜드를 요청한 경우)
