@@ -25,7 +25,7 @@ export interface Vehicle {
   cons?: string[];
   location?: string;
   detailUrl?: string;
-  // 🆕 Phase 3: TCO 데이터
+  // 🆕 Phase 3: TCO 데이터 (Phase 6-1: timeline 추가)
   tco?: {
     total: number;
     breakdown: {
@@ -37,6 +37,16 @@ export interface Vehicle {
     };
     confidence: number;
     ownershipYears: number;
+    timeline?: Array<{
+      year: number;
+      acquisitionTax: number;
+      vehicleTax: number;
+      maintenance: number;
+      depreciation: number;
+      fuelCost: number;
+      yearTotal: number;
+      cumulative: number;
+    }>;
   };
 }
 
@@ -139,12 +149,13 @@ export function useWebSocketChat() {
               cons: vehicle.cons || [],
               location: vehicle.location || '위치 미상',
               detailUrl: vehicle.detailUrl || '',
-              // 🆕 Phase 3: TCO 데이터 매핑
+              // 🆕 Phase 3: TCO 데이터 매핑 (Phase 6-1: timeline 추가)
               tco: vehicle.tco ? {
                 total: vehicle.tco.total,
                 breakdown: vehicle.tco.breakdown,
                 confidence: vehicle.tco.confidence,
-                ownershipYears: vehicle.tco.ownershipYears
+                ownershipYears: vehicle.tco.ownershipYears,
+                timeline: vehicle.tco.timeline || undefined
               } : undefined,
               // 🆕 Phase 3-E: 금융 옵션 매핑
               financingOptions: vehicle.financingOptions || undefined
