@@ -1,0 +1,82 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e6]:
+        - link "CarFin AI 논문 기반 추천" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img [ref=e9] [cursor=pointer]
+          - generic [ref=e13] [cursor=pointer]:
+            - generic [ref=e14] [cursor=pointer]: CarFin AI
+            - generic [ref=e15] [cursor=pointer]: 논문 기반 추천
+        - generic [ref=e16]:
+          - link "홈" [ref=e17] [cursor=pointer]:
+            - /url: /
+          - link "AI 상담" [ref=e18] [cursor=pointer]:
+            - /url: /chat
+          - link "기능" [ref=e19] [cursor=pointer]:
+            - /url: "#features"
+          - link "논문" [ref=e20] [cursor=pointer]:
+            - /url: "#papers"
+        - generic [ref=e21]:
+          - button [ref=e22] [cursor=pointer]:
+            - img
+          - button "시작하기" [ref=e23] [cursor=pointer]
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - img [ref=e29]
+          - generic [ref=e31]: 개인화 설정
+        - heading "당신만의 AI 컨설턴트 설정하기" [level=1] [ref=e32]:
+          - generic [ref=e33]: 당신만의 AI 컨설턴트
+          - generic [ref=e34]: 설정하기
+        - paragraph [ref=e35]: 몇 가지 질문에 답해주시면 더 정확한 차량 추천을 받을 수 있어요
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: 진행률
+          - generic [ref=e39]: 1 / 5
+        - progressbar [ref=e40]
+      - generic [ref=e42]:
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - img [ref=e48]
+            - generic [ref=e51]: 기본 정보를 알려주세요
+            - generic [ref=e52]: 더 정확한 추천을 위해 몇 가지 여쭤볼게요
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - generic [ref=e56]: 이름 또는 닉네임
+              - textbox "이름 또는 닉네임" [ref=e57]
+            - generic [ref=e58]:
+              - generic [ref=e59]: 연령대
+              - radiogroup [ref=e60]:
+                - generic [ref=e61]:
+                  - generic [ref=e62]:
+                    - radio "20대" [ref=e63] [cursor=pointer]
+                    - generic [ref=e64]: 20대
+                  - generic [ref=e65]:
+                    - radio "30대" [ref=e66] [cursor=pointer]
+                    - generic [ref=e67]: 30대
+                  - generic [ref=e68]:
+                    - radio "40대" [ref=e69] [cursor=pointer]
+                    - generic [ref=e70]: 40대
+                  - generic [ref=e71]:
+                    - radio "50대" [ref=e72] [cursor=pointer]
+                    - generic [ref=e73]: 50대
+                  - generic [ref=e74]:
+                    - radio "60대 이상" [ref=e75] [cursor=pointer]
+                    - generic [ref=e76]: 60대 이상
+            - generic [ref=e77]:
+              - generic [ref=e78]: 지역
+              - textbox "지역" [ref=e79]
+        - generic [ref=e80]:
+          - button "이전" [disabled]:
+            - img
+            - text: 이전
+          - button "다음" [disabled]:
+            - text: 다음
+            - img
+```

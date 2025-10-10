@@ -627,60 +627,127 @@ Manager Agent (조율)
 
 ---
 
-## 🚀 AI/LLM 고도화 로드맵
+## 🚀 AI Agent 고도화 로드맵 (Reactive → Cognitive)
 
-### 최신 기술 트렌드 이해 및 적용 계획
+### 목표: Cognitive Agent 90.8/100 달성
 
 <div class="columns">
 
 <div>
 
-#### 🔧 현재 (PoC)
+#### 📊 현재 상태 (77.5/100)
 
-**강점**:
-- ✅ 논문 기반 검증된 알고리즘
-- ✅ 구조화된 데이터 (SQL)
-- ✅ 빠른 응답 (1.8초)
-- ✅ 정확한 필터링
+**AI Agent 평가**:
+- ✅ 자율성: 85/100 (우수)
+- ✅ 목표지향: 90/100 (우수)
+- ✅ 도구사용: 95/100 (매우 우수)
+- ⚠️ 적응성: 75/100 (보통)
+- ⚠️ 추론능력: 80/100 (보통)
+- 🔴 **메모리: 40/100 (약점)**
 
-**한계**:
-- ❌ LangChain/LangGraph 미사용
-- ❌ RAG/벡터DB 미사용
-- ❌ 학습 메커니즘 부재
-- ❌ 의미 검색 불가
+**등급**: Reactive Agent
+
+**치명적 약점**:
+- 세션 종료 시 대화 기록 소실
+- 사용자 피드백 학습 불가
+- Agent 간 협업/토론 부재
 
 </div>
 
 <div>
 
-#### 🔮 고도화 (v2.0)
+#### 🎯 Phase 1: Memory & Learning (1주)
 
-**Phase 1: Agent Framework**
-- LangChain 도입 → 프롬프트 관리
-- LangGraph 도입 → 복잡한 플로우
-- **효과**: 유지보수성 50% 향상
+**핵심 개선**:
+- 대화 기록 영구 저장 (PostgreSQL)
+- 선호도 학습 시스템
+- 컨텍스트 인식 대화
 
-**Phase 2: Semantic Search**
-- RAG 구현 (차량 리뷰 검색)
-- Pinecone + OpenAI Embedding
-- **효과**: 의미 검색 가능
+**효과**:
+- Memory: 40 → **85점** (+45)
+- Adaptability: 75 → 82점 (+7)
+- **총점: 77.5 → 85.8점**
 
-**Phase 3: Learning**
-- 사용자 피드백 기반 학습
-- 강화학습 (RLHF)
-- **효과**: 개인화 정확도 95%+
+**데모 시나리오**:
+```
+사용자: "3000만원대 SUV"
+AI: [3대 추천]
 
-**Phase 4: Monitoring**
-- Langfuse/Langsmith 통합
-- A/B 테스트 프레임워크
-- **효과**: 데이터 기반 의사결정
+사용자: "너무 비싸"
+AI: "예산을 2,500만원으로 조정했습니다 ✅"
+    "이전에 '현대차 별로'라고 하셨으니 제외했습니다 ✅"
+```
+
+</div>
+
+</div>
+
+---
+
+## 🚀 AI Agent 고도화 로드맵 (계속)
+
+<div class="columns">
+
+<div>
+
+#### 🎯 Phase 2: Agent Deliberation (2주)
+
+**핵심 개선**:
+- Agent 간 토론 프로토콜 (3 rounds)
+- 충돌 감지 및 해결
+- 대안 제시 시스템
+
+**효과**:
+- Reasoning: 80 → **90점** (+10)
+- Adaptability: 82 → **90점** (+8)
+- **총점: 85.8 → 89.2점**
+
+**데모 시나리오**:
+```
+User Analyst: "가족용이므로 7인승 필수"
+Searcher: "예산 부족! 7인승은 5대뿐"
+Manager: "충돌 감지! 3가지 대안:"
+  1️⃣ 예산 상향 (3,000 → 3,200만원)
+  2️⃣ 6인승 타협
+  3️⃣ 연식 낮추기 (2020 → 2019년식)
+```
+
+</div>
+
+<div>
+
+#### 🎯 Phase 3: Self-Improvement (3주)
+
+**핵심 개선**:
+- A/B Testing 인프라
+- 자동 성능 분석 (매일 자정)
+- 전략 자동 최적화
+
+**효과**:
+- Autonomy: 85 → **95점** (+10)
+- **총점: 89.2 → 90.8점**
+- **등급: Cognitive Agent** ✅
+
+**자동 최적화 로직**:
+```
+전략 A: 전환율 12%
+전략 B: 전환율 18% ← 우승
+전략 C: 전환율 15%
+
+[자정 1시] AI가 자동으로 전략 B 선택
+[자정 1시] 새로운 실험 전략 생성
+```
 
 </div>
 
 </div>
 
-<div style="margin-top: 20px; padding: 15px; background: #dbeafe; border-radius: 8px;">
-<strong>💡 전략</strong>: 현재는 실용적 접근 (SQL), 향후는 최신 트렌드 (RAG) - 상황에 맞는 기술 선택 능력
+<div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px;">
+<strong>🎯 핵심 전략</strong>: LangChain/RAG보다 <strong>Agent 지능 강화</strong>를 우선! (메모리 → 협업 → 자기개선)
+</div>
+
+<div style="margin-top: 10px; padding: 15px; background: #fef3c7; border-radius: 8px;">
+<strong>⚠️ LangChain/RAG 도입 시기</strong>: Phase 4 (리뷰 데이터 추가 시) - 현재는 over-engineering
 </div>
 
 ---
@@ -839,24 +906,31 @@ A. LocalStorage 기반 프로필 저장 (서버 미전송). 추천 시에만 익
 #### AI/LLM 기술 관련
 
 **Q4. 왜 LangChain/LangGraph를 사용하지 않았나요?**
-A. PoC 단계에서는 논문 직접 구현으로 알고리즘 이해도 증명. v2.0에서 LangGraph 도입 예정 (유지보수성 50% 향상 목표).
+A. PoC 단계에서는 논문 직접 구현으로 알고리즘 이해도 증명. **v1.0 목표: Agent 지능 강화가 우선**. LangChain은 Phase 4 (선택적 - 프롬프트 관리 편의성).
 
 **Q5. RAG/벡터DB가 없는데 문제 없나요?**
-A. 현재는 구조화된 데이터(SQL)로 정확한 필터링. 의미 검색이 필요한 리뷰 검색 기능은 v2.0에서 Pinecone + OpenAI Embedding으로 구현 예정.
+A. **현재는 over-engineering**. 구조화된 데이터(SQL)로 정확하고 빠른 필터링. RAG는 **리뷰 데이터 추가 시**에만 필요 (Phase 5). **상황에 맞는 기술 선택 능력 증명**.
 
 **Q6. 진짜 "AI 에이전트"라고 부를 수 있나요?**
-A. Reactive Agent 수준 (77.5/100점). 자율성·목표지향·도구사용 능력 보유. 학습 메커니즘은 없지만 도메인 특화 작업에는 충분. v2.0에서 강화학습 도입 예정.
+A. **현재 Reactive Agent (77.5/100)**. 하지만 **Phase 1-3 완료 시 Cognitive Agent (90.8/100) 달성 가능!** 메모리(+45점) → Agent 협업(+10점) → 자기개선(+10점).
 
-**Q7. E2E 경험이 정말 있나요?**
+**Q7. Agent 점수를 어떻게 높일 계획인가요?**
+A. **3단계 고도화**:
+  - Phase 1 (1주): 대화 기록 저장 + 선호도 학습 → Memory 40→85점
+  - Phase 2 (2주): Agent 토론 + 충돌 해결 → Reasoning 80→90점
+  - Phase 3 (3주): A/B Testing + 자동 최적화 → Autonomy 85→95점
+  **총점: 77.5 → 90.8점 (Cognitive Agent)** ✅
+
+**Q8. E2E 경험이 정말 있나요?**
 A. 9단계 전 과정 수행 (92/100점). 문제 정의 → PoC → 데이터 파이프라인 → 모델 통합 → 구현 → 테스트 → 배포 → 모니터링. GitHub 공개로 검증 가능.
 
-**Q8. 논문 구현 정확도는 어떻게 측정했나요?**
+**Q9. 논문 구현 정확도는 어떻게 측정했나요?**
 A. 171개 단위 테스트 작성. MACRec (36개), Alibaba (20개), TOPSIS (85개) + TCO (86개). 각 논문의 핵심 알고리즘을 테스트 케이스로 검증.
 
 #### 향후 계획
 
-**Q9. 확장 계획은?**
-A. Phase 1: LangChain/LangGraph → Phase 2: RAG + 벡터DB → Phase 3: 강화학습 → Phase 4: A/B 테스트. GPT-4, 이미지 분석, 금융 상품 연계도 포함.
+**Q10. 확장 계획은?**
+A. **Phase 1-3 (필수)**: Agent 지능 강화 (Memory → 협업 → 자기개선) → **Phase 4-5 (선택)**: 리뷰 데이터 수집 → RAG 구현. **LangChain/RAG보다 Agent 지능이 먼저!**
 
 </div>
 

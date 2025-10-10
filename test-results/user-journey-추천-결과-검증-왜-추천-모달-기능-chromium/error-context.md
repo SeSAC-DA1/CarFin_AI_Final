@@ -1,0 +1,158 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e14]: MACRec Protocol
+          - generic [ref=e15]: SIGIR 2024
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e21]: 1/4 phases completed
+      - generic [ref=e22]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - img [ref=e27]
+            - generic [ref=e29]: Phase 1
+          - generic [ref=e30]:
+            - generic [ref=e31]: 대화 시작
+            - generic [ref=e32]: User Query Reception
+            - generic [ref=e33]: 요청을 받았어요
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img [ref=e40]
+            - generic [ref=e50]: Phase 2
+          - generic [ref=e51]:
+            - generic [ref=e52]: 분석 중
+            - generic [ref=e53]: Task Decomposition (Manager)
+            - generic [ref=e54]: 조건을 분석하고 있어요
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - img [ref=e61]
+            - generic [ref=e65]: Phase 3
+          - generic [ref=e66]:
+            - generic [ref=e67]: 검색 중
+            - generic [ref=e68]: Parallel Execution (Agents)
+            - generic [ref=e69]: 적합한 차량을 찾고 있어요
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - img [ref=e76]
+            - generic [ref=e79]: Phase 4
+          - generic [ref=e80]:
+            - generic [ref=e81]: 추천 준비
+            - generic [ref=e82]: Result Aggregation
+            - generic [ref=e83]: 최적의 차량을 선별하고 있어요
+    - generic [ref=e84]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - img [ref=e89]
+            - generic [ref=e91]:
+              - heading "CARFIN AI" [level=2] [ref=e92]
+              - paragraph [ref=e93]: 차량 추천 상담
+          - button "새 상담 시작" [ref=e94] [cursor=pointer]:
+            - img
+            - text: 새 상담 시작
+        - generic [ref=e96]:
+          - button "히스토리" [ref=e97] [cursor=pointer]:
+            - img [ref=e98] [cursor=pointer]
+            - text: 히스토리
+          - button "프로필" [ref=e102] [cursor=pointer]:
+            - img [ref=e103] [cursor=pointer]
+            - text: 프로필
+          - button "필터" [ref=e106] [cursor=pointer]:
+            - img [ref=e107] [cursor=pointer]
+            - text: 필터
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - heading "최근 상담 내역" [level=3] [ref=e112]
+            - generic [ref=e114]: "0"
+          - generic [ref=e115]:
+            - img [ref=e116]
+            - paragraph [ref=e118]: 아직 상담 내역이 없습니다
+            - paragraph [ref=e119]: 새 상담을 시작해보세요
+        - button "설정" [ref=e121] [cursor=pointer]:
+          - img
+          - text: 설정
+      - generic [ref=e122]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - img [ref=e127]
+            - generic [ref=e131]:
+              - heading "AI 차량 추천" [level=2] [ref=e132]
+              - paragraph [ref=e133]: 12만대 이상 실시간 분석
+          - generic [ref=e135]:
+            - img [ref=e136]
+            - generic [ref=e143]: 연결 끊김
+        - generic [ref=e147]:
+          - generic [ref=e148]:
+            - heading "안녕하세요! 👋" [level=2] [ref=e149]
+            - paragraph [ref=e150]: AI 3명으로 구성된 차량 추천 팀입니다
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - generic [ref=e154]: 복잡한 차량 선택을 단순하게 만들어드립니다
+              - generic [ref=e155]: 각자 전문 분야가 있는 AI 3명이 협업해서 완벽한 추천을 찾아드려요
+            - generic [ref=e156]:
+              - generic [ref=e158]:
+                - img [ref=e160]
+                - generic [ref=e170]:
+                  - heading "니즈 분석 AI" [level=3] [ref=e171]
+                  - paragraph [ref=e172]: 당신의 말에서 진짜 원하는 것을 찾아요
+                  - paragraph [ref=e173]: 대화 내용을 분석해서 예산, 용도, 선호도를 정확히 파악합니다
+              - generic [ref=e175]:
+                - img [ref=e177]
+                - generic [ref=e181]:
+                  - heading "검색 AI" [level=3] [ref=e182]
+                  - paragraph [ref=e183]: 15만대 중 조건에 맞는 차량을 빠르게 검색해요
+                  - paragraph [ref=e184]: 0.5초만에 수만 대의 매물에서 당신의 조건에 맞는 차량을 찾습니다
+              - generic [ref=e186]:
+                - img [ref=e188]
+                - generic [ref=e191]:
+                  - heading "평가 AI" [level=3] [ref=e192]
+                  - paragraph [ref=e193]: 6가지 기준으로 객관적으로 평가해요
+                  - paragraph [ref=e194]: 가격, 성능, 안전성, 연비, 옵션, 상태를 종합해서 정확히 평가합니다
+            - 'button "다음: 사용법 알아보기" [ref=e196] [cursor=pointer]':
+              - text: "다음: 사용법 알아보기"
+              - img
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - 'textbox "예: 2500만원 이하 가족용 SUV 추천해주세요" [ref=e204]'
+            - button [disabled]:
+              - img
+          - paragraph [ref=e205]: Enter로 전송 · Shift+Enter로 줄바꿈
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - img [ref=e210]
+          - generic [ref=e215]:
+            - heading "MACRec Protocol SIGIR 2024" [level=3] [ref=e216]:
+              - text: MACRec Protocol
+              - generic [ref=e217]: SIGIR 2024
+            - paragraph [ref=e218]: 질문을 입력하면 협업을 시작합니다
+        - generic [ref=e219]:
+          - generic [ref=e221]:
+            - img [ref=e222]
+            - generic [ref=e232]:
+              - generic [ref=e233]:
+                - generic [ref=e234]: User Analyst
+                - img [ref=e235]
+              - paragraph [ref=e238]: 사용자의 구매 조건과 선호도를 분석합니다
+          - generic [ref=e240]:
+            - img [ref=e241]
+            - generic [ref=e245]:
+              - generic [ref=e246]:
+                - generic [ref=e247]: Searcher Agent
+                - img [ref=e248]
+              - paragraph [ref=e251]: 15만대 매물에서 조건에 맞는 차량을 검색합니다
+          - generic [ref=e253]:
+            - img [ref=e254]
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - generic [ref=e259]: Manager Agent
+                - img [ref=e260]
+              - paragraph [ref=e263]: 6가지 기준으로 차량을 종합 평가하고 최종 추천합니다
+```
