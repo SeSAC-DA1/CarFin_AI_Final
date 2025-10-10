@@ -104,10 +104,14 @@ export function useWebSocketChat() {
             content: data.content,
             timestamp: new Date(data.timestamp),
           }]);
-        } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended') {
+        } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended' || data.type === 'recommendations') {
           try {
             // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환 (안전 처리)
-            const formattedVehicles = (data.vehicles || []).map((vehicle: any, index: number) => {
+            // Phase 3-E: 'recommendations' 타입 추가 (data.data.vehicles 구조)
+            const vehicleList = data.type === 'recommendations' ? (data.data?.vehicles || []) : (data.vehicles || []);
+            const formattedVehicles = vehicleList.map((vehicleData: any, index: number) => {
+              // Phase 3-E: vehicle 필드가 있으면 unwrap
+              const vehicle = vehicleData.vehicle || vehicleData;
               // TOPSIS 점수 정규화 (0-1 범위를 0-100으로 변환)
               const normalizedTopsisScore = vehicle.topsisScore < 1
                 ? Math.round(vehicle.topsisScore * 100)
@@ -141,7 +145,9 @@ export function useWebSocketChat() {
                 breakdown: vehicle.tco.breakdown,
                 confidence: vehicle.tco.confidence,
                 ownershipYears: vehicle.tco.ownershipYears
-              } : undefined
+              } : undefined,
+              // 🆕 Phase 3-E: 금융 옵션 매핑
+              financingOptions: vehicle.financingOptions || undefined
             };
             });
 
