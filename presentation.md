@@ -690,67 +690,69 @@ Manager Agent (조율)
 
 <div>
 
-#### 🎯 Phase 2: Memory Management (2주)
+#### 🎯 Phase 2: Memory + 리뷰 감성 분석 (2주) ⭐ 최종 권장
 
 **핵심 개선** (Google Agent 구성 요소):
-- Conversation Storage (대화 기록 영구 저장)
-- Reflection Mechanism (패턴 학습)
-- Context-Aware Recommendations
+- **Memory**: Conversation Storage + Reflection
+- **Reviewer Agent**: 6,121개 리뷰 감성 분석 (SQL + Gemini)
+- **신뢰도 강화**: TOPSIS 객관 점수 + 실사용자 주관 의견
 
 **효과**:
-- Agent Level: Level 2 (95%) → **Level 3 (60%)**
+- Agent Level: Level 2 (95%) → **Level 2 (100%)** ✅ 완성!
 - Memory 구성 요소: 10% → **85%**
-- 추천 정확도: 85% → **92%** (학습 효과)
-- Google 평가: 70/100 → **80/100**
+- 추천 신뢰도: TOPSIS만 → **TOPSIS + 리뷰 요약**
+- Google 평가: 70/100 → **85/100**
 
 **데모 시나리오**:
 ```
-사용자: "3000만원대 SUV"
-AI: [3대 추천]
+[추천 결과]
+1. 싼타페 하이브리드 (2,890만원)
+   TOPSIS 점수: 0.85/1.0
 
-[다음 세션]
-사용자: "차량 다시 찾아줘"
-AI: "이전에 현대차를 3번 거부하셨으니 제외했습니다 ✅"
-    "예산을 평균 200만원 낮추는 패턴이 있어 2,800만원으로 검색 ✅"
+   ⭐ 실사용자 평가: 4.8/5.0 (892개 리뷰)
+   ✅ 장점: 넓은 공간, 연비 13km/L, 안전 장치
+   ⚠️ 단점: 주차 크기 부담, 고속 소음
 ```
 
 </div>
 
 <div>
 
-#### ⚠️ Agentic RAG: 불필요!
+#### 🎉 리뷰 데이터 발견! (6,121개)
 
-**Google 자료 핵심 메시지**:
-> "에이전트 도입 전에 **검색 성능 개선**이 먼저"
+**데이터 현황**:
+- ✅ **총 6,121개** 실사용자 리뷰
+- ✅ **Top 모델**: 싼타페 하이브리드 (892개)
+- ✅ **평균 만족도**: 4.90/5.0 (높은 품질)
+- ✅ **평균 길이**: 212자 (적절한 길이)
 
-**현재 검색 성능**:
-- ✅ 재현율 (Recall): **95%+** (SQL 정확)
-- ✅ 정밀도 (Precision): **90%+** (TOPSIS)
-- ✅ 속도: **2.3초** (빠름)
+**Phase 2에서 활용 가능!**
+- **Reviewer Agent**: SQL로 모델별 리뷰 검색
+- **Gemini 감성 분석**: 긍정/부정 키워드 추출
+- **벡터 DB 불필요**: SQL `Model` 컬럼 = 100% 정확
 
 **Google RAG 개선 6가지 체크**:
-1. ✅ Chunk 분할: Row 단위
-2. ✅ 메타데이터: brand, price 등
-3. ❌ 임베딩: 불필요 (SQL 사용)
-4. ❌ 벡터 DB: 불필요 (PostgreSQL)
-5. ✅ Ranker: TOPSIS 있음
+1. ✅ Chunk: Row 단위 (optimal)
+2. ✅ 메타데이터: Model, Satisfaction
+3. ❌ 임베딩: **불필요** (SQL 정확)
+4. ❌ 벡터 DB: **불필요** (규모 작음)
+5. ✅ Ranker: Satisfaction 정렬
 6. ✅ Grounding: DB 직접 조회
 
-**결론**: **Agentic RAG = over-engineering**
-- 비용만 증가 (임베딩 API, Vector DB)
-- 성능 저하 (근사 vs 정확)
-- **리뷰 데이터 전까지 불필요!**
+**결론**: **Agentic RAG 여전히 불필요!**
+- Phase 2에서 SQL + Gemini로 충분
+- 6,121개는 벡터 DB 없이 관리 가능
 
 </div>
 
 </div>
 
 <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px;">
-<strong>🎯 핵심 전략</strong>: <strong>MACRec 논문 충실 구현</strong>이 먼저! (13% → 80%)
+<strong>🎯 Phase 1 (2주)</strong>: MACRec 논문 충실 구현 (13% → 80%) → <strong>Phase 2 (2주)</strong>: Memory + 리뷰 감성 분석 (6,121개 활용) ✅
 </div>
 
 <div style="margin-top: 10px; padding: 15px; background: #fee2e2; border-radius: 8px;">
-<strong>🔴 Agentic RAG</strong>: 리뷰 데이터 추가 전까지 **100% over-engineering** (현재 검색 성능 95%+)</div>
+<strong>🔴 Agentic RAG + 벡터 DB</strong>: 여전히 **100% over-engineering** (SQL로 충분!)</div>
 
 ---
 
