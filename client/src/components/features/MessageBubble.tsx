@@ -46,6 +46,15 @@ const agentConfig: Record<string, {
     dotColor: "bg-blue-500",
     ringColor: "ring-blue-500/20"
   },
+  user_analyst: {
+    icon: Brain,
+    name: "사용자 분석가",
+    role: "프로필 & 니즈 분석",
+    color: "text-blue-600",
+    bgGradient: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20",
+    dotColor: "bg-blue-500",
+    ringColor: "ring-blue-500/20"
+  },
   data: {
     icon: Database,
     name: "데이터 분석 에이전트",
@@ -54,6 +63,24 @@ const agentConfig: Record<string, {
     bgGradient: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
     dotColor: "bg-green-500",
     ringColor: "ring-green-500/20"
+  },
+  searcher: {
+    icon: Database,
+    name: "검색 에이전트",
+    role: "차량 검색 & 필터링",
+    color: "text-green-600",
+    bgGradient: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
+    dotColor: "bg-green-500",
+    ringColor: "ring-green-500/20"
+  },
+  evaluator: {
+    icon: Award,
+    name: "평가 에이전트",
+    role: "TOPSIS 다기준 평가",
+    color: "text-orange-600",
+    bgGradient: "bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20",
+    dotColor: "bg-orange-500",
+    ringColor: "ring-orange-500/20"
   },
   data_analyst: {
     icon: Database,
@@ -72,6 +99,24 @@ const agentConfig: Record<string, {
     bgGradient: "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20",
     dotColor: "bg-purple-500",
     ringColor: "ring-purple-500/20"
+  },
+  financial_advisor: {
+    icon: Award,
+    name: "금융 자문가",
+    role: "일시불/할부/리스 분석",
+    color: "text-emerald-600",
+    bgGradient: "bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20",
+    dotColor: "bg-emerald-500",
+    ringColor: "ring-emerald-500/20"
+  },
+  concierge: {
+    icon: Award,
+    name: "종합 추천",
+    role: "최종 추천 생성",
+    color: "text-indigo-600",
+    bgGradient: "bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/30 dark:to-indigo-900/20",
+    dotColor: "bg-indigo-500",
+    ringColor: "ring-indigo-500/20"
   }
 };
 
