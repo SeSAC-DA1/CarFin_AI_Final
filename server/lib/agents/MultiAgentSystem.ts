@@ -84,7 +84,7 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "manager",
-      content: `✅ ${tasks.length}개 작업 분해 완료: ${tasks.map(t => t.agent).join(', ')}`
+      content: `🔍 ${allVehicles.length.toLocaleString()}대의 차량 중에서 조건에 맞는 차를 찾아드릴게요`
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -99,7 +99,7 @@ export class MultiAgentSystem {
       yield {
         type: "agent_working",
         agent: "manager",
-        content: `🔀 Parallel Execution: ${parallel[0].length}개 에이전트 동시 실행 중...`
+        content: `💡 조건에 맞는 차량을 찾고 있어요...`
       };
 
       const parallelResults = await Promise.all(
@@ -127,32 +127,21 @@ export class MultiAgentSystem {
 
       allResults.push(...parallelResults);
 
-      // 🎨 UX 개선: 각 에이전트 결과를 개별적으로 표시
-      for (const result of parallelResults) {
-        if (result.success) {
-          yield {
-            type: "agent_response",
-            agent: result.agent,
-            content: `✅ ${result.agent === 'user_analyst' ? '사용자 니즈 분석' : result.agent === 'searcher' ? '차량 검색' : '차량 평가'} 완료 (${result.executionTime}ms)`
-          };
-        }
-      }
+      // 🎨 UX 개선: 사용자 친화적 메시지로 변경
+      const searcherResult = parallelResults.find(r => r.agent === 'searcher');
+      const foundCount = searcherResult?.output?.length || 0;
 
-      yield {
-        type: "agent_response",
-        agent: "manager",
-        content: `✅ 병렬 실행 완료: ${parallelResults.filter(r => r.success).length}/${parallelResults.length} 성공`
-      };
+      if (foundCount > 0) {
+        yield {
+          type: "agent_response",
+          agent: "searcher",
+          content: `✅ 조건에 맞는 차량 ${foundCount}대를 찾았어요`
+        };
+      }
     }
 
-    // Round 1+: 순차 실행 필요한 작업들
+    // Round 1+: 순차 실행 필요한 작업들 (조용히 처리)
     for (const task of sequential) {
-      yield {
-        type: "agent_working",
-        agent: task.agent,
-        content: `➡️ Sequential: ${task.agent} - ${task.action} 실행 중...`
-      };
-
       let result: AgentResult;
 
       if (task.agent === 'user_analyst') {
@@ -173,26 +162,20 @@ export class MultiAgentSystem {
 
       allResults.push(result);
 
-      if (result.success) {
-        yield {
-          type: "agent_response",
-          agent: task.agent,
-          content: `✅ ${task.action} 완료 (${result.executionTime}ms)`
-        };
-      }
+      // 순차 실행은 조용히 처리 (사용자에게 불필요한 정보)
     }
 
     // ═══════════════════════════════════════════════════════════════
     // Phase 3: Result Aggregation (Manager Agent)
     // ═══════════════════════════════════════════════════════════════
-    yield { type: "agent_working", agent: "manager", content: "🧩 Result Aggregation: 결과 합의 중..." };
+    yield { type: "agent_working", agent: "manager", content: "📊 가장 적합한 차량을 선별하고 있어요..." };
 
     const consensus = await this.manager.aggregate(allResults);
 
     yield {
       type: "agent_response",
       agent: "manager",
-      content: `✅ 합의 완료: Top ${consensus.rankedVehicles.length}개 차량 선정`
+      content: `✅ 베스트 3 차량을 선정했어요`
     };
 
     const top3 = consensus.rankedVehicles.slice(0, 3);
@@ -200,7 +183,7 @@ export class MultiAgentSystem {
     // ═══════════════════════════════════════════════════════════════
     // 🆕 Phase 3-E: Financial Advisor Agent Integration
     // ═══════════════════════════════════════════════════════════════
-    yield { type: "agent_working", agent: "financial_advisor", content: "💰 Financial Advisor: 금융 상품 분석 중..." };
+    yield { type: "agent_working", agent: "financial_advisor", content: "💰 일시불, 할부, 리스 중 어떤 방법이 유리한지 분석하고 있어요..." };
 
     // Top 3 차량에 대해 FinancialAdvisorAgent로 금융 옵션 분석
     const financialEnrichedRecommendations = await this.enrichWithFinancialOptions(top3, userProfile);
@@ -208,10 +191,10 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "financial_advisor",
-      content: `✅ 금융 옵션 분석 완료 (일시불/할부/리스 비교)`
+      content: `✅ 각 차량별 최적의 구매 방법을 찾았어요`
     };
 
-    yield { type: "agent_working", agent: "concierge", content: "종합 추천 생성 중..." };
+    yield { type: "agent_working", agent: "concierge", content: "📝 추천 내용을 정리하고 있어요..." };
     const finalRecommendations = await this.generateComprehensiveRecommendation(
       financialEnrichedRecommendations,
       userMessage
