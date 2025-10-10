@@ -127,6 +127,17 @@ export class MultiAgentSystem {
 
       allResults.push(...parallelResults);
 
+      // 🎨 UX 개선: 각 에이전트 결과를 개별적으로 표시
+      for (const result of parallelResults) {
+        if (result.success) {
+          yield {
+            type: "agent_response",
+            agent: result.agent,
+            content: `✅ ${result.agent === 'user_analyst' ? '사용자 니즈 분석' : result.agent === 'searcher' ? '차량 검색' : '차량 평가'} 완료 (${result.executionTime}ms)`
+          };
+        }
+      }
+
       yield {
         type: "agent_response",
         agent: "manager",
