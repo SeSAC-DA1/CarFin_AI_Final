@@ -198,67 +198,98 @@ export default function Onboarding() {
     },
     {
       id: 3,
-      title: "실시간 매물 분석",
-      description: "15만대 데이터를 즉시 검색하고 분석합니다",
-      icon: <Database className="w-8 h-8 text-primary" />,
+      title: "기존 방식 vs CARFIN AI",
+      description: "3일 고민을 3분으로 단축합니다",
+      icon: <Zap className="w-8 h-8 text-primary" />,
       content: (
-        <div className="space-y-8">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Card className="border-primary/20 text-center">
-              <CardContent className="p-6">
-                <Database className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-3xl font-bold text-primary mb-1">15만대</div>
-                <div className="text-xs text-muted-foreground">통합 매물</div>
-              </CardContent>
-            </Card>
+        <div className="space-y-6">
+          {/* Before - 기존 방식 */}
+          <Card className="border-2 border-red-200 bg-red-50/30">
+            <CardHeader>
+              <CardTitle className="text-red-700 flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                기존 방식 (3일)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">❌</span>
+                <div>
+                  <p className="font-medium mb-1">1시간씩 사이트 돌아다니기</p>
+                  <p className="text-sm text-muted-foreground">KB차차차 → 엔카 → SK엔카 → ...</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">❌</span>
+                <div>
+                  <p className="font-medium mb-1">중복 매물 수동 제거</p>
+                  <p className="text-sm text-muted-foreground">같은 차가 여러 사이트에...</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">❌</span>
+                <div>
+                  <p className="font-medium mb-1">100개 매물 일일이 비교</p>
+                  <p className="text-sm text-muted-foreground">엑셀에 정리하고 계산기 두드리고...</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">❌</span>
+                <div>
+                  <p className="font-medium mb-1">숨은 비용 놓침</p>
+                  <p className="text-sm text-muted-foreground">세금·정비비·연료비 나중에 알고 후회</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="border-chart-2/20 text-center">
-              <CardContent className="p-6">
-                <Clock className="w-8 h-8 text-chart-2 mx-auto mb-3" />
-                <div className="text-3xl font-bold text-chart-2 mb-1">3분</div>
-                <div className="text-xs text-muted-foreground">분석 시간</div>
-              </CardContent>
-            </Card>
+          {/* After - CARFIN AI */}
+          <Card className="border-2 border-primary/30 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="text-primary flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                CARFIN AI (3분)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">✅</span>
+                <div>
+                  <p className="font-medium mb-1">15만대 통합 검색 (1초)</p>
+                  <p className="text-sm text-muted-foreground">KB·엔카·SK엔카 한번에 검색</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">✅</span>
+                <div>
+                  <p className="font-medium mb-1">AI가 자동 비교 (2초)</p>
+                  <p className="text-sm text-muted-foreground">가격·연비·안전성 6가지 기준</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">✅</span>
+                <div>
+                  <p className="font-medium mb-1">숨은 비용까지 계산 (3초)</p>
+                  <p className="text-sm text-muted-foreground">세금·정비비·연료비 모두 포함</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">✅</span>
+                <div>
+                  <p className="font-medium mb-1">Top 3만 추천</p>
+                  <p className="text-sm text-muted-foreground">불필요한 정보는 제거</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="border-chart-3/20 text-center">
-              <CardContent className="p-6">
-                <Target className="w-8 h-8 text-chart-3 mx-auto mb-3" />
-                <div className="text-3xl font-bold text-chart-3 mb-1">Top 3</div>
-                <div className="text-xs text-muted-foreground">추천 차량</div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-chart-4/20 text-center">
-              <CardContent className="p-6">
-                <Users className="w-8 h-8 text-chart-4 mx-auto mb-3" />
-                <div className="text-3xl font-bold text-chart-4 mb-1">5개</div>
-                <div className="text-xs text-muted-foreground">AI 협업</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Features */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border">
-              <CheckCircle2 className="w-5 h-5 text-chart-3 flex-shrink-0" />
-              <span className="text-sm">KB차차차·엔카 실시간 데이터 통합</span>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border">
-              <CheckCircle2 className="w-5 h-5 text-chart-3 flex-shrink-0" />
-              <span className="text-sm">TOPSIS 6가지 기준 자동 평가</span>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border">
-              <CheckCircle2 className="w-5 h-5 text-chart-3 flex-shrink-0" />
-              <span className="text-sm">TCO 총 소유비용 자동 계산</span>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">실제 매물만 추천</span>
-            </div>
+          {/* Result */}
+          <div className="text-center p-8 bg-gradient-to-r from-primary/10 to-chart-2/10 rounded-xl border-2 border-primary/20">
+            <p className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
+              3일 → 3분
+            </p>
+            <p className="text-lg text-muted-foreground mb-1">99.9% 시간 절약</p>
+            <p className="text-sm text-muted-foreground">정확도는 더 높아집니다</p>
           </div>
         </div>
       )

@@ -24,7 +24,12 @@
       "Bash(psql:*)",
       "Bash(timeout 5 bash -c 'until curl -s http://localhost:5000 > nul 2>&1; do sleep 1; done')",
       "Bash(git restore:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(marp:*)",
+      "Bash(npm start)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

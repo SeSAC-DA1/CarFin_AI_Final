@@ -57,32 +57,32 @@ export default function Hero() {
 
             <div className="flex flex-wrap gap-8 pt-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-chart-1/10 rounded-lg">
-                  <Search className="w-6 h-6 text-chart-1" />
+                <div className="p-2 bg-green-500/10 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">15만대</p>
-                  <p className="text-xs text-muted-foreground">실시간 매물</p>
+                  <p className="text-lg font-semibold">무료</p>
+                  <p className="text-xs text-muted-foreground">추천 비용 0원</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold">100%</p>
+                  <p className="text-xs text-muted-foreground">실제 매물만</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-chart-2/10 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-chart-2" />
+                  <Award className="w-6 h-6 text-chart-2" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">3분</p>
-                  <p className="text-xs text-muted-foreground">빠른 추천</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-chart-3/10 rounded-lg">
-                  <MessageCircle className="w-6 h-6 text-chart-3" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold">딱 3대</p>
-                  <p className="text-xs text-muted-foreground">개인 맞춤</p>
+                  <p className="text-lg font-semibold">최적화</p>
+                  <p className="text-xs text-muted-foreground">개인 맞춤 분석</p>
                 </div>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 pt-2">
                       <p className="font-bold mb-1">0초</p>
-                      <p className="text-sm text-muted-foreground">프로필 데이터 자동 분석</p>
+                      <p className="text-sm text-muted-foreground">당신의 조건 이해</p>
                     </div>
                   </div>
 
@@ -116,7 +116,7 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 pt-2">
                       <p className="font-bold mb-1">1초</p>
-                      <p className="text-sm text-muted-foreground">15만대 DB 실시간 검색</p>
+                      <p className="text-sm text-muted-foreground">15만대 중 매칭 차량 발견</p>
                     </div>
                   </div>
 
@@ -126,7 +126,7 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 pt-2">
                       <p className="font-bold mb-1">2초</p>
-                      <p className="text-sm text-muted-foreground">TOPSIS 6가지 기준 평가</p>
+                      <p className="text-sm text-muted-foreground">가격·연비·안전성 비교</p>
                     </div>
                   </div>
 
@@ -136,7 +136,7 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 pt-2">
                       <p className="font-bold mb-1">3초</p>
-                      <p className="text-sm text-muted-foreground">TCO 비용 계산 완료</p>
+                      <p className="text-sm text-muted-foreground">총 비용까지 계산 완료</p>
                     </div>
                   </div>
                 </div>
