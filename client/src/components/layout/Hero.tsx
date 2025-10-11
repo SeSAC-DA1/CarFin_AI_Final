@@ -17,40 +17,40 @@ export default function Hero() {
           {/* Left: Text Content */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">AI가 3분 안에 찾아드립니다</span>
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">논문 3개 기반 검증된 AI 시스템</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                수만 대 중에
+                15만대 매물 분석
               </span>
               <br />
-              <span className="text-foreground">당신의 차 딱 3대만</span>
+              <span className="text-foreground">3분 안에 Top 3 추천</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                5개 AI가 협업해서 찾아드립니다
+                멀티에이전트 협업 시스템
               </span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">예산, 용도, 연비까지 종합 분석</span>
+              <span className="text-foreground/90 font-medium">SIGIR·RecSys 국제 학회 논문 구현</span>
               <br />
-              <span className="text-muted-foreground">3분이면 당신에게 꼭 맞는 차를 찾습니다</span>
+              <span className="text-muted-foreground">5개 전문 AI가 협업하여 최적 차량 선정</span>
               <br />
-              <span className="text-primary font-medium">실제 매물 15만대 실시간 분석</span>
+              <span className="text-primary font-medium">KB차차차·엔카 실시간 데이터 통합</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 rounded-full shadow-lg hover:shadow-xl transition-shadow" data-testid="button-start-chat">
                 <Link href="/onboarding">
-                  차 찾기 시작하기
+                  시작하기
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full border-2" data-testid="button-learn-more">
                 <Link href="/onboarding">
-                  어떻게 하는지 볼래요
+                  시스템 소개
                 </Link>
               </Button>
             </div>
@@ -104,23 +104,23 @@ export default function Hero() {
 
                 <div className="space-y-3">
                   <div className="p-4 bg-muted/50 rounded-2xl">
-                    <p className="text-sm text-muted-foreground mb-1">👤 사용자</p>
-                    <p className="text-sm">"가족용 SUV 찾는데, 연비도 좋고 안전했으면 좋겠어요"</p>
+                    <p className="text-sm text-muted-foreground mb-1">사용자 요청</p>
+                    <p className="text-sm">"3000만원 이하 가족용 SUV"</p>
                   </div>
 
                   <div className="p-4 bg-primary/10 rounded-2xl">
-                    <p className="text-sm text-primary mb-1">🧠 분석 AI</p>
-                    <p className="text-sm">"가족용, SUV, 연비, 안전성을 핵심으로 분석할게요"</p>
+                    <p className="text-sm text-primary mb-1">Manager</p>
+                    <p className="text-sm">작업 분해 및 Agent 조율</p>
                   </div>
 
                   <div className="p-4 bg-chart-2/10 rounded-2xl">
-                    <p className="text-sm text-chart-2 mb-1">🔍 검색 AI</p>
-                    <p className="text-sm">"조건에 맞는 차량 243대를 찾았어요"</p>
+                    <p className="text-sm text-chart-2 mb-1">Searcher</p>
+                    <p className="text-sm">15만대 DB에서 243대 검색</p>
                   </div>
 
                   <div className="p-4 bg-chart-3/10 rounded-2xl">
-                    <p className="text-sm text-chart-3 mb-1">⭐ 추천 AI</p>
-                    <p className="text-sm">"여러 기준으로 평가해서 베스트 3대 완성!"</p>
+                    <p className="text-sm text-chart-3 mb-1">Evaluator</p>
+                    <p className="text-sm">TOPSIS 6가지 기준 평가</p>
                   </div>
                 </div>
 
