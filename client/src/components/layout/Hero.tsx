@@ -17,8 +17,8 @@ export default function Hero() {
           {/* Left: Text Content */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">AI가 3분 안에 찾아드립니다</span>
+              <Shield className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Google Agent Level 3 달성</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
@@ -30,11 +30,11 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">예산, 용도, 연비까지 종합 분석</span>
+              <span className="text-foreground/90 font-medium">5개 전문 AI가 실시간 협업 추천</span>
               <br />
-              <span className="text-muted-foreground">3분이면 당신에게 꼭 맞는 차를 찾습니다</span>
+              <span className="text-muted-foreground">총 소유비용(TCO) 법적 근거 기반 계산</span>
               <br />
-              <span className="text-primary font-medium">실제 매물 15만대 실시간 분석</span>
+              <span className="text-primary font-medium">15만대 매물 3초 내 정밀 분석</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
