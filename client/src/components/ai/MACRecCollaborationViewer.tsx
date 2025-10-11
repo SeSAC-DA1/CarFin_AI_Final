@@ -70,29 +70,36 @@ export default function MACRecCollaborationViewer({
     {
       id: 'manager',
       name: 'Manager Agent',
+      emoji: '🎯',
+      specialty: 'Task Decomposition & Coordination',
+      status: 'idle'
+    },
+    {
+      id: 'user_analyst',
+      name: 'User Analyst',
       emoji: '🧠',
-      specialty: '태스크 분해 및 조율',
+      specialty: '사용자 니즈 분석 및 프로필 추출',
       status: 'idle'
     },
     {
-      id: 'needs_analyst',
-      name: 'Needs Analyst',
+      id: 'searcher',
+      name: 'Searcher Agent',
       emoji: '🔍',
-      specialty: '사용자 니즈 분석',
+      specialty: '차량 DB 검색 및 필터링',
       status: 'idle'
     },
     {
-      id: 'data_analyst',
-      name: 'Data Analyst',
-      emoji: '📊',
-      specialty: '15만대 데이터 검색',
+      id: 'evaluator',
+      name: 'Evaluator Agent',
+      emoji: '⭐',
+      specialty: 'TOPSIS 다기준 평가',
       status: 'idle'
     },
     {
-      id: 'reflector',
-      name: 'Reflector Agent',
-      emoji: '💭',
-      specialty: '만족도 검증 및 재추천',
+      id: 'financial_advisor',
+      name: 'Financial Advisor',
+      emoji: '💰',
+      specialty: 'TCO 계산 및 금융 옵션 분석',
       status: 'idle'
     }
   ]);

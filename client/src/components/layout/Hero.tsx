@@ -18,27 +18,27 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">논문 기반 AI 추천 시스템</span>
+              <span className="text-sm font-medium text-primary">멀티에이전트 AI 추천 시스템</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                12만대에서
+                실제 매물에서
               </span>
               <br />
               <span className="text-foreground">당신의 차 3대만</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                3분 안에 AI가 추천합니다
+                5개 AI 에이전트가 협업 추천
               </span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">3개의 전문 AI가 협업하여</span>
+              <span className="text-foreground/90 font-medium">5개 전문 AI 에이전트가 협업하여</span>
               <br />
               <span className="text-muted-foreground">개인화된 최적의 차량을 추천합니다</span>
               <br />
-              <span className="text-primary font-medium">학술 논문 검증 알고리즘 (SIGIR 2024, RecSys 2019)</span>
+              <span className="text-primary font-medium">MACRec 프로토콜 구현 (SIGIR 2024, RecSys 2019)</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -61,8 +61,8 @@ export default function Hero() {
                   <Search className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">12만대 이상</p>
-                  <p className="text-xs text-muted-foreground">실시간 매물</p>
+                  <p className="text-lg font-semibold">실제 매물</p>
+                  <p className="text-xs text-muted-foreground">KB차차차·엔카</p>
                 </div>
               </div>
 
@@ -71,7 +71,7 @@ export default function Hero() {
                   <BarChart3 className="w-6 h-6 text-chart-2" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">3개 AI</p>
+                  <p className="text-lg font-semibold">5개 Agent</p>
                   <p className="text-xs text-muted-foreground">실시간 협업</p>
                 </div>
               </div>
@@ -81,7 +81,7 @@ export default function Hero() {
                   <MessageCircle className="w-6 h-6 text-chart-3" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">딱 3대</p>
+                  <p className="text-lg font-semibold">Top 3</p>
                   <p className="text-xs text-muted-foreground">맞춤 추천</p>
                 </div>
               </div>
@@ -97,8 +97,8 @@ export default function Hero() {
                     <Sparkles className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold">멀티 에이전트 협업</p>
-                    <p className="text-sm text-muted-foreground">3개 AI가 실시간 분석</p>
+                    <p className="font-semibold">멀티에이전트 협업</p>
+                    <p className="text-sm text-muted-foreground">5개 Agent 실시간 분석</p>
                   </div>
                 </div>
 

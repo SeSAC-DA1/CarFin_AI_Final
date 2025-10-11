@@ -12,18 +12,18 @@ const papers = [
     venue: "SIGIR 2024",
     venueDetail: "The 47th International ACM SIGIR Conference",
     authors: "Google Research & MIT",
-    description: "3개의 전문 AI 에이전트(Manager, User Analyst, Searcher)가 실시간으로 협업하여 사용자 니즈를 분석하고 최적의 차량을 추천합니다.",
+    description: "5개의 전문 AI 에이전트(Manager, User Analyst, Searcher, Evaluator, Financial Advisor)가 실시간으로 협업하여 사용자 니즈를 분석하고 최적의 차량을 추천합니다.",
     badge: "멀티에이전트",
     color: "bg-blue-500/10 text-blue-600 border-blue-200",
-    accuracy: 90,
+    accuracy: 0,
     implementation: "/server/lib/agents/MultiAgentSystem.ts",
-    testCoverage: "36/36 tests passed",
+    testCoverage: "5개 Agent 구현",
     keyFeatures: [
-      "3-Agent 협업 프로토콜",
-      "실시간 Agent-to-Agent 통신",
-      "동적 역할 분담 시스템"
+      "Task Decomposition (Manager)",
+      "Parallel Execution (Agents)",
+      "Result Aggregation (협업)"
     ],
-    technicalHighlight: "협업 효율성 30% 향상 (단일 에이전트 대비)",
+    technicalHighlight: "Google Agent Level 3 구현 완료",
     paperUrl: "https://dl.acm.org/doi/10.1145/3626772.3657836"
   },
   {
@@ -33,18 +33,18 @@ const papers = [
     venue: "RecSys 2019 (Best Paper)",
     venueDetail: "13th ACM Conference on Recommender Systems",
     authors: "Alibaba Group",
-    description: "사용자별 개인화 점수를 실시간으로 계산하여 50개 후보 중 Top 3를 선정합니다. CTR +3.5% 검증된 알고리즘입니다.",
+    description: "사용자별 개인화 점수를 실시간으로 계산하여 후보 차량 중 Top 3를 선정합니다. Alibaba가 검증한 2단계 재정렬 알고리즘을 구현했습니다.",
     badge: "개인화 재정렬",
     color: "bg-purple-500/10 text-purple-600 border-purple-200",
-    accuracy: 85,
+    accuracy: 0,
     implementation: "/server/lib/collaboration/MultiAgentCollaborator.ts",
-    testCoverage: "20/20 tests passed",
+    testCoverage: "Re-ranking 구현",
     keyFeatures: [
       "2단계 Re-ranking 시스템",
       "6개 특성 가중치 적용",
       "실시간 개인화 점수 계산"
     ],
-    technicalHighlight: "추천 만족도 85% 달성 (실사용자 피드백)",
+    technicalHighlight: "프로필 기반 개인화 구현",
     paperUrl: "https://dl.acm.org/doi/10.1145/3298689.3347000"
   },
   {
@@ -54,18 +54,18 @@ const papers = [
     venue: "Multiple Studies (2018-2024)",
     venueDetail: "Expert Systems with Applications & Decision Support Systems",
     authors: "International Standards",
-    description: "6가지 평가 기준(가격, 연비, 안전성, 브랜드, 상태, 옵션)을 종합하여 객관적으로 차량을 평가하는 산업계 표준 방법입니다.",
+    description: "6가지 평가 기준(가격, 연비, 안전성, 브랜드, 상태, 옵션)을 종합하여 객관적으로 차량을 평가하는 산업계 표준 다기준 의사결정 방법입니다.",
     badge: "객관적 평가",
     color: "bg-green-500/10 text-green-600 border-green-200",
-    accuracy: 95,
+    accuracy: 0,
     implementation: "/server/lib/topsis/TOPSISEngine.ts",
-    testCoverage: "85/85 tests passed",
+    testCoverage: "TOPSIS 엔진 구현",
     keyFeatures: [
       "6가지 평가 기준 종합 분석",
       "Positive/Negative Ideal Solution",
       "상대적 근접도 기반 순위"
     ],
-    technicalHighlight: "수학적 정확성 100% 검증 완료",
+    technicalHighlight: "Evaluator Agent가 활용",
     paperUrl: "https://www.sciencedirect.com/science/article/abs/pii/S0957417418306249"
   }
 ];
@@ -77,15 +77,15 @@ export default function PapersSection() {
         {/* Header */}
         <div className="text-center mb-16 space-y-6">
           <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-2 text-sm">
-            🎓 학술 논문 3개 완전 구현
+            🎓 학술 논문 3개 기반 구현
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-            검증된 AI 알고리즘 기반
+            MACRec 멀티에이전트 시스템
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            SIGIR 2024, RecSys 2019 등 세계 최고 수준 AI 학회 논문을 실제로 구현했습니다.<br/>
-            <span className="font-semibold text-foreground">171개 단위 테스트</span>로 정확성을 검증했으며,
-            <span className="font-semibold text-foreground"> 평균 90% 이상의 구현 정확도</span>를 달성했습니다.
+            SIGIR 2024 MACRec 프로토콜을 실제로 구현했습니다.<br/>
+            <span className="font-semibold text-foreground">5개 AI 에이전트</span>가 협업하며,
+            <span className="font-semibold text-foreground"> Google Agent Level 3</span> 수준을 달성했습니다.
           </p>
         </div>
 
@@ -129,16 +129,15 @@ export default function PapersSection() {
                   {paper.description}
                 </p>
 
-                {/* Implementation Accuracy */}
+                {/* Implementation Status */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground flex items-center gap-1">
                       <Code2 className="w-4 h-4" />
-                      구현 정확도
+                      구현 상태
                     </span>
-                    <span className="font-bold text-lg">{paper.accuracy}%</span>
+                    <span className="font-bold text-sm text-green-600">완료</span>
                   </div>
-                  <Progress value={paper.accuracy} className="h-2" />
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-green-600" />
                     {paper.testCoverage}
@@ -200,20 +199,20 @@ export default function PapersSection() {
           <div className="p-8">
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div>
-                <p className="text-3xl font-bold text-primary mb-2">3개</p>
-                <p className="text-sm text-muted-foreground">학술 논문 구현</p>
+                <p className="text-3xl font-bold text-primary mb-2">5개</p>
+                <p className="text-sm text-muted-foreground">AI Agent 협업</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-chart-2 mb-2">90%+</p>
-                <p className="text-sm text-muted-foreground">평균 구현 정확도</p>
+                <p className="text-3xl font-bold text-chart-2 mb-2">Level 3</p>
+                <p className="text-sm text-muted-foreground">Google 기준</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-chart-3 mb-2">171개</p>
-                <p className="text-sm text-muted-foreground">단위 테스트 통과</p>
+                <p className="text-3xl font-bold text-chart-3 mb-2">MACRec</p>
+                <p className="text-sm text-muted-foreground">SIGIR 2024</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-chart-4 mb-2">85%</p>
-                <p className="text-sm text-muted-foreground">추천 정확도</p>
+                <p className="text-3xl font-bold text-chart-4 mb-2">TypeScript</p>
+                <p className="text-sm text-muted-foreground">전체 구현</p>
               </div>
             </div>
           </div>

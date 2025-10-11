@@ -36,8 +36,8 @@ export default function Onboarding() {
   const steps: OnboardingStep[] = [
     {
       id: 1,
-      title: "3개의 전문 AI가 협력합니다",
-      description: "각자 다른 역할을 맡은 AI들이 실시간으로 협업하여 최적의 차량을 추천합니다",
+      title: "5개의 전문 AI 에이전트가 협업합니다",
+      description: "각자 다른 역할을 맡은 AI 에이전트들이 MACRec 프로토콜로 협업하여 최적의 차량을 추천합니다",
       icon: <Users className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8">
@@ -47,33 +47,53 @@ export default function Onboarding() {
                 <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Brain className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-bold mb-2">🧠 분석 AI</h3>
-                <p className="text-sm text-muted-foreground">사용자의 니즈를 정확하게 분석합니다</p>
+                <h3 className="font-bold mb-2">🎯 Manager Agent</h3>
+                <p className="text-sm text-muted-foreground">Task Decomposition & Coordination</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-2/20">
               <CardContent className="p-6">
                 <div className="w-16 h-16 rounded-lg bg-chart-2/10 flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="w-8 h-8 text-chart-2" />
+                  <Users className="w-8 h-8 text-chart-2" />
                 </div>
-                <h3 className="font-bold mb-2">🔍 검색 AI</h3>
-                <p className="text-sm text-muted-foreground">12만대 이상 중 조건에 맞는 차량을 검색합니다</p>
+                <h3 className="font-bold mb-2">🧠 User Analyst</h3>
+                <p className="text-sm text-muted-foreground">사용자 니즈 분석 및 프로필 추출</p>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-3/20">
               <CardContent className="p-6">
                 <div className="w-16 h-16 rounded-lg bg-chart-3/10 flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-chart-3" />
+                  <BarChart3 className="w-8 h-8 text-chart-3" />
                 </div>
-                <h3 className="font-bold mb-2">⭐ 추천 AI</h3>
-                <p className="text-sm text-muted-foreground">6가지 기준으로 비교하여 Top 3를 선정합니다</p>
+                <h3 className="font-bold mb-2">🔍 Searcher Agent</h3>
+                <p className="text-sm text-muted-foreground">데이터베이스 검색 및 필터링</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="text-center hover-elevate border-chart-4/20">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 rounded-lg bg-chart-4/10 flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-chart-4" />
+                </div>
+                <h3 className="font-bold mb-2">⭐ Evaluator Agent</h3>
+                <p className="text-sm text-muted-foreground">TOPSIS 다기준 평가 및 순위 결정</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center hover-elevate border-green-500/20">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 rounded-lg bg-green-500/10 flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="font-bold mb-2">💰 Financial Advisor</h3>
+                <p className="text-sm text-muted-foreground">TCO 계산 및 비용 분석</p>
               </CardContent>
             </Card>
           </div>
           <div className="relative bg-gradient-to-r from-primary/5 via-chart-2/5 to-chart-3/5 p-6 rounded-lg border border-primary/20">
             <p className="text-center text-foreground">
               <Sparkles className="w-5 h-5 inline mr-2 text-primary" />
-              3개 AI의 실시간 협업 과정을 확인할 수 있습니다
+              5개 AI 에이전트의 실시간 협업 과정을 확인할 수 있습니다
             </p>
           </div>
         </div>
@@ -81,8 +101,8 @@ export default function Onboarding() {
     },
     {
       id: 2,
-      title: "학술적으로 검증된 알고리즘 기반",
-      description: "세계 최고 수준 AI 학회에서 검증된 3개 논문 방법론을 적용했습니다",
+      title: "학술 논문 기반 MACRec 프로토콜 구현",
+      description: "SIGIR 2024 논문의 멀티에이전트 협업 프로토콜을 실제로 구현했습니다",
       icon: <Shield className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-6">
@@ -95,8 +115,8 @@ export default function Onboarding() {
                   </div>
                   <div>
                     <Badge variant="outline" className="mb-2 bg-primary/10 text-primary border-primary/30">SIGIR 2024</Badge>
-                    <h3 className="font-bold mb-2">🤝 AI 에이전트 협업 프로토콜</h3>
-                    <p className="text-sm text-muted-foreground">멀티 에이전트 협업으로 단일 AI 대비 30% 정확도 향상</p>
+                    <h3 className="font-bold mb-2">🤝 MACRec 프로토콜</h3>
+                    <p className="text-sm text-muted-foreground">Task Decomposition → Parallel Execution → Result Aggregation</p>
                   </div>
                 </div>
               </CardContent>
@@ -108,9 +128,9 @@ export default function Onboarding() {
                     <TrendingUp className="w-6 h-6 text-chart-2" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="mb-2 bg-chart-2/10 text-chart-2 border-chart-2/30">RecSys 2019 Best Paper</Badge>
-                    <h3 className="font-bold mb-2">🧠 개인화 추천 알고리즘</h3>
-                    <p className="text-sm text-muted-foreground">Alibaba 검증 방법론으로 사용자 선호도를 실시간 반영합니다</p>
+                    <Badge variant="outline" className="mb-2 bg-chart-2/10 text-chart-2 border-chart-2/30">RecSys 2019</Badge>
+                    <h3 className="font-bold mb-2">🧠 Alibaba Re-ranking</h3>
+                    <p className="text-sm text-muted-foreground">개인화 점수 기반 2단계 재정렬 알고리즘</p>
                   </div>
                 </div>
               </CardContent>
@@ -122,9 +142,9 @@ export default function Onboarding() {
                     <BarChart3 className="w-6 h-6 text-chart-3" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="mb-2 bg-chart-3/10 text-chart-3 border-chart-3/30">TOPSIS 방법론</Badge>
-                    <h3 className="font-bold mb-2">⚖️ 객관적 다기준 평가</h3>
-                    <p className="text-sm text-muted-foreground">6가지 기준을 수학적으로 분석하여 공정하게 평가합니다</p>
+                    <Badge variant="outline" className="mb-2 bg-chart-3/10 text-chart-3 border-chart-3/30">AHP-TOPSIS</Badge>
+                    <h3 className="font-bold mb-2">⚖️ 다기준 의사결정</h3>
+                    <p className="text-sm text-muted-foreground">6가지 기준 가중치 적용 및 이상해 분석</p>
                   </div>
                 </div>
               </CardContent>
@@ -133,7 +153,7 @@ export default function Onboarding() {
           <div className="relative bg-gradient-to-r from-chart-2/10 to-chart-3/10 p-4 rounded-lg border border-chart-2/20">
             <p className="text-center text-foreground">
               <CheckCircle2 className="w-5 h-5 inline mr-2 text-chart-2" />
-              학술적으로 검증된 알고리즘으로 85% 이상의 추천 정확도 달성
+              Google Agent Level 3 (Multi-Agent Collaboration) 구현 완료
             </p>
           </div>
         </div>
@@ -141,39 +161,39 @@ export default function Onboarding() {
     },
     {
       id: 3,
-      title: "12만대 이상 실시간 매물 분석",
-      description: "대규모 데이터베이스에서 개인화된 최적의 차량을 빠르게 찾아드립니다",
+      title: "실제 매물 데이터 통합 분석",
+      description: "KB차차차, 엔카 등 주요 플랫폼의 실제 매물 데이터를 통합하여 분석합니다",
       icon: <Database className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-primary/20 to-chart-2/20 rounded-full mb-6 border border-primary/30">
-              <span className="text-3xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">12만+</span>
+              <span className="text-3xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">실제</span>
             </div>
-            <h3 className="text-xl font-bold mb-2">실시간 매물 데이터</h3>
-            <p className="text-muted-foreground mb-6">엔카·차차차 등 주요 플랫폼의 실제 매물 정보를 통합 분석</p>
+            <h3 className="text-xl font-bold mb-2">실제 중고차 매물 데이터</h3>
+            <p className="text-muted-foreground mb-6">KB차차차·엔카 크롤러로 수집한 실제 매물 정보</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Card className="text-center hover-elevate border-primary/20">
               <CardContent className="p-4">
                 <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
-                <div className="text-2xl font-bold text-primary mb-1">3분 이내</div>
-                <div className="text-sm text-muted-foreground">분석 완료 시간</div>
+                <div className="text-2xl font-bold text-primary mb-1">빠른</div>
+                <div className="text-sm text-muted-foreground">AI 분석</div>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-2/20">
               <CardContent className="p-4">
-                <TrendingUp className="w-6 h-6 text-chart-2 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-chart-2 mb-1">85%</div>
-                <div className="text-sm text-muted-foreground">추천 만족도</div>
+                <Users className="w-6 h-6 text-chart-2 mx-auto mb-2" />
+                <div className="text-2xl font-bold text-chart-2 mb-1">5개</div>
+                <div className="text-sm text-muted-foreground">AI Agent</div>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-3/20">
               <CardContent className="p-4">
                 <BarChart3 className="w-6 h-6 text-chart-3 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-chart-3 mb-1">5개 기준</div>
-                <div className="text-sm text-muted-foreground">종합 평가 항목</div>
+                <div className="text-2xl font-bold text-chart-3 mb-1">TOPSIS</div>
+                <div className="text-sm text-muted-foreground">다기준 평가</div>
               </CardContent>
             </Card>
             <Card className="text-center hover-elevate border-chart-4/20">

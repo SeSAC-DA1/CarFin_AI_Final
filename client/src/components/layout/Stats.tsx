@@ -1,8 +1,8 @@
 const stats = [
-  { value: "3분안에", label: "완벽한 추천", sublabel: "빠른 분석" },
-  { value: "12만대 이상", label: "실시간 매물", sublabel: "정확한 데이터" },
-  { value: "3개 논문", label: "학술 검증", sublabel: "SIGIR·RecSys" },
-  { value: "3명의 AI", label: "멀티에이전트", sublabel: "실시간 협업" }
+  { value: "5개 Agent", label: "멀티에이전트", sublabel: "실시간 협업" },
+  { value: "실제 매물", label: "데이터 통합", sublabel: "KB차차차·엔카" },
+  { value: "MACRec", label: "SIGIR 2024", sublabel: "논문 구현" },
+  { value: "Level 3", label: "Google 기준", sublabel: "Agent 수준" }
 ];
 
 export default function Stats() {
