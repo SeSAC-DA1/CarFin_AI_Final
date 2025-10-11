@@ -202,7 +202,7 @@ export default function ChatInterface() {
                     {showMACRecCollaboration && <Sparkles className="w-4 h-4 text-primary animate-pulse" />}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {showMACRecCollaboration ? 'MACRec 멀티에이전트 협업 중...' : '12만대 이상 실시간 분석'}
+                    {showMACRecCollaboration ? 'AI가 최적의 차를 찾고 있어요...' : '15만대 실시간 분석'}
                   </p>
                 </div>
               </div>

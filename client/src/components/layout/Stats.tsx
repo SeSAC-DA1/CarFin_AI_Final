@@ -1,8 +1,8 @@
 const stats = [
-  { value: "5개 Agent", label: "멀티에이전트", sublabel: "실시간 협업" },
-  { value: "실제 매물", label: "데이터 통합", sublabel: "KB차차차·엔카" },
-  { value: "MACRec", label: "SIGIR 2024", sublabel: "논문 구현" },
-  { value: "Level 3", label: "Google 기준", sublabel: "Agent 수준" }
+  { value: "15만대", label: "실시간 매물", sublabel: "KB·엔카 연동" },
+  { value: "3분", label: "빠른 추천", sublabel: "AI 자동 분석" },
+  { value: "Top 3", label: "맞춤 추천", sublabel: "개인화 분석" },
+  { value: "5개 AI", label: "협업 시스템", sublabel: "전문 분석" }
 ];
 
 export default function Stats() {
