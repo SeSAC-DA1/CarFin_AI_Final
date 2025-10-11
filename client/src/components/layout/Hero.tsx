@@ -18,7 +18,7 @@ export default function Hero() {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
               <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Google Agent Level 3 달성</span>
+              <span className="text-sm font-medium text-primary">논문 2개 + 검증된 방법론 기반</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">

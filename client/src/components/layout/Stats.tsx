@@ -1,8 +1,8 @@
 const stats = [
   { value: "5개 AI", label: "멀티에이전트 협업", sublabel: "Google Level 3 달성" },
-  { value: "논문 3개", label: "SIGIR·RecSys 구현", sublabel: "국제학회 검증" },
+  { value: "논문 2개", label: "SIGIR·RecSys 구현", sublabel: "국제학회 검증" },
   { value: "15만대", label: "실시간 매물 분석", sublabel: "3초 내 처리" },
-  { value: "TCO", label: "총 소유비용 계산", sublabel: "법적근거 5가지" }
+  { value: "TOPSIS", label: "다기준 의사결정", sublabel: "6가지 정밀 평가" }
 ];
 
 export default function Stats() {
