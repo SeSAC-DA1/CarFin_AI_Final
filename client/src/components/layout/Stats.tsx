@@ -1,8 +1,8 @@
 const stats = [
-  { value: "Level 3", label: "Google Agent", sublabel: "최고 수준" },
-  { value: "논문 3개", label: "학술 검증", sublabel: "SIGIR·RecSys" },
-  { value: "171개", label: "테스트 통과", sublabel: "검증된 정확도" },
-  { value: "무료", label: "추천 서비스", sublabel: "회원가입 불필요" }
+  { value: "5개 AI", label: "멀티에이전트 협업", sublabel: "Google Level 3 달성" },
+  { value: "논문 3개", label: "SIGIR·RecSys 구현", sublabel: "국제학회 검증" },
+  { value: "15만대", label: "실시간 매물 분석", sublabel: "3초 내 처리" },
+  { value: "TCO", label: "총 소유비용 계산", sublabel: "법적근거 5가지" }
 ];
 
 export default function Stats() {

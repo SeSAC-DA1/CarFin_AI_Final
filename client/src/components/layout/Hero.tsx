@@ -116,7 +116,7 @@ export default function Hero() {
 
                   <div className="p-4 bg-chart-3/10 rounded-2xl">
                     <p className="text-sm text-chart-3 mb-1">⭐ 추천 AI</p>
-                    <p className="text-sm">"여러 기준으로 평가해서 베스트 3대 완성!"</p>
+                    <p className="text-sm">"가격·연비·안전성·브랜드·상태·옵션 6가지 기준으로 평가해서 베스트 3대 완성!"</p>
                   </div>
                 </div>
 
