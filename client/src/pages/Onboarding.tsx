@@ -123,8 +123,8 @@ export default function Onboarding() {
     },
     {
       id: 2,
-      title: "검증된 알고리즘",
-      description: "SIGIR, RecSys 등 국제 학회 논문 기반 구현",
+      title: "논문 2개 + 검증된 방법론",
+      description: "SIGIR·RecSys 국제 학회 논문 + TOPSIS 다기준 분석",
       icon: <Shield className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-6">
@@ -176,11 +176,11 @@ export default function Onboarding() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="bg-chart-3/10 text-chart-3 border-chart-3/30">AHP-TOPSIS</Badge>
-                      <span className="text-sm text-muted-foreground">Multi-Criteria Decision</span>
+                      <Badge variant="outline" className="bg-chart-3/10 text-chart-3 border-chart-3/30">검증된 방법론</Badge>
+                      <span className="text-sm text-muted-foreground">다기준 의사결정 분석</span>
                     </div>
-                    <h3 className="font-bold mb-1">다기준 의사결정</h3>
-                    <p className="text-sm text-muted-foreground">6가지 기준 동시 평가</p>
+                    <h3 className="font-bold mb-1">TOPSIS</h3>
+                    <p className="text-sm text-muted-foreground">6가지 기준 정밀 평가</p>
                   </div>
                 </div>
               </CardContent>
@@ -255,8 +255,8 @@ export default function Onboarding() {
               <div className="flex items-start gap-3">
                 <span className="text-2xl">✅</span>
                 <div>
-                  <p className="font-medium mb-1">15만대 통합 검색 (1초)</p>
-                  <p className="text-sm text-muted-foreground">KB·엔카·SK엔카 한번에 검색</p>
+                  <p className="font-medium mb-1">실시간 매물 통합 검색 (1초)</p>
+                  <p className="text-sm text-muted-foreground">KB차차차·엔카·SK엔카 실제 매물</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -288,7 +288,7 @@ export default function Onboarding() {
             <p className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
               3일 → 3분
             </p>
-            <p className="text-lg text-muted-foreground mb-1">99.9% 시간 절약</p>
+            <p className="text-lg text-muted-foreground mb-1">99% 이상 시간 절약</p>
             <p className="text-sm text-muted-foreground">정확도는 더 높아집니다</p>
           </div>
         </div>
