@@ -216,7 +216,7 @@ export default function Onboarding() {
                 <span className="text-2xl">❌</span>
                 <div>
                   <p className="font-medium mb-1">1시간씩 사이트 돌아다니기</p>
-                  <p className="text-sm text-muted-foreground">KB차차차 → 엔카 → SK엔카 → ...</p>
+                  <p className="text-sm text-muted-foreground">KB차차차 → 엔카 → 다시 검색 → ...</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -256,7 +256,7 @@ export default function Onboarding() {
                 <span className="text-2xl">✅</span>
                 <div>
                   <p className="font-medium mb-1">실시간 매물 통합 검색 (1초)</p>
-                  <p className="text-sm text-muted-foreground">KB차차차·엔카·SK엔카 실제 매물</p>
+                  <p className="text-sm text-muted-foreground">KB차차차·엔카 실제 매물</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
