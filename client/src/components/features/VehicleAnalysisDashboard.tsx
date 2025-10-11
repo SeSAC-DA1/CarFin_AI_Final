@@ -442,8 +442,8 @@ export default function VehicleAnalysisDashboard({
                   <div className="p-4 bg-gradient-to-r from-primary/5 to-chart-2/5 rounded-lg">
                     <h4 className="font-semibold mb-2">📊 데이터 기반 평가</h4>
                     <p className="text-sm text-muted-foreground">
-                      이 차량은 15만대 매물 분석을 통해 도출된 결과입니다.
-                      논문 3개 기반 AI 시스템(MACRec + Alibaba + AHP-TOPSIS)을 활용하여
+                      이 차량은 실시간 매물 분석을 통해 도출된 결과입니다.
+                      논문 2개 + 검증된 방법론 기반 AI 시스템(MACRec + Alibaba + TOPSIS)을 활용하여
                       객관적이고 정밀한 분석을 제공합니다.
                     </p>
                   </div>
