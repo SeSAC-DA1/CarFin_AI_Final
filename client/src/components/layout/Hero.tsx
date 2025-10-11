@@ -57,32 +57,32 @@ export default function Hero() {
 
             <div className="flex flex-wrap gap-8 pt-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                <div className="p-2 bg-chart-1/10 rounded-lg">
+                  <Search className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">무료</p>
-                  <p className="text-xs text-muted-foreground">추천 비용 0원</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Shield className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold">100%</p>
-                  <p className="text-xs text-muted-foreground">실제 매물만</p>
+                  <p className="text-lg font-semibold">15만대</p>
+                  <p className="text-xs text-muted-foreground">실시간 매물</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-chart-2/10 rounded-lg">
-                  <Award className="w-6 h-6 text-chart-2" />
+                  <BarChart3 className="w-6 h-6 text-chart-2" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">최적화</p>
-                  <p className="text-xs text-muted-foreground">개인 맞춤 분석</p>
+                  <p className="text-lg font-semibold">3분</p>
+                  <p className="text-xs text-muted-foreground">빠른 추천</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-chart-3/10 rounded-lg">
+                  <MessageCircle className="w-6 h-6 text-chart-3" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold">딱 3대</p>
+                  <p className="text-xs text-muted-foreground">개인 맞춤</p>
                 </div>
               </div>
             </div>
@@ -92,60 +92,42 @@ export default function Hero() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-chart-2/20 rounded-3xl blur-3xl" />
               <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-8 border border-card-border space-y-6">
-                {/* Header */}
-                <div className="text-center pb-4 border-b border-border">
-                  <p className="text-2xl font-bold mb-2">3분 분석 과정</p>
-                  <p className="text-sm text-muted-foreground">15만대 → Top 3</p>
-                </div>
-
-                {/* Timeline */}
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-8 h-8 text-primary" />
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <p className="font-bold mb-1">0초</p>
-                      <p className="text-sm text-muted-foreground">당신의 조건 이해</p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
                   </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-chart-2/10 flex items-center justify-center flex-shrink-0">
-                      <Database className="w-8 h-8 text-chart-2" />
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <p className="font-bold mb-1">1초</p>
-                      <p className="text-sm text-muted-foreground">15만대 중 매칭 차량 발견</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-chart-3/10 flex items-center justify-center flex-shrink-0">
-                      <BarChart3 className="w-8 h-8 text-chart-3" />
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <p className="font-bold mb-1">2초</p>
-                      <p className="text-sm text-muted-foreground">가격·연비·안전성 비교</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                      <Award className="w-8 h-8 text-green-600" />
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <p className="font-bold mb-1">3초</p>
-                      <p className="text-sm text-muted-foreground">총 비용까지 계산 완료</p>
-                    </div>
+                  <div>
+                    <p className="font-semibold">멀티에이전트 협업</p>
+                    <p className="text-sm text-muted-foreground">5개 Agent 실시간 분석</p>
                   </div>
                 </div>
 
-                {/* Result */}
-                <div className="pt-4 border-t border-border">
-                  <div className="bg-primary/10 rounded-2xl p-4 text-center">
-                    <p className="text-sm text-primary font-bold mb-1">분석 완료</p>
-                    <p className="text-xs text-muted-foreground">당신을 위한 최적 차량 3대</p>
+                <div className="space-y-3">
+                  <div className="p-4 bg-muted/50 rounded-2xl">
+                    <p className="text-sm text-muted-foreground mb-1">사용자 요청</p>
+                    <p className="text-sm">"3000만원 이하 가족용 SUV"</p>
+                  </div>
+
+                  <div className="p-4 bg-primary/10 rounded-2xl">
+                    <p className="text-sm text-primary mb-1">Manager</p>
+                    <p className="text-sm">작업 분해 및 Agent 조율</p>
+                  </div>
+
+                  <div className="p-4 bg-chart-2/10 rounded-2xl">
+                    <p className="text-sm text-chart-2 mb-1">Searcher</p>
+                    <p className="text-sm">15만대 DB에서 243대 검색</p>
+                  </div>
+
+                  <div className="p-4 bg-chart-3/10 rounded-2xl">
+                    <p className="text-sm text-chart-3 mb-1">Evaluator</p>
+                    <p className="text-sm">TOPSIS 6가지 기준 평가</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1 h-10 bg-muted/50 rounded-full" />
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                    <ArrowRight className="w-5 h-5 text-primary-foreground" />
                   </div>
                 </div>
               </div>
