@@ -23,14 +23,10 @@ export default function Hero() {
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                수만 대 중에
+                멀티 에이전트 기반
               </span>
               <br />
-              <span className="text-foreground">당신의 차 딱 3대만</span>
-              <br />
-              <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                5개 AI가 협업해서 찾아드립니다
-              </span>
+              <span className="text-foreground">중고차 추천 시스템</span>
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
