@@ -1,8 +1,8 @@
 const stats = [
-  { value: "15만대", label: "통합 매물 DB", sublabel: "실시간 검색" },
-  { value: "3분", label: "평균 분석 시간", sublabel: "즉시 결과" },
-  { value: "171개", label: "단위 테스트 통과", sublabel: "검증된 정확도" },
-  { value: "논문 3개", label: "학술 검증", sublabel: "SIGIR·RecSys" }
+  { value: "15만대", label: "실시간 매물", sublabel: "KB·엔카 연동" },
+  { value: "3분", label: "빠른 추천", sublabel: "AI 자동 분석" },
+  { value: "Top 3", label: "맞춤 추천", sublabel: "개인화 분석" },
+  { value: "5개 AI", label: "협업 시스템", sublabel: "전문 분석" }
 ];
 
 export default function Stats() {
