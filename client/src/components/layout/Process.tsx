@@ -10,14 +10,14 @@ const steps = [
   {
     icon: Search,
     number: "02",
-    title: "AI 3명이 찾아드립니다",
+    title: "5개 AI가 찾아드립니다",
     description: "각자 전문 분야에서 동시 분석"
   },
   {
     icon: BarChart3,
     number: "03",
     title: "꼼꼼히 비교분석",
-    description: "여러 기준으로 정밀 평가"
+    description: "6가지 기준 정밀 평가"
   },
   {
     icon: CheckCircle,

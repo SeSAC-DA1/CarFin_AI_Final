@@ -111,7 +111,7 @@ export default function Hero() {
 
                   <div className="p-4 bg-chart-2/10 rounded-2xl">
                     <p className="text-sm text-chart-2 mb-1">🔍 검색 AI</p>
-                    <p className="text-sm">"조건에 맞는 차량 243대를 찾았어요"</p>
+                    <p className="text-sm">"조건에 맞는 차량을 찾았어요"</p>
                   </div>
 
                   <div className="p-4 bg-chart-3/10 rounded-2xl">

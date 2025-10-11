@@ -77,7 +77,7 @@ export default function PapersSection() {
         {/* Header */}
         <div className="text-center mb-16 space-y-6">
           <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-2 text-sm">
-            🎓 학술 논문 3개 기반 구현
+            🎓 논문 2개 + 검증된 방법론 기반 구현
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
             MACRec 멀티에이전트 시스템

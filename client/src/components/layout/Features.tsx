@@ -11,7 +11,7 @@ const features = [
   },
   {
     icon: Brain,
-    title: "3명의 AI 에이전트 협업",
+    title: "5개 AI 에이전트 협업",
     others: "단순 키워드 검색",
     carfin: "SIGIR 2024 멀티 에이전트가 실시간 협업",
     badge: "MACRec"
