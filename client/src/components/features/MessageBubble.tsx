@@ -58,7 +58,7 @@ const agentConfig: Record<string, {
   data: {
     icon: Database,
     name: "데이터 분석 에이전트",
-    role: "15만대 매물 검색",
+    role: "실시간 매물 검색",
     color: "text-green-600",
     bgGradient: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
     dotColor: "bg-green-500",
@@ -85,7 +85,7 @@ const agentConfig: Record<string, {
   data_analyst: {
     icon: Database,
     name: "데이터 분석 에이전트",
-    role: "15만대 매물 검색",
+    role: "실시간 매물 검색",
     color: "text-green-600",
     bgGradient: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
     dotColor: "bg-green-500",

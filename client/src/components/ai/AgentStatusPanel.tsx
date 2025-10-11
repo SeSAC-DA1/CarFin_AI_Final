@@ -9,7 +9,7 @@ const getTaskForStep = (step: string): string => {
   const taskMap: Record<string, string> = {
     'analyzing_needs': '사용자 요구사항 분석 중',
     'user_analyst': '프로필 추출 중',
-    'searching_vehicles': '15만대 데이터 검색 중',
+    'searching_vehicles': '실시간 매물 검색 중',
     'searcher': '조건 맞는 차량 탐색 중',
     'final_recommendation': 'TOPSIS 정밀 평가 중',
     'manager': '최종 추천 통합 중',
@@ -22,7 +22,7 @@ const getDetailForStep = (step: string, userQuery: string): string => {
   const detailMap: Record<string, string> = {
     'analyzing_needs': `"${userQuery.slice(0, 20)}..." 분석 중`,
     'user_analyst': '예산, 용도, 선호도 파악 중',
-    'searching_vehicles': '조건에 맞는 차량 검색 중',
+    'searching_vehicles': 'KB차차차·엔카 실제 매물 검색 중',
     'searcher': 'MACRec 프로토콜 실행 중',
     'final_recommendation': '6가지 기준 정밀 평가',
     'manager': 'Alibaba Re-ranking 적용 중',
@@ -86,7 +86,7 @@ const agentDefinitions = [
     id: "searcher",
     name: "Searcher Agent",
     shortName: "검색",
-    role: "15만대 매물에서 조건에 맞는 차량을 검색합니다",
+    role: "실시간 매물에서 조건에 맞는 차량을 검색합니다",
     icon: Database,
     color: "text-green-600",
     bgColor: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20",
@@ -166,9 +166,9 @@ export default function AgentStatusPanel({
                 addAgentMessage('user_analyst', 'manager', '✅ 프로필 데이터 추출 완료');
               }, 800);
             } else if (agent.id === 'searcher') {
-              addAgentMessage('manager', 'searcher', '🔍 15만대 DB 검색 시작 요청');
+              addAgentMessage('manager', 'searcher', '🔍 실시간 매물 검색 시작 요청');
               setTimeout(() => {
-                addAgentMessage('searcher', 'manager', '✅ 387대 후보 차량 발견');
+                addAgentMessage('searcher', 'manager', '✅ 조건에 맞는 차량 발견');
               }, 1200);
             } else if (agent.id === 'manager') {
               addAgentMessage('manager', 'all', '🏆 최종 평가 및 순위 결정 중');

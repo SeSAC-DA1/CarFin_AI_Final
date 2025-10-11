@@ -148,7 +148,7 @@ export default function FeedbackSection({ vehicles, onRecommend, onSatisfied }: 
               감사합니다! 🎉
             </h3>
             <p className="text-sm text-muted-foreground">
-              AI 3명의 협업으로 만족스러운 추천을 드릴 수 있어서 기쁩니다
+              5개 AI의 협업으로 만족스러운 추천을 드릴 수 있어서 기쁩니다
             </p>
             <div className="flex items-center justify-center gap-2 text-xs text-green-600 dark:text-green-400 mt-3">
               <Award className="w-4 h-4" />
@@ -163,7 +163,7 @@ export default function FeedbackSection({ vehicles, onRecommend, onSatisfied }: 
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">어떤 부분을 개선해드릴까요?</h3>
               <p className="text-sm text-muted-foreground">
-                선택해주시면 AI 3명이 즉시 재분석해드립니다
+                선택해주시면 5개 AI가 즉시 재분석해드립니다
               </p>
             </div>
 
@@ -197,7 +197,7 @@ export default function FeedbackSection({ vehicles, onRecommend, onSatisfied }: 
                 <div className="flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-primary animate-spin" />
                   <span className="text-sm font-medium text-primary">
-                    AI 3명이 피드백을 반영해서 재분석 중입니다...
+                    5개 AI가 피드백을 반영해서 재분석 중입니다...
                   </span>
                 </div>
                 <p className="text-xs text-primary/80 mt-1">

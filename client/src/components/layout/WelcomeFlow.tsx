@@ -50,7 +50,7 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
   const steps = [
     {
       title: "안녕하세요! 👋",
-      subtitle: "AI 3명으로 구성된 차량 추천 팀입니다",
+      subtitle: "5개 AI로 구성된 차량 추천 팀입니다",
       content: (
         <div className="space-y-6">
           <div className="text-center space-y-3">
@@ -58,7 +58,7 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
               복잡한 차량 선택을 단순하게 만들어드립니다
             </div>
             <div className="text-sm text-muted-foreground">
-              각자 전문 분야가 있는 AI 3명이 협업해서 완벽한 추천을 찾아드려요
+              각자 전문 분야가 있는 5개 AI가 협업해서 완벽한 추천을 찾아드려요
             </div>
           </div>
 

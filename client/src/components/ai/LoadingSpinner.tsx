@@ -27,7 +27,7 @@ const getStepMessage = (step?: string) => {
   const messages: Record<string, string> = {
     'analyzing_needs': '🧠 사용자 요구사항 분석 중...',
     'user_analyst': '👤 사용자 프로필 추출 중...',
-    'searching_vehicles': '🔍 15만대 데이터 검색 중...',
+    'searching_vehicles': '🔍 실시간 매물 검색 중...',
     'searcher': '🚗 조건 맞는 차량 탐색 중...',
     'final_recommendation': '📊 정밀 평가 분석 중...',
     'manager': '🎯 최종 추천 생성 중...',
@@ -44,7 +44,7 @@ export default function LoadingSpinner({ message, step, className }: LoadingSpin
     <div className={cn("flex flex-col items-center justify-center p-8 space-y-4", className)}>
       {/* 논문 기반 시스템 로딩 애니메이션 */}
       <div className="relative">
-        {/* 외부 링 - 논문 3개 표시 */}
+        {/* 외부 링 - 논문 2개 + 방법론 표시 */}
         <div className="w-20 h-20 border-4 border-primary/20 rounded-full animate-spin">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="w-3 h-3 bg-blue-500 rounded-full" title="MACRec (SIGIR 2024)" />
@@ -53,7 +53,7 @@ export default function LoadingSpinner({ message, step, className }: LoadingSpin
             <div className="w-3 h-3 bg-green-500 rounded-full" title="Alibaba Re-ranking (RecSys 2019)" />
           </div>
           <div className="absolute bottom-0 right-0 -translate-x-1/4 translate-y-1/4">
-            <div className="w-3 h-3 bg-purple-500 rounded-full" title="AHP-TOPSIS" />
+            <div className="w-3 h-3 bg-purple-500 rounded-full" title="TOPSIS 검증된 방법론" />
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export default function LoadingSpinner({ message, step, className }: LoadingSpin
         {step && (
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" />
-            <span>논문 3개 기반 AI 시스템 실행 중</span>
+            <span>논문 2개 + 검증된 방법론 기반 AI 시스템 실행 중</span>
           </div>
         )}
       </div>
@@ -91,8 +91,8 @@ export default function LoadingSpinner({ message, step, className }: LoadingSpin
         </div>
         <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
           <div className="w-2 h-2 bg-purple-500 rounded-full mx-auto mb-1" />
-          <div className="font-medium text-purple-700 dark:text-purple-400">AHP-TOPSIS</div>
-          <div className="text-purple-600 dark:text-purple-500">Multi Studies</div>
+          <div className="font-medium text-purple-700 dark:text-purple-400">TOPSIS</div>
+          <div className="text-purple-600 dark:text-purple-500">검증된 방법론</div>
         </div>
       </div>
     </div>
