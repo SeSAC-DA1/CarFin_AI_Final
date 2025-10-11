@@ -23,13 +23,13 @@ export default function Hero() {
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
-                15만대 매물 분석
+                멀티에이전트 협업 시스템
               </span>
               <br />
-              <span className="text-foreground">3분 안에 Top 3 추천</span>
+              <span className="text-foreground">15만대 매물 3분 분석</span>
               <br />
               <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-                멀티에이전트 협업 시스템
+                Top 3 최적 차량 추천
               </span>
             </h1>
 
