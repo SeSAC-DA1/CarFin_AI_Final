@@ -54,6 +54,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 🔧 성능 측정 미들웨어 적용
   app.use(performanceMiddleware);
 
+  // 🏥 Health Check Endpoint (Railway 배포용)
+  app.get("/api/system/health", async (_req, res) => {
+    try {
+      // 데이터베이스 연결 확인
+      const testQuery = await storage.getVehicleCount();
+
+      res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        database: testQuery !== undefined ? "connected" : "disconnected",
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // 📊 System Status Endpoint
+  app.get("/api/system/status", async (_req, res) => {
+    try {
+      const metrics = systemMonitor.getMetrics();
+      res.json({
+        timestamp: new Date().toISOString(),
+        status: "operational",
+        metrics
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to get system status"
+      });
+    }
+  });
+
   app.get("/api/vehicles/search", async (req, res) => {
     try {
       const filters: VehicleSearchFilters = {
