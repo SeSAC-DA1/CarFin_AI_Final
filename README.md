@@ -373,399 +373,209 @@ GET  /api/vehicles/:id                 # 차량 상세
 
 ### 1. 전체 데이터 흐름 아키텍처
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     데이터 수집 계층 (Crawling Layer)              │
-│                                                                   │
-│  ┌────────────┐                              ┌────────────┐      │
-│  │ KB차차차    │  HTTP 크롤링 (Python)        │   엔카      │      │
-│  │ ~63,000대  │ ─────────────────────────→  │ ~64,378대  │      │
-│  └────────────┘                              └────────────┘      │
-│         │                                           │             │
-│         └───────────────────┬───────────────────────┘             │
-│                             ↓                                     │
-└─────────────────────────────┼─────────────────────────────────────┘
-                              │
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                  데이터 정제 계층 (ETL Layer)                      │
-│                                                                   │
-│  1. 데이터 추출 (Extract)                                         │
-│     • JSON/HTML 파싱                                             │
-│     • 필드 매핑 (brand, model, price, distance...)              │
-│                                                                   │
-│  2. 데이터 변환 (Transform)                                       │
-│     • 중복 제거 (vehicleId 기준)                                  │
-│     • 결측치 처리 (기본값 또는 제외)                               │
-│     • 타입 변환 (문자열→숫자)                                      │
-│     • 이상치 탐지 (가격, 주행거리 검증)                            │
-│                                                                   │
-│  3. 데이터 적재 (Load)                                            │
-│     • PostgreSQL UPSERT (ON CONFLICT UPDATE)                    │
-│     • 인덱스 재구성 (성능 최적화)                                  │
-│                                                                   │
-└─────────────────────────────┬───────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   저장 계층 (Storage Layer)                        │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────┐       │
-│  │         PostgreSQL Database (127,378대)              │       │
-│  │                                                        │       │
-│  │  vehicles 테이블:                                      │       │
-│  │  • vehicleId (PK)                                     │       │
-│  │  • brand, model, modelYear                            │       │
-│  │  • price, distance, fuelType                          │       │
-│  │  • photo, options[], detailUrl                        │       │
-│  │  • accidentCost, originPrice                          │       │
-│  │                                                        │       │
-│  │  인덱스:                                               │       │
-│  │  • idx_vehicles_price                                 │       │
-│  │  • idx_vehicles_brand                                 │       │
-│  │  • idx_vehicles_fuel                                  │       │
-│  │  • idx_vehicles_year                                  │       │
-│  └──────────────────────────────────────────────────────┘       │
-│                              │                                    │
-└──────────────────────────────┼────────────────────────────────────┘
-                               ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   캐싱 계층 (Caching Layer)                        │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────┐       │
-│  │              Redis Cache (5-10분 TTL)                │       │
-│  │                                                        │       │
-│  │  캐시 키 구조:                                          │       │
-│  │  • search:{budget}:{usage}:{location} → 검색 결과     │       │
-│  │  • topsis:{profileHash} → TOPSIS 평가 결과            │       │
-│  │  • vehicle:{vehicleId} → 차량 상세 정보                │       │
-│  │                                                        │       │
-│  │  성능 지표:                                             │       │
-│  │  • 캐시 히트율: 85%                                     │       │
-│  │  • 평균 응답시간: 142ms (캐시 히트 시 < 50ms)           │       │
-│  └──────────────────────────────────────────────────────┘       │
-│                                                                   │
-└─────────────────────────────┬───────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                 비즈니스 로직 계층 (Application Layer)              │
-│                                                                   │
-│  ┌─────────────────────────────────────────────────────┐        │
-│  │       5개 AI 에이전트 (MACRec 프로토콜)              │        │
-│  │                                                       │        │
-│  │  1. Manager Agent (조율)                             │        │
-│  │     ↓                                                 │        │
-│  │  2. User Analyst (Gemini 2.5로 니즈 분석)            │        │
-│  │     ↓                                                 │        │
-│  │  3. Searcher Agent (PostgreSQL 검색 + Redis 캐싱)    │        │
-│  │     ↓                                                 │        │
-│  │  4. Evaluator (TOPSIS 6기준 평가)                    │        │
-│  │     ↓                                                 │        │
-│  │  5. Financial Advisor (TCO 5개 비용 계산)            │        │
-│  │     ↓                                                 │        │
-│  │  Alibaba Re-ranking (개인화 재정렬)                  │        │
-│  │     ↓                                                 │        │
-│  │  Top 3 최종 추천                                      │        │
-│  └─────────────────────────────────────────────────────┘        │
-│                                                                   │
-└─────────────────────────────┬───────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   프레젠테이션 계층 (Presentation Layer)            │
-│                                                                   │
-│  React Frontend (Vercel)                                         │
-│  • 랜딩 페이지                                                     │
-│  • 온보딩 (3단계)                                                  │
-│  • 프로필 설정 (4단계)                                             │
-│  • AI 상담 채팅 (WebSocket 실시간 통신)                           │
-│  • TCO 비교 차트                                                  │
-│  • 차량 분석 대시보드                                              │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Crawling["🕷️ 데이터 수집 계층"]
+        KB["KB차차차<br/>~63,000대"]
+        Encar["엔카<br/>~64,378대"]
+    end
+
+    subgraph ETL["🔄 데이터 정제 계층 (ETL)"]
+        Extract["📥 Extract<br/>JSON/HTML 파싱"]
+        Transform["⚙️ Transform<br/>중복제거·결측치·타입변환"]
+        Load["📤 Load<br/>PostgreSQL UPSERT"]
+    end
+
+    subgraph Storage["💾 저장 계층"]
+        DB[("🗄️ PostgreSQL<br/>127,378대<br/>━━━━━━━━<br/>📊 4개 인덱스<br/>• price<br/>• brand<br/>• fuel<br/>• year")]
+    end
+
+    subgraph Cache["⚡ 캐싱 계층"]
+        Redis[("🔥 Redis Cache<br/>5-10분 TTL<br/>━━━━━━━━<br/>✅ 85% 히트율<br/>⏱️ 50ms 응답")]
+    end
+
+    subgraph Business["🤖 비즈니스 로직 계층"]
+        Manager["🎯 Manager Agent<br/>Task Decomposition"]
+        UserAnalyst["🧠 User Analyst<br/>Gemini 2.5 분석"]
+        Searcher["🔍 Searcher Agent<br/>PostgreSQL + Redis"]
+        Evaluator["⭐ Evaluator Agent<br/>TOPSIS 6기준"]
+        Financial["💰 Financial Advisor<br/>TCO 5개 비용"]
+        Reranking["🎲 Alibaba Re-ranking<br/>개인화 재정렬"]
+    end
+
+    subgraph Frontend["🎨 프레젠테이션 계층"]
+        React["⚛️ React Frontend<br/>Vercel 배포<br/>━━━━━━━━<br/>• 랜딩·온보딩<br/>• 프로필 설정<br/>• AI 상담 채팅<br/>• TCO 차트"]
+    end
+
+    KB --> Extract
+    Encar --> Extract
+    Extract --> Transform
+    Transform --> Load
+    Load --> DB
+    DB --> Redis
+    Redis --> Searcher
+    DB --> Searcher
+
+    Manager --> UserAnalyst
+    UserAnalyst --> Searcher
+    Searcher --> Evaluator
+    Evaluator --> Financial
+    Financial --> Reranking
+    Reranking --> React
+
+    style KB fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style Encar fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style DB fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+    style Redis fill:#FF5722,stroke:#D84315,stroke-width:3px,color:#fff
+    style Manager fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
+    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style React fill:#00BCD4,stroke:#006064,stroke-width:3px,color:#fff
 ```
 
 ### 2. 실시간 서비스 워크플로우 (사용자 요청 → 추천)
 
+```mermaid
+sequenceDiagram
+    actor User as 👤 사용자
+    participant Frontend as ⚛️ React<br/>Frontend
+    participant WS as 🔌 WebSocket<br/>Handler
+    participant Manager as 🎯 Manager<br/>Agent
+    participant UserAnalyst as 🧠 User<br/>Analyst
+    participant Searcher as 🔍 Searcher<br/>Agent
+    participant Redis as 🔥 Redis<br/>Cache
+    participant DB as 🗄️ PostgreSQL<br/>Database
+    participant Evaluator as ⭐ Evaluator<br/>Agent
+    participant Financial as 💰 Financial<br/>Advisor
+    participant Reranking as 🎲 Alibaba<br/>Re-ranking
+
+    User->>Frontend: "3000만원 이하<br/>가족용 SUV 찾아요"
+    Note over User,Frontend: Step 1: 사용자 입력
+
+    Frontend->>WS: WebSocket 메시지 전송<br/>{userProfile 자동 첨부}
+    Note over Frontend,WS: Step 2: 프로필 포함 전송<br/>budget: [2000, 3000]<br/>usage: ["family"]
+
+    WS->>Manager: MACRec 협업 시작
+    Note over Manager: Step 3: Task Decomposition
+
+    Manager->>UserAnalyst: 니즈 분석 요청
+    activate UserAnalyst
+    UserAnalyst->>UserAnalyst: Gemini 2.5 API 호출
+    Note over UserAnalyst: Step 4: AI 분석 (~0.5초)<br/>추출: 예산·차종·용도
+    UserAnalyst-->>Manager: 니즈 분석 완료
+    deactivate UserAnalyst
+
+    Manager->>Searcher: 차량 검색 요청<br/>(budget: 2000-3000, SUV)
+    activate Searcher
+    Searcher->>Redis: 캐시 확인<br/>search:2000-3000:family:SUV
+    alt 캐시 히트 (85%)
+        Redis-->>Searcher: ✅ 캐시 데이터 반환
+        Note over Searcher,Redis: ⏱️ 50ms
+    else 캐시 미스 (15%)
+        Searcher->>DB: SQL 쿼리 실행<br/>WHERE price BETWEEN 2000-3000
+        Note over DB: 인덱스 활용:<br/>idx_vehicles_price
+        DB-->>Searcher: 387대 후보 반환
+        Note over Searcher,DB: ⏱️ 142ms
+        Searcher->>Redis: 캐시 저장 (5분 TTL)
+    end
+    Searcher-->>Manager: 387대 후보 발견
+    deactivate Searcher
+
+    Manager->>Evaluator: TOPSIS 평가 요청<br/>(387대 + 사용자 가중치)
+    activate Evaluator
+    Evaluator->>Evaluator: 6기준 평가<br/>가격·연비·안전성<br/>브랜드·상태·옵션
+    Note over Evaluator: Step 6: TOPSIS (~0.8초)<br/>정규화 → 가중치 적용<br/>→ 이상해 거리 계산
+    Evaluator-->>Manager: Top 50 선별 완료
+    deactivate Evaluator
+
+    Manager->>Financial: TCO 계산 요청<br/>(Top 50)
+    activate Financial
+    Financial->>Financial: 5개 비용 항목 계산<br/>취득세·자동차세·정비비<br/>감가상각·연료비
+    Note over Financial: Step 7: TCO (~0.3초)<br/>법적 근거 기반<br/>개인화 변수 반영
+    Financial-->>Manager: TCO 계산 완료
+    deactivate Financial
+
+    Manager->>Reranking: 개인화 재정렬 요청
+    activate Reranking
+    Reranking->>Reranking: Score = 0.6×TOPSIS<br/>+ 0.3×TCO + 0.1×History
+    Note over Reranking: Step 8: Re-ranking (~0.2초)<br/>개인화 점수 계산
+    Reranking-->>Manager: Top 3 최종 추천
+    deactivate Reranking
+
+    Manager->>WS: 추천 결과 전송
+    WS->>Frontend: WebSocket 실시간 응답<br/>{vehicles: Top3}
+    Note over WS,Frontend: Step 9: 결과 전송<br/>⏱️ 총 2.3초
+
+    Frontend->>User: 📊 Top 3 차량 표시<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석
+    Note over User,Frontend: Step 10: 렌더링 완료
+
+    Note over User,Reranking: ✅ 전체 프로세스 완료: ~2.3초<br/>1위. 팰리세이드 2021 (0.92점)<br/>2위. 쏘렌토 2020 (0.87점)<br/>3위. 싼타페 2019 (0.83점)
 ```
-┌──────────────────────────────────────────────────────────────┐
-│ Step 1: 사용자 입력                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-        사용자: "3000만원 이하 가족용 SUV 찾아요"
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 2: WebSocket 메시지 전송                                 │
-│                                                                │
-│  {                                                             │
-│    type: "user_message",                                      │
-│    content: "3000만원 이하 가족용 SUV 찾아요",                │
-│    userProfile: {                                             │
-│      budget: [2000, 3000],                                    │
-│      usage: ["family"],                                       │
-│      importance: {                                            │
-│        safety: 10, price: 8, fuelEfficiency: 7, ...          │
-│      }                                                         │
-│    }                                                           │
-│  }                                                             │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 3: MACRec 멀티에이전트 협업 시작                          │
-│                                                                │
-│  Manager Agent: Task Decomposition                            │
-│  ├─ Task 1: 사용자 니즈 분석                                   │
-│  ├─ Task 2: 차량 검색                                          │
-│  └─ Task 3: 평가 및 추천                                       │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 4: User Analyst - Gemini 2.5 Flash 분석                 │
-│                                                                │
-│  입력: "3000만원 이하 가족용 SUV 찾아요"                       │
-│       + userProfile                                           │
-│       ↓                                                        │
-│  Gemini API 호출                                              │
-│       ↓                                                        │
-│  추출된 니즈:                                                  │
-│  • 예산: 2000-3000만원 (명확)                                 │
-│  • 차종: SUV (명확)                                            │
-│  • 용도: 가족용 (안전성 우선)                                  │
-│  • 키워드: ["가족", "안전", "넓은 공간"]                       │
-│                                                                │
-│  ⏱️ 소요시간: ~0.5초                                          │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 5: Searcher Agent - 차량 검색 (Redis + PostgreSQL)       │
-│                                                                │
-│  1. Redis 캐시 확인                                            │
-│     캐시 키: search:2000-3000:family:SUV                      │
-│       ├─ 히트 (85% 확률) → 즉시 반환 (~50ms)                  │
-│       └─ 미스 (15% 확률) → PostgreSQL 쿼리                    │
-│                                                                │
-│  2. PostgreSQL 검색 (캐시 미스 시)                             │
-│     SELECT * FROM vehicles                                    │
-│     WHERE price BETWEEN 2000 AND 3000                         │
-│       AND model LIKE '%SUV%'                                  │
-│       AND fuelType IN ('가솔린', '디젤', '하이브리드')        │
-│     ORDER BY modelYear DESC                                   │
-│     LIMIT 500;                                                │
-│                                                                │
-│     인덱스 활용:                                               │
-│     • idx_vehicles_price (가격 범위 검색)                     │
-│     • idx_vehicles_brand (브랜드 필터링)                      │
-│                                                                │
-│  3. 결과 캐싱 (5분 TTL)                                        │
-│     Redis에 검색 결과 저장                                     │
-│                                                                │
-│  검색 결과: 387대 후보 발견                                    │
-│  ⏱️ 소요시간: ~142ms (캐시 히트 시 ~50ms)                     │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 6: Evaluator Agent - TOPSIS 6기준 평가                  │
-│                                                                │
-│  입력: 387대 후보 + 사용자 가중치                              │
-│                                                                │
-│  6가지 기준 평가:                                              │
-│  1. 가격 (weight: 8)                                          │
-│     • 예산 대비 경쟁력                                         │
-│     • 2500만원 → 0.8점, 3000만원 → 0.5점                      │
-│                                                                │
-│  2. 연비 (weight: 7)                                          │
-│     • 12km/L → 0.7점, 9km/L → 0.4점                           │
-│                                                                │
-│  3. 안전성 (weight: 10) ← 가족용이므로 최우선                 │
-│     • 사고이력 0원 → 1.0점                                     │
-│     • 사고이력 500만원 → 0.5점                                 │
-│                                                                │
-│  4. 브랜드 (weight: 6)                                         │
-│     • 현대/기아 → 0.8점, BMW/벤츠 → 1.0점                     │
-│                                                                │
-│  5. 차량 상태 (weight: 7)                                      │
-│     • 주행거리 3만km → 1.0점, 10만km → 0.6점                  │
-│     • 연식 2021년 → 1.0점, 2018년 → 0.7점                     │
-│                                                                │
-│  6. 옵션 (weight: 5)                                           │
-│     • 후방카메라, 네비게이션 → 0.9점                           │
-│                                                                │
-│  TOPSIS 알고리즘:                                              │
-│  • 정규화 (Normalization)                                     │
-│  • 가중치 적용 (Weighted Matrix)                              │
-│  • 이상해/부이상해 거리 계산                                   │
-│  • TOPSIS 점수 산출 (0-1 사이)                                │
-│                                                                │
-│  Top 50 선별 (TOPSIS 점수 기준)                                │
-│  ⏱️ 소요시간: ~0.8초                                          │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 7: Financial Advisor - TCO 계산                          │
-│                                                                │
-│  입력: Top 50 차량 + 사용자 프로필 (annualKm, ownershipYears) │
-│                                                                │
-│  TCO 5개 비용 항목 계산:                                       │
-│                                                                │
-│  예시: 2021 팰리세이드 2,850만원                               │
-│                                                                │
-│  1. 취득세 (지방세법 제11조)                                   │
-│     = 2,850만원 × 7% = 199.5만원                              │
-│                                                                │
-│  2. 자동차세 (지방세법 제127조)                                │
-│     = 배기량 3,778cc × 200원/cc × 3년 = 226.7만원             │
-│                                                                │
-│  3. 정비비 (DOE/ANL 88원/km)                                  │
-│     = 연간 15,000km × 88원 × 3년 = 396만원                    │
-│                                                                │
-│  4. 감가상각 (정률법 20%)                                      │
-│     = 2,850만원 × (1 - 0.8³) = 1,387.2만원                    │
-│                                                                │
-│  5. 연료비                                                     │
-│     = (15,000km / 9.8km/L) × 1,650원/L × 3년 = 758.7만원     │
-│                                                                │
-│  **총 TCO**: 2,968만원 (3년 기준)                             │
-│                                                                │
-│  ⏱️ 소요시간: ~0.3초 (50개 차량 병렬 계산)                    │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 8: Alibaba Re-ranking - 개인화 재정렬                     │
-│                                                                │
-│  입력: Top 50 (TOPSIS + TCO)                                  │
-│                                                                │
-│  개인화 점수 계산:                                             │
-│  Score = 0.6 × TOPSIS + 0.3 × TCO_Score + 0.1 × User_History│
-│                                                                │
-│  최종 Top 3 선정:                                              │
-│  1위. 팰리세이드 2021 (Score: 0.92)                           │
-│  2위. 쏘렌토 2020 (Score: 0.87)                                │
-│  3위. 싼타페 2019 (Score: 0.83)                                │
-│                                                                │
-│  ⏱️ 소요시간: ~0.2초                                          │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 9: WebSocket 실시간 응답                                  │
-│                                                                │
-│  {                                                             │
-│    type: "vehicles",                                          │
-│    vehicles: [                                                │
-│      {                                                         │
-│        vehicle: { 팰리세이드 2021 정보... },                   │
-│        topsisScore: 0.92,                                     │
-│        tco: {                                                  │
-│          total: 2968,                                         │
-│          breakdown: { 취득세, 자동차세, 정비비... }            │
-│        },                                                      │
-│        reason: "안전성 우수(사고 0원), 가족용 최적..."         │
-│      },                                                        │
-│      { 쏘렌토 2020... },                                       │
-│      { 싼타페 2019... }                                        │
-│    ]                                                           │
-│  }                                                             │
-│                                                                │
-│  ⏱️ 총 소요시간: ~2.3초                                       │
-│                                                                │
-└────────────────────┬─────────────────────────────────────────┘
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ Step 10: Frontend 렌더링                                       │
-│                                                                │
-│  • VehicleRecommendations 컴포넌트                            │
-│    ├─ VehicleCard × 3 (Top 3 차량)                           │
-│    ├─ TCOComparisonChart (Recharts 바 차트)                  │
-│    └─ VehicleAnalysisDashboard (TOPSIS 분석)                 │
-│                                                                │
-│  사용자는 즉시 결과를 확인하고 추가 질문 가능                  │
-│                                                                │
-└──────────────────────────────────────────────────────────────┘
-```
+
+**다이어그램 특징:**
+- ✅ GitHub 자동 렌더링 (Mermaid 지원)
+- ✅ 컬러 코딩으로 계층 구분 명확
+- ✅ 이모지로 시각적 식별 용이
+- ✅ 발표 시 전문적인 인상
+
+**주요 성능 지표:**
+- **평균 응답 시간**: 2.3초 (목표: 3초 이내)
+- **캐시 히트율**: 85% (Redis)
+- **DB 쿼리 시간**: 평균 142ms (인덱스 활용)
+- **동시 처리**: 500+ concurrent users
+- **TOPSIS 평가**: 387대 → Top 50 선별 (0.8초)
+- **TCO 계산**: Top 50 차량 병렬 처리 (0.3초)
+
+---
 
 ### 3. Airflow 자동 데이터 수집 파이프라인 (예정)
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│              Airflow DAG: daily_vehicle_crawling               │
-│                     Schedule: 0 2 * * * (매일 02:00 KST)       │
-└────────────────────────┬───────────────────────────────────────┘
-                         ↓
-      ┌──────────────────┴──────────────────┐
-      │                                      │
-      ↓                                      ↓
-┌───────────┐                          ┌───────────┐
-│ Task 1:   │                          │ Task 2:   │
-│ KB차차차  │  (병렬 실행)              │   엔카     │
-│ 크롤링    │                          │  크롤링    │
-└─────┬─────┘                          └─────┬─────┘
-      │                                      │
-      │  • Selenium/BeautifulSoup           │
-      │  • 페이지네이션 처리                │
-      │  • 약 63,000대 수집                 │
-      │  • JSON 저장                        │
-      │  • ⏱️ 소요시간: ~30분               │
-      │                                      │
-      └──────────────────┬──────────────────┘
-                         ↓
-                   ┌───────────┐
-                   │ Task 3:   │
-                   │ 데이터     │
-                   │ 정제       │
-                   └─────┬─────┘
-                         │
-                         │  • 중복 제거 (vehicleId 기준)
-                         │  • 결측치 처리
-                         │  • 타입 변환 (문자열→숫자)
-                         │  • 이상치 제거 (가격, 주행거리)
-                         │  • ⏱️ 소요시간: ~15분
-                         │
-                         ↓
-                   ┌───────────┐
-                   │ Task 4:   │
-                   │ PostgreSQL│
-                   │ UPSERT    │
-                   └─────┬─────┘
-                         │
-                         │  • ON CONFLICT (vehicleId) DO UPDATE
-                         │  • 127,378대 업데이트
-                         │  • 인덱스 재구성
-                         │  • ⏱️ 소요시간: ~10분
-                         │
-                         ↓
-                   ┌───────────┐
-                   │ Task 5:   │
-                   │ Redis     │
-                   │ 캐시 초기화│
-                   └─────┬─────┘
-                         │
-                         │  • 모든 search:* 키 삭제
-                         │  • 캐시 히트율 초기화
-                         │  • ⏱️ 소요시간: <1분
-                         │
-                         ↓
-                   ┌───────────┐
-                   │ Task 6:   │
-                   │ Slack     │
-                   │ 알림       │
-                   └───────────┘
-                         │
-                         │  • 성공: "✅ 127,378대 업데이트 완료"
-                         │  • 실패: "❌ 크롤링 실패: [에러 메시지]"
-                         │
-                         ↓
-                    작업 완료
-              ⏱️ 총 소요시간: ~1시간
+```mermaid
+flowchart TD
+    Start["⏰ 매일 02:00 KST<br/>Airflow DAG 시작<br/>━━━━━━━━<br/>daily_vehicle_crawling"]
+
+    subgraph Parallel["🔄 병렬 크롤링 Phase"]
+        KB["📥 Task 1: KB차차차<br/>━━━━━━━━<br/>~63,000대<br/>Selenium/BeautifulSoup<br/>⏱️ 30분"]
+        Encar["📥 Task 2: 엔카<br/>━━━━━━━━<br/>~64,378대<br/>Selenium/BeautifulSoup<br/>⏱️ 30분"]
+    end
+
+    Clean["🧹 Task 3: 데이터 정제<br/>━━━━━━━━<br/>중복제거·결측치 처리<br/>타입변환·이상치 제거<br/>⏱️ 15분"]
+    Load["💾 Task 4: PostgreSQL UPSERT<br/>━━━━━━━━<br/>127,378대 업데이트<br/>ON CONFLICT DO UPDATE<br/>⏱️ 10분"]
+    Cache["🔥 Task 5: Redis 캐시 초기화<br/>━━━━━━━━<br/>search:* 키 삭제<br/>⏱️ <1분"]
+    Notify["📢 Task 6: Slack 알림<br/>━━━━━━━━<br/>✅ 성공 / ❌ 실패"]
+    End["✅ 파이프라인 완료<br/>━━━━━━━━<br/>⏱️ 총 ~1시간"]
+
+    Start --> Parallel
+    KB --> Clean
+    Encar --> Clean
+    Clean --> Load
+    Load --> Cache
+    Cache --> Notify
+    Notify --> End
+
+    style Start fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
+    style KB fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style Encar fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style Clean fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style Load fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+    style Cache fill:#FF5722,stroke:#D84315,stroke-width:3px,color:#fff
+    style Notify fill:#00BCD4,stroke:#006064,stroke-width:3px,color:#fff
+    style End fill:#8BC34A,stroke:#558B2F,stroke-width:3px,color:#fff
 ```
 
 **배포 계획:**
 - **예상 일정**: 2025년 2월
 - **배포 환경**: AWS EC2 + Docker Compose
 - **모니터링**: Airflow UI + Slack 알림
+
+---
+
+## 🧪 테스트
+
+```bash
+# 전체 테스트 (171개)
+npm run test
+
+# 커버리지 확인
 
 ---
 
