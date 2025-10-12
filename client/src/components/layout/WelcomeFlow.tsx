@@ -139,11 +139,11 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
               return (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg bg-${badge.color}-50 border border-${badge.color}-200 text-center animate-fade-in`}
+                  className="p-3 rounded-lg bg-muted/30 border border-border text-center animate-fade-in hover:bg-muted/50 transition-colors"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <Icon className={`w-4 h-4 text-${badge.color}-600 mx-auto mb-1`} />
-                  <p className="text-xs font-medium text-${badge.color}-900">{badge.text}</p>
+                  <Icon className="w-4 h-4 text-primary mx-auto mb-1" />
+                  <p className="text-xs font-medium text-foreground">{badge.text}</p>
                 </div>
               );
             })}
@@ -158,11 +158,11 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
             </div>
 
             <div
-              className={`p-5 rounded-xl border-2 ${aiTeamStructure.manager.borderColor} ${aiTeamStructure.manager.bgColor} shadow-lg animate-fade-in`}
+              className="p-5 rounded-xl border-2 border-primary/30 bg-gradient-to-r from-primary/5 via-chart-2/5 to-chart-3/5 shadow-sm animate-fade-in"
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-white shadow-md">
-                  <Crown className={`w-6 h-6 ${aiTeamStructure.manager.color}`} />
+                <div className="p-3 rounded-xl bg-white shadow-sm border border-border">
+                  <Crown className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -176,26 +176,22 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
             </div>
 
             {/* 4개 전문 에이전트 (하위) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {aiTeamStructure.specialists.map((agent, index) => {
                 const Icon = agent.icon;
                 return (
                   <div
                     key={agent.id}
-                    className={`p-4 rounded-xl border ${agent.borderColor} ${agent.bgColor} animate-fade-in`}
-                    style={{ animationDelay: `${(index + 1) * 150}ms` }}
+                    className="p-4 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors animate-fade-in text-center"
+                    style={{ animationDelay: `${(index + 1) * 100}ms` }}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-white shadow-sm">
-                        <Icon className={`w-5 h-5 ${agent.color}`} />
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="p-2 rounded-lg bg-background border border-border">
+                        <Icon className="w-5 h-5 text-primary" />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-sm">{agent.name}</h3>
-                          <Badge variant="outline" className="text-xs">{agent.badge}</Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-1">{agent.description}</p>
-                        <p className="text-xs text-muted-foreground">{agent.detail}</p>
+                      <div>
+                        <h3 className="font-semibold text-xs mb-1">{agent.name}</h3>
+                        <Badge variant="outline" className="text-xs">{agent.badge}</Badge>
                       </div>
                     </div>
                   </div>
@@ -223,16 +219,16 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
       content: (
         <div className="space-y-6">
           {/* 시연 안내 */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+          <div className="bg-muted/30 border border-border rounded-xl p-4">
             <div className="flex gap-3">
-              <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-yellow-900 mb-2">
+                <p className="text-sm font-semibold text-foreground mb-2">
                   💡 시연 시 권장사항
                 </p>
-                <ul className="text-xs text-yellow-800 space-y-1">
-                  <li>• 시나리오 A-C 중 하나를 선택하시면 <strong>3분 이내 정확한 추천</strong>을 받으실 수 있습니다</li>
-                  <li>• 각 시나리오는 <strong>예산·용도·중요도·TCO 조건</strong>이 모두 포함되어 최적화되어 있습니다</li>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• 시나리오 A-C 중 하나를 선택하시면 <strong className="text-foreground">3분 이내 정확한 추천</strong>을 받으실 수 있습니다</li>
+                  <li>• 각 시나리오는 <strong className="text-foreground">예산·용도·중요도·TCO 조건</strong>이 모두 포함되어 최적화되어 있습니다</li>
                   <li>• 직접 입력 시에도 위 조건들을 포함하시면 더 정확한 추천이 가능합니다</li>
                 </ul>
               </div>
@@ -247,21 +243,21 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
                 <button
                   key={scenario.id}
                   onClick={() => onQuickStart(scenario.script)}
-                  className="w-full text-left p-5 rounded-xl border-2 border-primary/20 hover:border-primary
-                    bg-gradient-to-br from-white to-primary/5 hover:shadow-lg transition-all group
+                  className="w-full text-left p-5 rounded-xl border border-border hover:border-primary
+                    bg-muted/20 hover:bg-muted/40 hover:shadow-md transition-all group
                     animate-fade-in"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
                   <div className="space-y-3">
                     {/* 헤더 */}
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
+                      <div className="p-2 rounded-lg bg-background border border-border">
                         <Icon className="w-5 h-5 text-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-sm">{scenario.label}</h3>
-                          <Badge className={`${scenario.badgeColor} text-white text-xs`}>
+                          <Badge variant="secondary" className="text-xs">
                             {scenario.badge}
                           </Badge>
                         </div>
@@ -303,7 +299,7 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
 
           {/* 하단 버튼 */}
           <div className="space-y-3">
-            <div className="p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
+            <div className="p-4 bg-muted/20 rounded-xl border border-border">
               <div className="flex items-start gap-3">
                 <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
