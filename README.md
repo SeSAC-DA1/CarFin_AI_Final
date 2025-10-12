@@ -296,6 +296,60 @@ flowchart LR
 
 ---
 
+### 🔄 완전한 추천 프로세스 워크플로우 (E2E)
+
+**논문 기반 전체 흐름: 사용자 입력부터 최종 추천까지**
+
+```mermaid
+flowchart LR
+    Input["👤 사용자 입력<br/>'3000만원 SUV 추천'"] --> Profile["📊 프로필 분석<br/>예산·용도·가중치"]
+
+    Profile --> MACRec["🤖 MACRec 협업<br/>(SIGIR 2024)"]
+
+    MACRec --> Manager["👔 Manager<br/>Task Decomposition"]
+
+    Manager --> Parallel["⚡ 병렬 실행"]
+
+    Parallel --> Analyst["📊 User Analyst<br/>니즈 분석"]
+    Parallel --> Searcher["🔍 Searcher<br/>실시간 매물 검색"]
+    Parallel --> Evaluator["⚖️ Evaluator<br/>TOPSIS 평가"]
+    Parallel --> Financial["💰 Financial<br/>TCO 계산"]
+
+    Analyst --> Aggregate["🔗 결과 통합"]
+    Searcher --> Aggregate
+    Evaluator --> Aggregate
+    Financial --> Aggregate
+
+    Aggregate --> TOPSIS["📐 TOPSIS 점수<br/>(6기준 평가)"]
+
+    TOPSIS --> Rerank["🎲 Alibaba 재정렬<br/>(RecSys 2019)"]
+
+    Rerank --> TCO["💰 TCO 계산<br/>(5개 비용 항목)"]
+
+    TCO --> Result["🏆 Top 3 추천<br/>+ TCO 대시보드"]
+
+    Result --> User["👤 사용자"]
+
+    style Input fill:#F59E0B,color:#fff
+    style MACRec fill:#3B82F6,color:#fff
+    style Manager fill:#E91E63,color:#fff
+    style Parallel fill:#9C27B0,color:#fff
+    style TOPSIS fill:#00BCD4,color:#fff
+    style Rerank fill:#FF9800,color:#fff
+    style TCO fill:#4CAF50,color:#fff
+    style Result fill:#10B981,color:#fff
+```
+
+**핵심 프로세스**:
+1. 📊 **프로필 기반 분석**: 사용자 예산·용도·중요도 가중치 추출
+2. 🤖 **MACRec 협업**: Manager가 작업 분해 → 4개 에이전트 병렬 실행
+3. 📐 **TOPSIS 평가**: 6가지 기준으로 객관적 점수 계산
+4. 🎲 **Alibaba 재정렬**: 사용자 가중치 반영한 개인화 순위
+5. 💰 **TCO 계산**: 5개 비용 항목 기반 총 소유비용
+6. 🏆 **최종 결과**: Top 3 차량 + TCO 비교 대시보드
+
+---
+
 ## 🏗️ 시스템 아키텍처
 
 ### 전체 구조 (가로형)
