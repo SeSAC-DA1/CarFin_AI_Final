@@ -135,7 +135,7 @@ export default function Onboarding() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-20">
 
             {/* Analyst */}
-            <Card className="border-chart-2/30 hover:border-chart-2 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-2/5 to-white">
+            <Card className="border-chart-2/30 hover:border-chart-2 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10">
               <CardContent className="p-5">
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-2 to-chart-2/70 flex items-center justify-center shadow-lg">
@@ -154,7 +154,7 @@ export default function Onboarding() {
             </Card>
 
             {/* Searcher */}
-            <Card className="border-chart-3/30 hover:border-chart-3 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-3/5 to-white">
+            <Card className="border-chart-3/30 hover:border-chart-3 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10">
               <CardContent className="p-5">
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-3 to-chart-3/70 flex items-center justify-center shadow-lg">
@@ -173,7 +173,7 @@ export default function Onboarding() {
             </Card>
 
             {/* Evaluator */}
-            <Card className="border-chart-4/30 hover:border-chart-4 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-4/5 to-white">
+            <Card className="border-chart-4/30 hover:border-chart-4 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10">
               <CardContent className="p-5">
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-4 to-chart-4/70 flex items-center justify-center shadow-lg">
@@ -192,7 +192,7 @@ export default function Onboarding() {
             </Card>
 
             {/* Financial */}
-            <Card className="border-green-500/30 hover:border-green-500 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-500/5 to-white">
+            <Card className="border-green-500/30 hover:border-green-500 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10">
               <CardContent className="p-5">
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center shadow-lg">
