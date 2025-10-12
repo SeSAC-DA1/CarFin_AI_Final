@@ -160,7 +160,7 @@ export default function RecommendationReasonModal({
                 TOPSIS 종합 점수
               </h3>
               <Badge className="text-lg px-4 py-1">
-                {vehicle.topsisScore}/100
+                {vehicle.topsisScore.toFixed(1)}/100
               </Badge>
             </div>
             <Progress value={vehicle.topsisScore} className="h-3" />

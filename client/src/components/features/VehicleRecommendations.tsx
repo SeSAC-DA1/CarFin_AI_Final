@@ -269,9 +269,6 @@ export default function VehicleRecommendations({
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Wallet className="w-3 h-3" />
                       <span>{vehicle.tco.ownershipYears}년 총 소유비용 (TCO)</span>
-                      <Badge variant="outline" className="text-xs ml-auto">
-                        신뢰도 {(vehicle.tco.confidence * 100).toFixed(0)}%
-                      </Badge>
                     </div>
 
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
