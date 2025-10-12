@@ -1,10 +1,10 @@
 # CARFIN AI - 멀티 에이전트 기반 중고차 추천 및 TCO 금융 분석 시스템
 
-> **5개 AI 에이전트 협업 | 학술논문 2개 구현 (SIGIR 2024, RecSys 2019) | 법적근거 비용 계산**
->
-> 12.7만대 데이터를 **2.3초 내** 분석하여 **최적의 차량 3대 + 금융 옵션 7개** 추천
+> **Google Agents (2024) 프레임워크 준수 Hybrid Multi-Agent System**
+> **학술 논문 2개 (SIGIR 2024, RecSys 2019) + 검증된 알고리즘** 구현
+> 12.7만대 데이터를 **2.3초 내** 분석하여 **TCO 금융 데이터 분석 대시보드** 제공
 
-**프로젝트 포지셔닝**: AI × Fintech 융합 / 학술 논문 구현 파이널 프로젝트
+**프로젝트 포지셔닝**: AI × Fintech 융합 포트폴리오 / 학술 논문 구현 파이널 프로젝트
 
 <div align="center">
 
@@ -56,20 +56,43 @@
 ### AI 에이전트 시스템 (Google Agents 2024 기준)
 
 **아키텍처 분류**: **Hybrid Multi-Agent System (MAS)** with XAI
+**자율성 레벨**: **Level 3 (Conditional Autonomy)** - 반자율 시스템
 
-| 에이전트 | 유형 | 역할 | 핵심 기술 |
-|---------|------|------|----------|
-| **Manager** | Goal-Based | 작업 분해 및 조율 | Task Decomposition, Parallel Planning |
-| **User Analyst** | Model-Based | 프로필 분석 및 학습 | Gemini 2.5, Incremental Learning |
-| **Searcher** | Utility-Based | 데이터베이스 최적화 검색 | Rule-Based Filtering, Brand Diversity |
-| **Evaluator** | Utility-Based | 다기준 의사결정 | TOPSIS 6기준, TCO 통합 |
-| **Financial Advisor** | Goal-Based | 금융 옵션 추천 | Loan/Lease Simulation, Affordability Scoring |
+#### Google Agents (2024) 자율성 레벨 기준
 
-**Google Agents (2024) 프레임워크 준수**:
-- ✅ **Perception** (인식): WebSocket, Gemini AI, PostgreSQL 127,378대 데이터
-- ✅ **Decision Making** (의사결정): LLM 기반 + Rule-Based + TOPSIS 유틸리티 최적화
-- ✅ **Action** (실행): 병렬 에이전트 실행, 실시간 WebSocket 응답
-- ⚠️ **Learning** (학습): 프로필 누적 학습 (모델 재학습은 미구현)
+| 레벨 | 명칭 | 특징 | CARFIN AI 적용 |
+|------|------|------|---------------|
+| **Level 0** | No Automation | 수동 시스템 | ❌ |
+| **Level 1** | Assisted | 단순 추천만 제공 | ❌ |
+| **Level 2** | Partial | 일부 자동화 | ❌ |
+| **Level 3** | Conditional | 특정 조건 내 자율 동작 | ✅ **현재 수준** |
+| **Level 4** | High | 거의 모든 상황 자율 | ⚠️ 미구현 (피드백 학습 필요) |
+| **Level 5** | Full | 완전 자율 | ❌ |
+
+**Level 3 근거**:
+- ✅ 사용자 입력 없이 5개 에이전트가 자율적으로 협업
+- ✅ Task Decomposition → 병렬 실행 → Result Aggregation 자동화
+- ⚠️ 초기 프로필 설정은 사용자 입력 필요 (Human-in-the-Loop)
+- ⚠️ 최종 구매 결정은 사용자가 수행
+
+#### 에이전트 상세 분류
+
+| 에이전트 | 유형 | 역할 | 핵심 기술 | 자율성 |
+|---------|------|------|----------|--------|
+| **Manager** | Goal-Based | 작업 분해 및 조율 | Task Decomposition, Parallel Planning | High |
+| **User Analyst** | Model-Based | 프로필 분석 및 학습 | Gemini 2.5, Incremental Learning | Medium |
+| **Searcher** | Utility-Based | 데이터베이스 최적화 검색 | Rule-Based Filtering, Brand Diversity | High |
+| **Evaluator** | Utility-Based | 다기준 의사결정 | TOPSIS 6기준, TCO 통합 | High |
+| **Financial Advisor** | Goal-Based | 금융 옵션 추천 | Loan/Lease Simulation, Affordability Scoring | High |
+
+#### Google Agents (2024) 4대 프레임워크 준수
+
+| 프레임워크 | 구현 상태 | 기술적 증거 |
+|-----------|----------|-----------|
+| **Perception** (인식) | ✅ 완전 구현 | WebSocket 실시간 수신, Gemini API 자연어 이해, PostgreSQL 127,378대 쿼리 |
+| **Decision Making** (의사결정) | ✅ 완전 구현 | LLM 기반 Task Decomposition, Rule-Based 필터링, TOPSIS 유틸리티 최적화 |
+| **Action** (실행) | ✅ 완전 구현 | 병렬 에이전트 실행 (Promise.all), WebSocket 실시간 응답, TCO 계산 |
+| **Learning** (학습) | ⚠️ 부분 구현 | 세션 기반 프로필 누적 학습 (✅), 모델 재학습/강화학습 (❌) |
 
 **기술적 이점**:
 - **생산성 향상**: 수동 검색 4시간 → AI 추천 2.3초 (99.98% 시간 단축)
