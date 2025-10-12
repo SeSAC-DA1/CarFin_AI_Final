@@ -16,7 +16,7 @@
 
 **🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **⚡ 응답시간 3분 이내**
 
-[데모 보기](https://carfin-ai.railway.app) • [빠른 시작](#-빠른-시작)
+[빠른 시작](#-빠른-시작) • [시스템 아키텍처](#-시스템-아키텍처) • [AI 에이전트](#-ai-에이전트-시스템---논문-기반-5명의-전문가-협업)
 
 </div>
 
@@ -93,32 +93,26 @@
 **비유**: 자동차 구매 컨설팅 회사에 5명의 전문가가 있다면?
 
 ```mermaid
-graph TB
-    User["👤 고객<br/>'3000만원 SUV 추천해주세요'"] --> Manager
+flowchart LR
+    User["👤 고객<br/>'3000만원 SUV 추천'"]
 
-    subgraph Team["🏢 CARFIN AI 컨설팅팀 (5명)"]
-        Manager["👔 매니저<br/>작업 총괄"]
-        Analyst["📊 고객분석가<br/>니즈 파악"]
-        Searcher["🔍 차량전문가<br/>DB 검색"]
-        Evaluator["⚖️ 평가전문가<br/>점수 계산"]
-        Finance["💰 재무상담사<br/>비용 분석"]
-    end
+    User --> Manager["👔 매니저<br/>작업 총괄<br/>MACRec 프로토콜"]
 
-    Manager --> Analyst
-    Manager --> Searcher
-    Manager --> Evaluator
-    Manager --> Finance
+    Manager --> Analyst["📊 고객분석가<br/>Gemini AI<br/>니즈 파악"]
+    Manager --> Searcher["🔍 차량전문가<br/>PostgreSQL<br/>DB 검색"]
+    Manager --> Evaluator["⚖️ 평가전문가<br/>TOPSIS<br/>점수 계산"]
+    Manager --> Finance["💰 재무상담사<br/>TCO 계산<br/>비용 분석"]
 
-    Analyst --> Result["📋 최종 추천<br/>TOP 3 차량"]
+    Analyst --> Result["📋 TOP 3 추천"]
     Searcher --> Result
     Evaluator --> Result
     Finance --> Result
 
     Result --> User
 
+    style User fill:#F59E0B,color:#fff
     style Manager fill:#3B82F6,color:#fff
     style Result fill:#10B981,color:#fff
-    style User fill:#F59E0B,color:#fff
 ```
 
 #### 각 전문가의 역할
@@ -197,13 +191,13 @@ sequenceDiagram
 #### **① 학술적 신뢰성**
 
 ```mermaid
-graph LR
-    A["📄 SIGIR 2024<br/>MACRec 논문"] --> D["🎯 CARFIN AI"]
-    B["📄 RecSys 2019<br/>Alibaba 재정렬"] --> D
+flowchart LR
+    A["📄 SIGIR 2024<br/>MACRec"] --> D["🎯 CARFIN AI"]
+    B["📄 RecSys 2019<br/>Alibaba"] --> D
     C["📄 TOPSIS<br/>다기준 평가"] --> D
 
-    D --> E["✅ 171개 테스트 통과"]
-    D --> F["✅ 평균 90%+ 정확도"]
+    D --> E["✅ 171개<br/>테스트 통과"]
+    D --> F["✅ 평균 90%+<br/>구현 정확도"]
 
     style A fill:#3B82F6,color:#fff
     style B fill:#3B82F6,color:#fff
@@ -226,31 +220,21 @@ graph LR
 #### **③ 기술 스택 (Production-Grade)**
 
 ```mermaid
-graph TB
-    subgraph Frontend["⚛️ 사용자 화면"]
-        React["React 18.3"]
-        WS["WebSocket<br/>실시간 통신"]
-    end
+flowchart LR
+    User["👤 사용자"] --> React["⚛️ React 18.3<br/>Vercel 배포"]
+    React <-->|"WebSocket<br/>실시간 통신"| Backend["🚀 Node.js 22<br/>Railway 배포"]
 
-    subgraph Backend["🚀 AI 엔진"]
-        Gemini["Google Gemini 2.5<br/>(AI 두뇌)"]
-        Agents["5개 에이전트<br/>(협업 시스템)"]
-    end
+    Backend --> Gemini["🤖 Gemini 2.5<br/>AI 두뇌"]
+    Backend --> Agents["🤝 5개 에이전트<br/>MACRec 협업"]
+    Backend --> DB["🗄️ PostgreSQL 15<br/>실시간 매물"]
+    Backend --> Redis["⚡ Redis 7<br/>85% 히트율"]
 
-    subgraph Data["💾 데이터 저장소"]
-        DB["PostgreSQL<br/>(실시간 매물)"]
-        Redis["Redis 캐싱<br/>(85% 히트율)"]
-    end
-
-    React <--> WS
-    WS <--> Agents
-    Agents <--> Gemini
-    Agents <--> DB
-    Agents <--> Redis
-
-    style Gemini fill:#3B82F6,color:#fff
+    style React fill:#00BCD4,color:#fff
+    style Backend fill:#9C27B0,color:#fff
     style Agents fill:#10B981,color:#fff
-    style DB fill:#F59E0B,color:#000
+    style Gemini fill:#3B82F6,color:#fff
+    style DB fill:#2196F3,color:#fff
+    style Redis fill:#FF5722,color:#fff
 ```
 
 ---
@@ -260,15 +244,15 @@ graph TB
 #### **정량적 지표**
 
 ```mermaid
-graph LR
-    A["🎓 학술 논문<br/>3개 적용"] --> Result["🏆 CARFIN AI"]
-    B["🤖 AI 에이전트<br/>5개 협업"] --> Result
-    C["🚗 실시간 매물<br/>DB 연동"] --> Result
-    D["✅ 테스트<br/>171개 통과"] --> Result
+flowchart LR
+    A["🎓 3개 논문"] --> Result["🏆 CARFIN AI"]
+    B["🤖 5개 에이전트"] --> Result
+    C["🚗 실시간 매물"] --> Result
+    D["✅ 171개 테스트"] --> Result
 
-    Result --> E["⏱️ 99% 시간 단축"]
-    Result --> F["🎯 6가지 개인화 기준"]
-    Result --> G["💰 법적 근거 TCO"]
+    Result --> E["⏱️ 3분 추천"]
+    Result --> F["🎯 6가지 개인화"]
+    Result --> G["💰 TCO 계산"]
 
     style Result fill:#10B981,color:#fff
     style E fill:#3B82F6,color:#fff
@@ -299,125 +283,78 @@ graph LR
 ### 💡 심사위원 Q&A 예상 답변
 
 **Q1. "왜 5개 에이전트로 나눴나요?"**
-> A: MACRec 논문의 핵심이 "전문가 협업"입니다. 각 에이전트가 전문 분야(고객분석, 검색, 평가, 재무)에 집중하여 **단일 AI보다 23% 정확도 향상**을 달성했습니다.
+> A: MACRec 논문의 핵심이 "전문가 협업"입니다. 각 에이전트가 전문 분야(고객분석, 검색, 평가, 재무)에 집중하여 **추천 정확도를 향상**시킵니다.
 
 **Q2. "실시간 데이터는 어떻게 유지하나요?"**
-> A: Apache Airflow로 **매일 자동 크롤링**하여 PostgreSQL에 저장합니다. 현재 127,378대이며, 매일 업데이트됩니다.
+> A: 정기적인 크롤링을 통해 PostgreSQL에 저장합니다. 현재 127,378대 매물 데이터를 보유하고 있습니다.
 
 **Q3. "논문 구현 정확도 98%는 어떻게 검증했나요?"**
-> A: MACRec 논문의 **36개 핵심 기능을 단위 테스트**로 구현하여 모두 통과했습니다. (코드: `MultiAgentSystem.test.ts`)
+> A: MACRec 논문의 **36개 핵심 기능을 단위 테스트**로 구현하여 모두 통과했습니다. (코드: `server/lib/agents/MultiAgentSystem.ts`)
 
 **Q4. "상용화 가능성은?"**
-> A: 현재 **500명 동시 접속 가능** (Railway 배포), Redis 캐싱으로 **85% 응답 속도 향상** 달성. Production-ready 상태입니다.
+> A: Railway 배포로 안정적으로 운영 중이며, Redis 캐싱으로 **85% 히트율**을 달성했습니다. Production-ready 상태입니다.
 
 ---
 
 ## 🏗️ 시스템 아키텍처
 
-### 전체 구조
+### 전체 구조 (가로형)
 
 ```mermaid
-graph TB
-    subgraph Frontend["⚛️ Frontend (Vercel)"]
-        Landing["🏠 랜딩 페이지"]
-        Onboarding["📚 온보딩 3단계"]
-        Profile["👤 프로필 설정 4단계<br/>예산·용도·중요도"]
-        Chat["💬 AI 상담 채팅"]
+flowchart LR
+    User["👤 사용자"] --> Frontend["⚛️ React 18.3<br/>Vercel 배포<br/>━━━━━━━<br/>랜딩·온보딩<br/>프로필·채팅"]
 
-        Landing --> Onboarding --> Profile --> Chat
-    end
+    Frontend <-->|"WebSocket<br/>실시간 통신"| Backend["🚀 Node.js 22<br/>Railway 배포"]
 
-    subgraph Backend["🚀 Backend (Railway - Node.js + Express)"]
-        WS["🔌 WebSocket Handler"]
-        REST["📡 REST API"]
+    Backend --> Manager["👔 Manager<br/>MACRec 조율"]
 
-        subgraph Agents["🤖 5개 AI 에이전트 (MACRec 프로토콜)"]
-            Manager["🎯 Manager Agent<br/>Task Decomposition"]
-            UserAnalyst["🧠 User Analyst<br/>Gemini 2.5"]
-            Searcher["🔍 Searcher Agent<br/>Redis + PostgreSQL"]
-            Evaluator["⭐ Evaluator Agent<br/>TOPSIS 6기준"]
-            Financial["💰 Financial Advisor<br/>TCO 5비용"]
+    Manager --> Analyst["📊 User Analyst<br/>Gemini 2.5"]
+    Manager --> Searcher["🔍 Searcher<br/>DB 검색"]
+    Manager --> Evaluator["⚖️ Evaluator<br/>TOPSIS"]
+    Manager --> Finance["💰 Financial<br/>TCO 계산"]
 
-            Manager --> UserAnalyst
-            Manager --> Searcher
-            Manager --> Evaluator
-            Manager --> Financial
-        end
+    Searcher --> DB["🗄️ PostgreSQL<br/>127,378대"]
+    Searcher --> Redis["⚡ Redis<br/>85% 히트율"]
 
-        Reranking["🎲 Alibaba Re-ranking<br/>개인화 재정렬"]
+    Evaluator --> Rerank["🎲 Alibaba<br/>재정렬"]
+    Finance --> Rerank
 
-        WS --> Manager
-        REST --> Manager
-        Evaluator --> Reranking
-        Financial --> Reranking
-    end
+    Rerank --> Frontend
 
-    subgraph DataLayer["💾 데이터 계층"]
-        DB[("🗄️ PostgreSQL<br/>실시간 매물 데이터<br/>4개 인덱스")]
-        Cache[("🔥 Redis Cache<br/>5-10분 TTL<br/>85% 히트율")]
-        AI["🤖 Google Gemini<br/>2.5 Flash API"]
-    end
-
-    subgraph Pipeline["🕷️ Airflow 파이프라인 (예정)"]
-        Crawl["📥 KB차차차 + 엔카<br/>크롤링 (병렬)"]
-        Clean["🧹 데이터 정제<br/>중복·결측치·이상치"]
-        Load["💾 PostgreSQL<br/>UPSERT 적재"]
-
-        Crawl --> Clean --> Load --> DB
-    end
-
-    Chat -->|"WebSocket + REST"| WS
-    Chat -->|"REST API"| REST
-
-    Searcher --> Cache
-    Searcher --> DB
-    UserAnalyst --> AI
-
-    Reranking -->|"WebSocket 실시간"| Chat
-
-    Pipeline -.->|"매일 02:00 자동 업데이트"| DB
-
-    style Frontend fill:#00BCD4,stroke:#006064,stroke-width:3px,color:#fff
-    style Backend fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
-    style Agents fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
-    style DataLayer fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
-    style Pipeline fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style Manager fill:#E91E63,stroke:#880E4F,stroke-width:2px,color:#fff
-    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
-    style DB fill:#1976D2,stroke:#0D47A1,stroke-width:2px,color:#fff
-    style Cache fill:#FF5722,stroke:#D84315,stroke-width:2px,color:#fff
+    style Frontend fill:#00BCD4,color:#fff
+    style Backend fill:#9C27B0,color:#fff
+    style Manager fill:#E91E63,color:#fff
+    style Rerank fill:#FF9800,color:#fff
+    style DB fill:#2196F3,color:#fff
+    style Redis fill:#FF5722,color:#fff
 ```
 
 **아키텍처 특징:**
-- ✅ **프론트엔드**: Vercel 배포, React 18.3 + TypeScript 5.6
-- ✅ **백엔드**: Railway 배포, Node.js 22 + Express 4.21
-- ✅ **실시간 통신**: Native WebSocket (ws 8.18.0)
-- ✅ **AI 협업**: MACRec 프로토콜 기반 5개 에이전트
-- ✅ **데이터**: PostgreSQL 실시간 매물 데이터 + Redis 캐싱 (85% 히트율)
-- ✅ **자동화**: Airflow 일일 크롤링 파이프라인 (예정)
+- ✅ **Frontend**: React 18.3 + TypeScript 5.6 (Vercel 배포)
+- ✅ **Backend**: Node.js 22 + Express 4.21 (Railway 배포)
+- ✅ **통신**: Native WebSocket (ws 8.18.0) 실시간 양방향
+- ✅ **AI**: MACRec 프로토콜 기반 5개 에이전트 협업
+- ✅ **데이터**: PostgreSQL 127,378대 + Redis 캐싱 (85% 히트율)
 
-### 사용자 여정 (User Journey)
+### 사용자 여정
 
 ```mermaid
 flowchart LR
     Start([👤 방문]) --> Landing[🏠 랜딩]
-    Landing --> Onboarding[📚 온보딩 3단계<br/>에이전트·논문·데이터]
-    Onboarding --> Profile[👤 프로필 4단계<br/>정보·용도·예산·중요도]
+    Landing --> Onboarding[📚 온보딩<br/>3단계]
+    Onboarding --> Profile[👤 프로필<br/>4단계]
     Profile --> Chat[💬 AI 상담]
-    Chat --> Agents[🤖 5개 에이전트 협업<br/>Manager→UserAnalyst→Searcher→Evaluator→Financial]
-    Agents --> Rerank[🎲 Alibaba 재정렬]
-    Rerank --> Result[📊 Top 3 추천]
-    Result --> Satisfied{만족?}
-    Satisfied -->|✅| End([완료])
-    Satisfied -->|🔄| Chat
+    Chat --> Agents[🤖 5개 에이전트<br/>협업]
+    Agents --> Rerank[🎲 Alibaba<br/>재정렬]
+    Rerank --> Result[📊 Top 3]
+    Result --> End([완료])
 ```
 
-**워크플로우 특징:**
-- ✅ **온보딩 3단계**: AI 에이전트 → 논문 배경 → 실시간 매물 소개
-- ✅ **프로필 4단계**: 기본정보 → 용도 → 예산 → 6가지 중요도 슬라이더
-- ✅ **MACRec 협업**: Manager 조율 → 4개 AI 에이전트 병렬/순차 실행
-- ✅ **실시간 응답**: 3분 이내 Top 3 추천 + TCO 차트 제공
-- ✅ **재추천 루프**: 사용자 불만족 시 즉시 재추천 가능
+**워크플로우:**
+- ✅ **온보딩 3단계**: 에이전트 소개 → 논문 배경 → 데이터 규모
+- ✅ **프로필 4단계**: 기본정보 → 용도 → 예산 → 중요도 (6가지)
+- ✅ **AI 협업**: Manager 조율 → 4개 에이전트 병렬 실행
+- ✅ **실시간 응답**: 3분 이내 Top 3 + TCO 차트
 
 ---
 
@@ -525,11 +462,13 @@ server/lib/
 │   └── MultiAgentSystem.ts      # MACRec 구현
 ├── papers/
 │   ├── topsis/
-│   │   └── TOPSISEngine.ts       # TOPSIS 구현
-│   └── reranking/
-│       └── AlibabaReranker.ts    # Alibaba 구현
-└── tco/
-    └── TCOCalculator.ts          # TCO 계산기
+│   │   └── AHP_TOPSIS_Dashboard.ts  # TOPSIS 구현
+│   ├── reranking/
+│   │   └── PersonalizedReranking.ts # Alibaba 구현
+│   └── macrec/
+│       └── MACRecProtocol.ts     # MACRec 프로토콜
+└── financial/
+    └── TCOCalculator.ts          # TCO 계산기 (법적 근거)
 ```
 
 ---
@@ -627,16 +566,16 @@ ChatbotLanding/
 
 | 지표 | 목표 | 실제 |
 |------|------|------|
-| **사용자 만족도** | > 80% | 85% ✅ |
-| **추천 정확도** | > 80% | 83% ✅ |
-| **전환율** | > 70% | 78% ✅ |
+| **논문 구현 정확도** | > 90% | 90%+ ✅ |
+| **테스트 통과율** | 100% | 171/171 ✅ |
+| **캐시 히트율** | > 80% | 85% ✅ |
 
 ### 데이터 규모
 
-- **총 차량 데이터**: 실시간 매물 (Airflow 자동 업데이트)
-- **KB차차차**: ~63,000대
-- **엔카**: ~64,000대
+- **총 차량 데이터**: 127,378대 (정기 크롤링)
+- **출처**: KB차차차 + 엔카
 - **DB 크기**: ~2.5GB
+- **업데이트**: 정기 크롤링 (향후 Airflow 파이프라인 예정)
 
 ---
 
@@ -678,152 +617,6 @@ GET  /api/vehicles/:id                 # 차량 상세
   "vehicles": [{ "vehicle": {...}, "topsisScore": 0.85, "tco": {...} }]
 }
 ```
-
----
-
-## 📊 데이터 파이프라인 & 서비스 워크플로우
-
-### 1. 전체 데이터 흐름 아키텍처
-
-```mermaid
-graph TB
-    subgraph Crawling["🕷️ 데이터 수집 계층"]
-        KB["KB차차차<br/>~63,000대"]
-        Encar["엔카<br/>~64,378대"]
-    end
-
-    subgraph ETL["🔄 데이터 정제 계층 (ETL)"]
-        Extract["📥 Extract<br/>JSON/HTML 파싱"]
-        Transform["⚙️ Transform<br/>중복제거·결측치·타입변환"]
-        Load["📤 Load<br/>PostgreSQL UPSERT"]
-    end
-
-    subgraph Storage["💾 저장 계층"]
-        DB[("🗄️ PostgreSQL<br/>실시간 매물 데이터<br/>━━━━━━━━<br/>📊 4개 인덱스<br/>• price<br/>• brand<br/>• fuel<br/>• year")]
-    end
-
-    subgraph Cache["⚡ 캐싱 계층"]
-        Redis[("🔥 Redis Cache<br/>5-10분 TTL<br/>━━━━━━━━<br/>✅ 85% 히트율<br/>⏱️ 50ms 응답")]
-    end
-
-    subgraph Business["🤖 비즈니스 로직 계층"]
-        Manager["🎯 Manager Agent<br/>Task Decomposition"]
-        UserAnalyst["🧠 User Analyst<br/>Gemini 2.5 분석"]
-        Searcher["🔍 Searcher Agent<br/>PostgreSQL + Redis"]
-        Evaluator["⭐ Evaluator Agent<br/>TOPSIS 6기준"]
-        Financial["💰 Financial Advisor<br/>TCO 5개 비용"]
-        Reranking["🎲 Alibaba Re-ranking<br/>개인화 재정렬"]
-    end
-
-    subgraph Frontend["🎨 프레젠테이션 계층"]
-        React["⚛️ React Frontend<br/>Vercel 배포<br/>━━━━━━━━<br/>• 랜딩·온보딩<br/>• 프로필 설정<br/>• AI 상담 채팅<br/>• TCO 차트"]
-    end
-
-    KB --> Extract
-    Encar --> Extract
-    Extract --> Transform
-    Transform --> Load
-    Load --> DB
-    DB --> Redis
-    Redis --> Searcher
-    DB --> Searcher
-
-    Manager --> UserAnalyst
-    UserAnalyst --> Searcher
-    Searcher --> Evaluator
-    Evaluator --> Financial
-    Financial --> Reranking
-    Reranking --> React
-
-    style KB fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style Encar fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style DB fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
-    style Redis fill:#FF5722,stroke:#D84315,stroke-width:3px,color:#fff
-    style Manager fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
-    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
-    style React fill:#00BCD4,stroke:#006064,stroke-width:3px,color:#fff
-```
-
-### 2. 실시간 서비스 워크플로우 (사용자 요청 → 추천)
-
-```mermaid
-flowchart LR
-    User([👤 사용자]) -->|질문| Frontend[⚛️ React]
-    Frontend -->|WebSocket| WS[🔌 Handler]
-    WS --> Manager[🎯 Manager<br/>Task Decomposition]
-
-    Manager --> UserAnalyst[🧠 User Analyst<br/>Gemini 2.5<br/>니즈 분석]
-    Manager --> Searcher[🔍 Searcher<br/>Redis→PostgreSQL<br/>387대 검색]
-
-    UserAnalyst --> Evaluator
-    Searcher --> Evaluator[⭐ Evaluator<br/>TOPSIS 6기준<br/>Top 50 선별]
-
-    Evaluator --> Financial[💰 Financial<br/>TCO 5개 비용<br/>법적 근거 기반]
-
-    Financial --> Rerank[🎲 Alibaba<br/>개인화 재정렬<br/>60% TOPSIS + 30% TCO]
-
-    Rerank --> Result[📊 Top 3<br/>+ TCO 차트]
-    Result -->|WebSocket| Frontend
-    Frontend --> User
-```
-
-**워크플로우 특징:**
-- **Manager**: Task Decomposition 후 병렬 실행 조율
-- **UserAnalyst**: Gemini 2.5로 사용자 니즈 추출
-- **Searcher**: Redis 캐시 (85% 히트율) → PostgreSQL 검색
-- **Evaluator**: TOPSIS 6기준 다기준 평가 (가격·연비·안전성·브랜드·상태·옵션)
-- **Financial**: TCO 5개 비용 계산 (취득세·자동차세·정비비·감가상각·연료비)
-- **Alibaba Re-ranking**: 개인화 점수 = 60% TOPSIS + 30% TCO + 10% History
-- **총 응답시간**: 3분 이내 (캐시 히트 시 더 빠름)
-
----
-
-### 3. Airflow 자동 데이터 수집 파이프라인 (예정)
-
-```mermaid
-flowchart TD
-    Start["⏰ 매일 02:00 KST<br/>Airflow DAG 시작<br/>━━━━━━━━<br/>daily_vehicle_crawling"]
-
-    subgraph Parallel["🔄 병렬 크롤링 Phase"]
-        KB["📥 Task 1: KB차차차<br/>━━━━━━━━<br/>~63,000대<br/>Selenium/BeautifulSoup<br/>⏱️ 30분"]
-        Encar["📥 Task 2: 엔카<br/>━━━━━━━━<br/>~64,378대<br/>Selenium/BeautifulSoup<br/>⏱️ 30분"]
-    end
-
-    Clean["🧹 Task 3: 데이터 정제<br/>━━━━━━━━<br/>중복제거·결측치 처리<br/>타입변환·이상치 제거<br/>⏱️ 15분"]
-    Load["💾 Task 4: PostgreSQL UPSERT<br/>━━━━━━━━<br/>실시간 매물 업데이트<br/>ON CONFLICT DO UPDATE<br/>⏱️ 10분"]
-    Cache["🔥 Task 5: Redis 캐시 초기화<br/>━━━━━━━━<br/>search:* 키 삭제<br/>⏱️ <1분"]
-    End["✅ 파이프라인 완료<br/>━━━━━━━━<br/>⏱️ 총 ~1시간"]
-
-    Start --> Parallel
-    KB --> Clean
-    Encar --> Clean
-    Clean --> Load
-    Load --> Cache
-    Cache --> End
-
-    style Start fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
-    style KB fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style Encar fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style Clean fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
-    style Load fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
-    style Cache fill:#FF5722,stroke:#D84315,stroke-width:3px,color:#fff
-    style End fill:#8BC34A,stroke:#558B2F,stroke-width:3px,color:#fff
-```
-
-**배포 계획:**
-- **예상 일정**: 2025년 2월
-- **배포 환경**: AWS EC2 + Docker Compose
-- **모니터링**: Airflow UI
-
----
-
-## 🧪 테스트
-
-```bash
-# 전체 테스트 (171개)
-npm run test
-
-# 커버리지 확인
 
 ---
 
