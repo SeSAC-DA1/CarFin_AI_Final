@@ -335,6 +335,41 @@ flowchart LR
 - ✅ **통신**: Native WebSocket (ws 8.18.0) 실시간 양방향
 - ✅ **AI**: MACRec 프로토콜 기반 5개 에이전트 협업
 - ✅ **데이터**: PostgreSQL 127,378대 + Redis 캐싱 (85% 히트율)
+- 🔄 **파이프라인**: Airflow 자동 크롤링 (예정)
+
+---
+
+### 데이터 파이프라인 (Airflow 예정)
+
+```mermaid
+flowchart LR
+    Trigger["⏰ 매일 02:00<br/>Airflow DAG"] --> Crawl1["📥 KB차차차<br/>크롤링"]
+    Trigger --> Crawl2["📥 엔카<br/>크롤링"]
+
+    Crawl1 --> Clean["🧹 데이터 정제<br/>중복·결측치 제거"]
+    Crawl2 --> Clean
+
+    Clean --> Load["💾 PostgreSQL<br/>UPSERT"]
+    Load --> Cache["🔥 Redis<br/>캐시 초기화"]
+    Cache --> Complete["✅ 완료"]
+
+    style Trigger fill:#9C27B0,color:#fff
+    style Crawl1 fill:#4CAF50,color:#fff
+    style Crawl2 fill:#4CAF50,color:#fff
+    style Clean fill:#FF9800,color:#fff
+    style Load fill:#2196F3,color:#fff
+    style Cache fill:#FF5722,color:#fff
+    style Complete fill:#8BC34A,color:#fff
+```
+
+**파이프라인 특징:**
+- 🕷️ **병렬 크롤링**: KB차차차 + 엔카 동시 수집
+- 🧹 **데이터 정제**: 중복 제거, 결측치 처리, 타입 변환
+- 💾 **증분 업데이트**: UPSERT로 변경분만 적재
+- ⏱️ **예상 소요시간**: 약 1시간
+- 📅 **배포 예정**: 2025년 2월 (AWS EC2 + Docker)
+
+---
 
 ### 사용자 여정
 
