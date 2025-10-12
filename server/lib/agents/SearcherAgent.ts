@@ -89,6 +89,26 @@ export class SearcherAgent {
 
     console.log(`💰 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원`);
 
+    // 🐛 Fix: userMessage에서 직접 차종 추출 (criteria.carType이 없을 경우 대비)
+    let targetCarType = criteria.carType;
+    if (!targetCarType && userMessage) {
+      const lowerMsg = userMessage.toLowerCase();
+      if (lowerMsg.includes('suv') || lowerMsg.includes('에스유브이')) {
+        targetCarType = 'SUV';
+        console.log(`🔍 메시지에서 차종 추출: SUV`);
+      } else if (lowerMsg.includes('세단')) {
+        targetCarType = '세단';
+        console.log(`🔍 메시지에서 차종 추출: 세단`);
+      } else if (lowerMsg.includes('경차')) {
+        targetCarType = '경차';
+        console.log(`🔍 메시지에서 차종 추출: 경차`);
+      }
+    }
+
+    if (targetCarType) {
+      console.log(`🚗 차종 필터: ${targetCarType}`);
+    }
+
     // 상용차 키워드 (제외 대상)
     const commercialVehicleKeywords = [
       'st1', '포터', '봉고', '다마스', '라보',
@@ -115,8 +135,8 @@ export class SearcherAgent {
       if (v.distance && v.distance > 200000) return false;
 
       // 차종 필터
-      if (criteria.carType) {
-        const requestedType = criteria.carType.toLowerCase();
+      if (targetCarType) {
+        const requestedType = targetCarType.toLowerCase();
         if (requestedType === 'suv') {
           const isSUV = carTypeLower.includes('suv') ||
                         carTypeLower.includes('rv') ||
@@ -125,6 +145,9 @@ export class SearcherAgent {
         } else if (requestedType === '세단') {
           const isSedan = carTypeLower.includes('세단') || carTypeLower.includes('sedan');
           if (!isSedan) return false;
+        } else if (requestedType === '경차') {
+          const isKCar = carTypeLower.includes('경차') || carTypeLower.includes('경형');
+          if (!isKCar) return false;
         }
       }
 
