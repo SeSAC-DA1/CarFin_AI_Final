@@ -82,8 +82,17 @@ export class SearcherAgent {
       const priceMatch = userMessage.match(/(\d+)만원?/);
       if (priceMatch && priceMatch[1]) {
         const targetPrice = parseInt(priceMatch[1]);
-        minPrice = Math.floor(targetPrice * 0.8);
-        maxPrice = Math.ceil(targetPrice * 1.2);
+
+        // 🐛 Fix: "이하" 키워드 감지 - 정확한 예산 준수
+        if (userMessage.includes('이하') || userMessage.includes('까지') || userMessage.includes('안') || userMessage.includes('내')) {
+          minPrice = 0;
+          maxPrice = targetPrice; // 정확히 지정된 금액까지만
+          console.log(`📍 예산 제한: ${targetPrice}만원 이하로 엄격하게 필터링`);
+        } else {
+          // "대략", "정도" 등의 경우만 ±20% 여유
+          minPrice = Math.floor(targetPrice * 0.8);
+          maxPrice = Math.ceil(targetPrice * 1.2);
+        }
       }
     }
 
@@ -138,9 +147,10 @@ export class SearcherAgent {
       if (targetCarType) {
         const requestedType = targetCarType.toLowerCase();
         if (requestedType === 'suv') {
+          // 🐛 Fix: 스포츠왜건을 SUV로 잘못 분류하는 문제 수정
           const isSUV = carTypeLower.includes('suv') ||
                         carTypeLower.includes('rv') ||
-                        carTypeLower.includes('스포츠');
+                        (carTypeLower.includes('스포츠') && carTypeLower.includes('유틸리티'));
           if (!isSUV) return false;
         } else if (requestedType === '세단') {
           const isSedan = carTypeLower.includes('세단') || carTypeLower.includes('sedan');
