@@ -68,123 +68,145 @@ export default function Onboarding() {
             </div>
           </div>
 
-          {/* 계층 구조: Manager 에이전트가 4개 에이전트 관리 */}
-          <div className="space-y-6">
-            {/* Manager Agent - 상위 계층 (크게 표시) */}
-            <div className="relative">
-              <Card className="border-2 border-primary/50 hover:border-primary hover:shadow-xl transition-all duration-300 hover:scale-102 bg-gradient-to-br from-primary/5 to-primary/10">
+          {/* 조직도 스타일 계층 구조 */}
+          <div className="space-y-8">
+            {/* Manager Agent - 최상위 */}
+            <div className="relative flex flex-col items-center">
+              <Card className="w-full max-w-2xl border-2 border-primary shadow-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-white">
                 <CardContent className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <Brain className="w-10 h-10 text-primary" />
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center shadow-xl">
+                        <Brain className="w-12 h-12 text-white" />
                       </div>
-                      <div>
-                        <Badge variant="default" className="bg-primary text-white mb-3 text-sm px-3 py-1">Manager Agent</Badge>
-                        <h3 className="font-bold text-2xl mb-2">작업 총괄 관리자</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                          전체 프로세스를 조율하고 4개 전문 에이전트에게 작업을 분배합니다<br />
-                          <strong className="text-primary">Task Decomposition</strong> 기법으로 복잡한 요청을 세부 작업으로 나눕니다
-                        </p>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                        <span className="text-sm font-bold">👑</span>
                       </div>
                     </div>
-                    <div className="hidden lg:flex flex-col items-center gap-2 text-primary">
-                      <div className="text-4xl font-bold">1</div>
-                      <div className="text-xs">관리자</div>
+                    <div className="flex-1">
+                      <Badge variant="default" className="bg-primary text-white mb-3 text-sm px-4 py-1 shadow-md">Manager Agent</Badge>
+                      <h3 className="font-bold text-3xl mb-3 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">작업 총괄 관리자</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        전체 프로세스를 조율하고 4개 전문 에이전트에게 작업을 분배합니다<br />
+                        <strong className="text-primary">Task Decomposition</strong> 기법으로 복잡한 요청을 세부 작업으로 나눕니다
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              {/* 화살표 표시 */}
-              <div className="flex justify-center my-4">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-0.5 h-8 bg-gradient-to-b from-primary/50 to-primary/20"></div>
-                  <div className="text-primary text-xs font-medium">작업 분배</div>
-                  <div className="w-0.5 h-8 bg-gradient-to-b from-primary/20 to-transparent"></div>
+
+              {/* 조직도 연결선 */}
+              <div className="relative w-full my-6">
+                {/* 수직선 */}
+                <div className="absolute left-1/2 top-0 w-1 h-8 bg-gradient-to-b from-primary to-primary/30 transform -translate-x-1/2"></div>
+
+                {/* 가로선 + 4개 수직선 */}
+                <div className="absolute left-1/2 top-8 w-full max-w-4xl transform -translate-x-1/2">
+                  {/* 가로선 */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+
+                  {/* 4개 수직선 */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex justify-center">
+                      <div className="w-1 h-12 bg-gradient-to-b from-chart-2/50 to-chart-2/20"></div>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className="w-1 h-12 bg-gradient-to-b from-chart-3/50 to-chart-3/20"></div>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className="w-1 h-12 bg-gradient-to-b from-chart-4/50 to-chart-4/20"></div>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className="w-1 h-12 bg-gradient-to-b from-green-500/50 to-green-500/20"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* "작업 분배" 라벨 */}
+                <div className="absolute left-1/2 top-2 transform -translate-x-1/2">
+                  <div className="bg-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                    ⚡ 작업 분배
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* 4개 전문 에이전트 - 하위 계층 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 4개 전문 에이전트 - 하위 계층 (더 작게) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-20">
 
             {/* Analyst */}
-            <Card className="border-chart-2/30 hover:border-chart-2 hover:shadow-lg transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-chart-2/10 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-6 h-6 text-chart-2" />
+            <Card className="border-chart-2/30 hover:border-chart-2 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-2/5 to-white">
+              <CardContent className="p-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-2 to-chart-2/70 flex items-center justify-center shadow-lg">
+                    <Users className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-chart-2/10 text-chart-2 border-chart-2/30 mb-2">Analyst</Badge>
-                    <h3 className="font-bold text-lg mb-1">사용자 분석</h3>
+                    <Badge variant="outline" className="bg-chart-2/10 text-chart-2 border-chart-2/30 mb-2 text-xs">Analyst</Badge>
+                    <h3 className="font-bold text-base mb-2">사용자 분석</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      프로필 데이터 추출 및 니즈 파악<br />
+                      <strong className="text-chart-2">Gemini AI</strong>
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  프로필 데이터 추출 및<br />
-                  니즈 파악 (예산·용도·선호도)<br />
-                  <strong className="text-chart-2">Gemini AI</strong> 활용
-                </p>
               </CardContent>
             </Card>
 
             {/* Searcher */}
-            <Card className="border-chart-3/30 hover:border-chart-3 hover:shadow-lg transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-chart-3/10 flex items-center justify-center flex-shrink-0">
-                    <Database className="w-6 h-6 text-chart-3" />
+            <Card className="border-chart-3/30 hover:border-chart-3 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-3/5 to-white">
+              <CardContent className="p-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-3 to-chart-3/70 flex items-center justify-center shadow-lg">
+                    <Database className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-chart-3/10 text-chart-3 border-chart-3/30 mb-2">Searcher</Badge>
-                    <h3 className="font-bold text-lg mb-1">매물 검색</h3>
+                    <Badge variant="outline" className="bg-chart-3/10 text-chart-3 border-chart-3/30 mb-2 text-xs">Searcher</Badge>
+                    <h3 className="font-bold text-base mb-2">매물 검색</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      실시간 DB 검색 및 필터링<br />
+                      <strong className="text-chart-3">PostgreSQL</strong>
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  실시간 매물 DB 검색<br />
-                  조건 맞는 후보 차량 필터링<br />
-                  <strong className="text-chart-3">PostgreSQL</strong> 연결
-                </p>
               </CardContent>
             </Card>
 
             {/* Evaluator */}
-            <Card className="border-chart-4/30 hover:border-chart-4 hover:shadow-lg transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-chart-4/10 flex items-center justify-center flex-shrink-0">
-                    <Target className="w-6 h-6 text-chart-4" />
+            <Card className="border-chart-4/30 hover:border-chart-4 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-chart-4/5 to-white">
+              <CardContent className="p-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-chart-4 to-chart-4/70 flex items-center justify-center shadow-lg">
+                    <Target className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-chart-4/10 text-chart-4 border-chart-4/30 mb-2">Evaluator</Badge>
-                    <h3 className="font-bold text-lg mb-1">객관적 평가</h3>
+                    <Badge variant="outline" className="bg-chart-4/10 text-chart-4 border-chart-4/30 mb-2 text-xs">Evaluator</Badge>
+                    <h3 className="font-bold text-base mb-2">객관적 평가</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      6가지 기준 점수 계산<br />
+                      <strong className="text-chart-4">TOPSIS</strong>
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  6가지 기준으로 점수 계산<br />
-                  (가격·연비·안전·브랜드·상태·옵션)<br />
-                  <strong className="text-chart-4">TOPSIS</strong> 알고리즘
-                </p>
               </CardContent>
             </Card>
 
             {/* Financial */}
-            <Card className="border-green-500/30 hover:border-green-500 hover:shadow-lg transition-all duration-300 hover:scale-105 lg:col-span-2">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                    <BarChart3 className="w-6 h-6 text-green-600" />
+            <Card className="border-green-500/30 hover:border-green-500 hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-500/5 to-white">
+              <CardContent className="p-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center shadow-lg">
+                    <BarChart3 className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500/30 mb-2">Financial</Badge>
-                    <h3 className="font-bold text-lg mb-1">금융 분석 (TCO)</h3>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500/30 mb-2 text-xs">Financial</Badge>
+                    <h3 className="font-bold text-base mb-2">금융 분석 (TCO)</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      5개 비용 항목 계산<br />
+                      <strong className="text-green-600">법적 근거 기반</strong>
+                    </p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  5개 비용 항목 정밀 계산 (취득세·자동차세·정비비·감가상각·연료비)<br />
-                  법적 근거 기반 <strong className="text-green-600">지방세법 제11조·127조 + DOE/ANL 88원/km</strong><br />
-                  5년 총 소유비용 (TCO) 예측 및 비교 분석
-                </p>
               </CardContent>
             </Card>
           </div>
