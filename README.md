@@ -245,7 +245,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["🎓 3개 논문"] --> Result["🏆 CARFIN AI"]
+    A["🎓 2개 논문<br/>+1개 검증 방법론"] --> Result["🏆 CARFIN AI"]
     B["🤖 5개 에이전트"] --> Result
     C["🚗 실시간 매물"] --> Result
     D["✅ 171개 테스트"] --> Result
