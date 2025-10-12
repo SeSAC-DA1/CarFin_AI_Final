@@ -7,8 +7,8 @@
 
 ![CARFIN AI Banner](https://img.shields.io/badge/CARFIN-AI%20Recommender-blue?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=flat-square&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-3178C6?style=flat-square&logo=typescript)
-![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-3178C6?style=flat-square&logo=typescript)
+![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql)
 
 **🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **⚡ 평균 응답시간 2.3초**
@@ -122,9 +122,9 @@
 
 | 계층 | 기술 | 버전 | 역할 |
 |------|------|------|------|
-| **Frontend** | React + TypeScript | 18.3 + 5.7 | UI 컴포넌트 |
+| **Frontend** | React + TypeScript | 18.3 + 5.6 | UI 컴포넌트 |
 | | shadcn/ui + Tailwind CSS | latest | 디자인 시스템 |
-| **Backend** | Node.js + Express | 20 + 4.21 | REST API 서버 |
+| **Backend** | Node.js + Express | 22 + 4.21 | REST API 서버 |
 | | Native WebSocket | - | 실시간 통신 |
 | | Drizzle ORM | 0.38 | DB 쿼리 빌더 |
 | **AI** | **Google Gemini 2.5 Flash** | latest | 자연어 처리 |
@@ -226,7 +226,7 @@ server/lib/
 
 ### 1. 사전 요구사항
 
-- Node.js 20 이상
+- Node.js 22 이상 (또는 20+)
 - PostgreSQL 15 이상
 - Google Gemini API Key
 

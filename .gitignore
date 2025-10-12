@@ -49,3 +49,11 @@ nul
 
 # MCP Servers (개발 전용)
 chrome-devtools-mcp/
+
+# Test results and reports
+test-results/
+playwright-report/
+coverage/
+
+# Legacy/Unused directories
+backend-main/
