@@ -72,7 +72,7 @@ export default function Onboarding() {
           <div className="space-y-8">
             {/* Manager Agent - 최상위 */}
             <div className="relative flex flex-col items-center">
-              <Card className="w-full max-w-2xl border-2 border-primary shadow-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-white">
+              <Card className="w-full max-w-2xl border-2 border-primary shadow-2xl bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10">
                 <CardContent className="p-8">
                   <div className="flex items-center gap-6">
                     <div className="relative">
