@@ -68,27 +68,45 @@ export default function Onboarding() {
             </div>
           </div>
 
-          {/* 5개 AI 카드 - 더 상세한 설명 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Manager */}
-            <Card className="border-primary/30 hover:border-primary hover:shadow-lg transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Brain className="w-6 h-6 text-primary" />
+          {/* 계층 구조: Manager 에이전트가 4개 에이전트 관리 */}
+          <div className="space-y-6">
+            {/* Manager Agent - 상위 계층 (크게 표시) */}
+            <div className="relative">
+              <Card className="border-2 border-primary/50 hover:border-primary hover:shadow-xl transition-all duration-300 hover:scale-102 bg-gradient-to-br from-primary/5 to-primary/10">
+                <CardContent className="p-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <Brain className="w-10 h-10 text-primary" />
+                      </div>
+                      <div>
+                        <Badge variant="default" className="bg-primary text-white mb-3 text-sm px-3 py-1">Manager Agent</Badge>
+                        <h3 className="font-bold text-2xl mb-2">작업 총괄 관리자</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                          전체 프로세스를 조율하고 4개 전문 에이전트에게 작업을 분배합니다<br />
+                          <strong className="text-primary">Task Decomposition</strong> 기법으로 복잡한 요청을 세부 작업으로 나눕니다
+                        </p>
+                      </div>
+                    </div>
+                    <div className="hidden lg:flex flex-col items-center gap-2 text-primary">
+                      <div className="text-4xl font-bold">1</div>
+                      <div className="text-xs">관리자</div>
+                    </div>
                   </div>
-                  <div>
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 mb-2">Manager</Badge>
-                    <h3 className="font-bold text-lg mb-1">작업 총괄</h3>
-                  </div>
+                </CardContent>
+              </Card>
+              {/* 화살표 표시 */}
+              <div className="flex justify-center my-4">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-0.5 h-8 bg-gradient-to-b from-primary/50 to-primary/20"></div>
+                  <div className="text-primary text-xs font-medium">작업 분배</div>
+                  <div className="w-0.5 h-8 bg-gradient-to-b from-primary/20 to-transparent"></div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  전체 프로세스를 조율하고<br />
-                  4개 에이전트에게 작업 분배<br />
-                  <strong className="text-primary">Task Decomposition</strong>
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* 4개 전문 에이전트 - 하위 계층 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Analyst */}
             <Card className="border-chart-2/30 hover:border-chart-2 hover:shadow-lg transition-all duration-300 hover:scale-105">
@@ -217,7 +235,7 @@ export default function Onboarding() {
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 text-center">
               <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
               <div className="text-3xl font-bold text-primary mb-2">3분</div>
-              <p className="text-sm text-muted-foreground">평균 응답 시간<br />(기존 3일 → 99% 단축)</p>
+              <p className="text-sm text-muted-foreground">평균 응답 시간<br />(기존 3일 → 3분)</p>
             </div>
             <div className="bg-chart-3/5 border border-chart-3/20 rounded-lg p-6 text-center">
               <Zap className="w-8 h-8 text-chart-3 mx-auto mb-3" />
@@ -227,7 +245,10 @@ export default function Onboarding() {
             <div className="bg-chart-2/5 border border-chart-2/20 rounded-lg p-6 text-center">
               <CheckCircle2 className="w-8 h-8 text-chart-2 mx-auto mb-3" />
               <div className="text-3xl font-bold text-chart-2 mb-2">5개</div>
-              <p className="text-sm text-muted-foreground">전문 AI 에이전트<br />(Manager·Analyst·Searcher·Evaluator·Financial)</p>
+              <p className="text-sm text-muted-foreground">
+                전문 AI 에이전트<br />
+                <span className="text-xs">(Manager + 4개 전문가)</span>
+              </p>
             </div>
           </div>
         </div>
