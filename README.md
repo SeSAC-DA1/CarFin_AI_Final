@@ -138,24 +138,70 @@ graph TB
 
 ### 사용자 여정 (User Journey)
 
+```mermaid
+flowchart TD
+    Start([👤 사용자 방문]) --> Landing[🏠 랜딩 페이지<br/>논문 기반 시스템 소개]
+
+    Landing --> Onboarding1[📚 온보딩 Step 1<br/>AI 에이전트 5개 소개]
+    Onboarding1 --> Onboarding2[📖 온보딩 Step 2<br/>학술 논문 배경 설명]
+    Onboarding2 --> Onboarding3[📊 온보딩 Step 3<br/>127,378대 데이터 규모]
+
+    Onboarding3 --> Profile1[👤 프로필 Step 1<br/>이름·나이·지역]
+    Profile1 --> Profile2[🎯 프로필 Step 2<br/>용도 선택<br/>출퇴근/가족/레저]
+    Profile2 --> Profile3[💰 프로필 Step 3<br/>예산 범위 설정<br/>2000-3000만원]
+    Profile3 --> Profile4[⚖️ 프로필 Step 4<br/>6가지 중요도 슬라이더<br/>가격·연비·안전성·디자인·브랜드·옵션]
+
+    Profile4 --> ChatStart[💬 AI 상담 시작<br/>프로필 자동 전송]
+
+    ChatStart --> UserInput["💭 사용자 질문<br/>'3000만원 가족용 SUV 찾아요'"]
+
+    UserInput --> Manager[🎯 Manager Agent<br/>Task Decomposition]
+
+    Manager --> UserAnalyst[🧠 User Analyst<br/>Gemini 2.5 니즈 분석<br/>~0.5초]
+    Manager --> Searcher[🔍 Searcher Agent<br/>Redis 캐시 확인<br/>→ PostgreSQL 검색<br/>387대 후보 발견<br/>~142ms]
+
+    UserAnalyst --> Evaluator
+    Searcher --> Evaluator[⭐ Evaluator Agent<br/>TOPSIS 6기준 평가<br/>Top 50 선별<br/>~0.8초]
+
+    Evaluator --> Financial[💰 Financial Advisor<br/>TCO 5개 비용 계산<br/>법적 근거 기반<br/>~0.3초]
+
+    Financial --> Reranking[🎲 Alibaba Re-ranking<br/>개인화 재정렬<br/>TOPSIS 60% + TCO 30%<br/>~0.2초]
+
+    Reranking --> Result[📊 Top 3 차량 추천<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석<br/>⏱️ 총 2.3초]
+
+    Result --> UserSatisfied{😊 사용자 만족?}
+
+    UserSatisfied -->|"✅ 만족"| End([🎉 추천 완료])
+    UserSatisfied -->|"🔄 재추천"| UserInput
+
+    style Start fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style Landing fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
+    style Onboarding1 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
+    style Onboarding2 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
+    style Onboarding3 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
+    style Profile1 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
+    style Profile2 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
+    style Profile3 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
+    style Profile4 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
+    style ChatStart fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    style UserInput fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    style Manager fill:#E91E63,stroke:#880E4F,stroke-width:2px,color:#fff
+    style UserAnalyst fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
+    style Searcher fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
+    style Evaluator fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
+    style Financial fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
+    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Result fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style UserSatisfied fill:#FF5722,stroke:#D84315,stroke-width:2px,color:#fff
+    style End fill:#8BC34A,stroke:#558B2F,stroke-width:3px,color:#fff
 ```
-1. 랜딩 페이지 → 온보딩 3단계 → 프로필 설정 4단계
-   (예산, 용도, 중요도 슬라이더)
-   ↓
-2. AI 상담 채팅: "3000만원 가족용 SUV 찾아요"
-   ↓
-3. 백엔드 MACRec 협업
-   • User Analyst: Gemini 2.5로 니즈 분석
-   • Searcher: PostgreSQL 검색 (Redis 캐시 확인)
-   • Evaluator: TOPSIS 6기준 평가
-   • Financial: TCO 5개 비용 계산
-   ↓
-4. Alibaba Re-ranking (개인화 재정렬)
-   ↓
-5. WebSocket 실시간 전송: Top 3 차량 + TCO 차트
-   ↓
-6. 사용자 피드백: 만족 or 재추천 (3번으로 복귀)
-```
+
+**워크플로우 특징:**
+- ✅ **온보딩 3단계**: AI 에이전트 → 논문 배경 → 데이터 규모
+- ✅ **프로필 4단계**: 기본정보 → 용도 → 예산 → 6가지 중요도 슬라이더
+- ✅ **MACRec 협업**: Manager 조율 → 4개 AI 에이전트 병렬/순차 실행
+- ✅ **실시간 응답**: 평균 2.3초 내 Top 3 추천 + TCO 차트
+- ✅ **재추천 루프**: 사용자 불만족 시 즉시 재추천 가능
 
 ---
 
