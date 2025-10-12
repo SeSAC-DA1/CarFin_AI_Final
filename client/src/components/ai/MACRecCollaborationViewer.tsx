@@ -169,7 +169,7 @@ export default function MACRecCollaborationViewer({
       },
       {
         id: 'task_2',
-        task: '15만대 DB에서 조건 매칭 차량 검색',
+        task: '실시간 매물에서 조건 매칭 차량 검색',
         assignedAgent: 'data_analyst',
         dependencies: [],
         status: 'pending'
@@ -530,7 +530,7 @@ export default function MACRecCollaborationViewer({
             <div className="font-medium">🎯 멀티에이전트 협업 완료!</div>
             <div>• Manager: 태스크 분해 + 결과 통합</div>
             <div>• Needs Analyst: 사용자 선호도 분석</div>
-            <div>• Data Analyst: 15만대 DB 검색</div>
+            <div>• Data Analyst: 실시간 매물 검색</div>
             <div>• Reflector: 추천 품질 검증</div>
             <div className="pt-2 text-xs text-muted-foreground">
               💫 단일 AI로는 불가능한 전문화된 협업으로 최적의 결과를 제공했습니다

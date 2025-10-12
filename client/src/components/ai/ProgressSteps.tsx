@@ -189,7 +189,7 @@ export default function ProgressSteps({ steps }: ProgressStepsProps) {
                   {activeStep.id === "searching" && (
                     <div className="space-y-1">
                       <p>• <strong>User Analyst</strong>: 프로필 데이터 추출 및 니즈 분석</p>
-                      <p>• <strong>Searcher Agent</strong>: 15만대 DB 병렬 검색 (조건 필터링)</p>
+                      <p>• <strong>Searcher Agent</strong>: 실시간 매물 병렬 검색 (조건 필터링)</p>
                       <p>• <strong>Parallel Execution</strong>: 2개 에이전트 동시 실행으로 속도 2배 향상</p>
                     </div>
                   )}

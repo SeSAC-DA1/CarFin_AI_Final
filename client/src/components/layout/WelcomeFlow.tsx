@@ -23,7 +23,7 @@ const agents = [
     icon: Database,
     color: "text-green-600",
     bgColor: "bg-green-50 dark:bg-green-950/30",
-    description: "15만대 중 조건에 맞는 차량을 빠르게 검색해요",
+    description: "실시간 매물 중 조건에 맞는 차량을 빠르게 검색해요",
     detail: "0.5초만에 수만 대의 매물에서 당신의 조건에 맞는 차량을 찾습니다"
   },
   {

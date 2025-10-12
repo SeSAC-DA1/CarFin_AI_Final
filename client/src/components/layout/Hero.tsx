@@ -34,7 +34,7 @@ export default function Hero() {
               <br />
               <span className="text-muted-foreground">총 소유비용(TCO) 법적 근거 기반 계산</span>
               <br />
-              <span className="text-primary font-medium">15만대 매물 3초 내 정밀 분석</span>
+              <span className="text-primary font-medium">실시간 매물 3초 내 정밀 분석</span>
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -57,7 +57,7 @@ export default function Hero() {
                   <Search className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">15만대</p>
+                  <p className="text-lg font-semibold">127,378대</p>
                   <p className="text-xs text-muted-foreground">실시간 매물</p>
                 </div>
               </div>
