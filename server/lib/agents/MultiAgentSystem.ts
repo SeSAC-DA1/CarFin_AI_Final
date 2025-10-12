@@ -193,7 +193,7 @@ export class MultiAgentSystem {
     yield { type: "agent_working", agent: "financial_advisor", content: "💰 일시불, 할부, 리스 중 어떤 방법이 유리한지 분석하고 있어요..." };
 
     // Top 3 차량에 대해 FinancialAdvisorAgent로 금융 옵션 분석
-    const financialEnrichedRecommendations = await this.enrichWithFinancialOptions(top3, userProfile);
+    const financialEnrichedRecommendations = await this.enrichWithFinancialOptions(top3, rawProfile);
 
     yield {
       type: "agent_response",
