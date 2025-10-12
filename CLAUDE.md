@@ -83,7 +83,7 @@ const collaborationStream = multiAgentSystem.collaborate(userMessage, allVehicle
 for await (const step of collaborationStream) {
   // Manager Agent: 전체 프로세스 조율
   // User Analyst: 사용자 니즈 분석
-  // Searcher Agent: 15만대 차량 검색 및 필터링
+  // Searcher Agent: 실시간 매물 검색 및 필터링
 }
 ```
 
@@ -355,7 +355,7 @@ await railwayRedisService.setTopsisRanking(userProfile, vehicles, topsisResult, 
 const messages = [
   { from: 'manager', to: 'user_analyst', msg: '🎯 사용자 니즈 분석 시작 요청' },
   { from: 'user_analyst', to: 'manager', msg: '✅ 프로필 데이터 추출 완료' },
-  { from: 'manager', to: 'searcher', msg: '🔍 15만대 DB 검색 시작 요청' },
+  { from: 'manager', to: 'searcher', msg: '🔍 실시간 DB 검색 시작 요청' },
   { from: 'searcher', to: 'manager', msg: '✅ 387대 후보 차량 발견' }
 ];
 
@@ -609,7 +609,7 @@ railway up
 ✅ **Phase 0-3**: 핵심 추천 시스템
 - 전체 사용자 여정 (랜딩 → 온보딩 → 프로필 → AI 상담)
 - 논문 3개 기반 멀티에이전트 협업 (MACRec + Alibaba + TOPSIS)
-- 15만대 실제 데이터 통합 및 실시간 검색
+- 실시간 매물 데이터 통합 및 검색
 - WebSocket 실시간 통신 및 자동 재연결
 
 ✅ **Phase 4**: TCO 핀테크 혁신
