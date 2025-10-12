@@ -189,61 +189,17 @@ graph TB
 ### 사용자 여정 (User Journey)
 
 ```mermaid
-flowchart TD
-    Start([👤 사용자 방문]) --> Landing[🏠 랜딩 페이지<br/>논문 기반 시스템 소개]
-
-    Landing --> Onboarding1[📚 온보딩 Step 1<br/>AI 에이전트 5개 소개]
-    Onboarding1 --> Onboarding2[📖 온보딩 Step 2<br/>학술 논문 배경 설명]
-    Onboarding2 --> Onboarding3[📊 온보딩 Step 3<br/>실시간 매물 데이터]
-
-    Onboarding3 --> Profile1[👤 프로필 Step 1<br/>이름·나이·지역]
-    Profile1 --> Profile2[🎯 프로필 Step 2<br/>용도 선택<br/>출퇴근/가족/레저]
-    Profile2 --> Profile3[💰 프로필 Step 3<br/>예산 범위 설정<br/>2000-3000만원]
-    Profile3 --> Profile4[⚖️ 프로필 Step 4<br/>6가지 중요도 슬라이더<br/>가격·연비·안전성·디자인·브랜드·옵션]
-
-    Profile4 --> ChatStart[💬 AI 상담 시작<br/>프로필 자동 전송]
-
-    ChatStart --> UserInput["💭 사용자 질문<br/>'3000만원 가족용 SUV 찾아요'"]
-
-    UserInput --> Manager[🎯 Manager Agent<br/>Task Decomposition]
-
-    Manager --> UserAnalyst[🧠 User Analyst<br/>Gemini 2.5 니즈 분석<br/>~0.5초]
-    Manager --> Searcher[🔍 Searcher Agent<br/>Redis 캐시 확인<br/>→ PostgreSQL 검색<br/>387대 후보 발견<br/>~142ms]
-
-    UserAnalyst --> Evaluator
-    Searcher --> Evaluator[⭐ Evaluator Agent<br/>TOPSIS 6기준 평가<br/>Top 50 선별<br/>~0.8초]
-
-    Evaluator --> Financial[💰 Financial Advisor<br/>TCO 5개 비용 계산<br/>법적 근거 기반<br/>~0.3초]
-
-    Financial --> Reranking[🎲 Alibaba Re-ranking<br/>개인화 재정렬<br/>TOPSIS 60% + TCO 30%<br/>~0.2초]
-
-    Reranking --> Result[📊 Top 3 차량 추천<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석<br/>⏱️ 3분 이내]
-
-    Result --> UserSatisfied{😊 사용자 만족?}
-
-    UserSatisfied -->|"✅ 만족"| End([🎉 추천 완료])
-    UserSatisfied -->|"🔄 재추천"| UserInput
-
-    style Start fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
-    style Landing fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
-    style Onboarding1 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
-    style Onboarding2 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
-    style Onboarding3 fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
-    style Profile1 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
-    style Profile2 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
-    style Profile3 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
-    style Profile4 fill:#00ACC1,stroke:#006064,stroke-width:2px,color:#fff
-    style ChatStart fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
-    style UserInput fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
-    style Manager fill:#E91E63,stroke:#880E4F,stroke-width:2px,color:#fff
-    style UserAnalyst fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
-    style Searcher fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
-    style Evaluator fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
-    style Financial fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
-    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
-    style Result fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
-    style UserSatisfied fill:#FF5722,stroke:#D84315,stroke-width:2px,color:#fff
-    style End fill:#8BC34A,stroke:#558B2F,stroke-width:3px,color:#fff
+flowchart LR
+    Start([👤 방문]) --> Landing[🏠 랜딩]
+    Landing --> Onboarding[📚 온보딩 3단계<br/>에이전트·논문·데이터]
+    Onboarding --> Profile[👤 프로필 4단계<br/>정보·용도·예산·중요도]
+    Profile --> Chat[💬 AI 상담]
+    Chat --> Agents[🤖 5개 에이전트 협업<br/>Manager→UserAnalyst→Searcher→Evaluator→Financial]
+    Agents --> Rerank[🎲 Alibaba 재정렬]
+    Rerank --> Result[📊 Top 3 추천]
+    Result --> Satisfied{만족?}
+    Satisfied -->|✅| End([완료])
+    Satisfied -->|🔄| Chat
 ```
 
 **워크플로우 특징:**
@@ -581,95 +537,34 @@ graph TB
 ### 2. 실시간 서비스 워크플로우 (사용자 요청 → 추천)
 
 ```mermaid
-sequenceDiagram
-    actor User as 👤 사용자
-    participant Frontend as ⚛️ React<br/>Frontend
-    participant WS as 🔌 WebSocket<br/>Handler
-    participant Manager as 🎯 Manager<br/>Agent
-    participant UserAnalyst as 🧠 User<br/>Analyst
-    participant Searcher as 🔍 Searcher<br/>Agent
-    participant Redis as 🔥 Redis<br/>Cache
-    participant DB as 🗄️ PostgreSQL<br/>Database
-    participant Evaluator as ⭐ Evaluator<br/>Agent
-    participant Financial as 💰 Financial<br/>Advisor
-    participant Reranking as 🎲 Alibaba<br/>Re-ranking
+flowchart LR
+    User([👤 사용자]) -->|질문| Frontend[⚛️ React]
+    Frontend -->|WebSocket| WS[🔌 Handler]
+    WS --> Manager[🎯 Manager<br/>Task Decomposition]
 
-    User->>Frontend: "3000만원 이하<br/>가족용 SUV 찾아요"
-    Note over User,Frontend: Step 1: 사용자 입력
+    Manager --> UserAnalyst[🧠 User Analyst<br/>Gemini 2.5<br/>니즈 분석]
+    Manager --> Searcher[🔍 Searcher<br/>Redis→PostgreSQL<br/>387대 검색]
 
-    Frontend->>WS: WebSocket 메시지 전송<br/>{userProfile 자동 첨부}
-    Note over Frontend,WS: Step 2: 프로필 포함 전송<br/>budget: [2000, 3000]<br/>usage: ["family"]
+    UserAnalyst --> Evaluator
+    Searcher --> Evaluator[⭐ Evaluator<br/>TOPSIS 6기준<br/>Top 50 선별]
 
-    WS->>Manager: MACRec 협업 시작
-    Note over Manager: Step 3: Task Decomposition
+    Evaluator --> Financial[💰 Financial<br/>TCO 5개 비용<br/>법적 근거 기반]
 
-    Manager->>UserAnalyst: 니즈 분석 요청
-    activate UserAnalyst
-    UserAnalyst->>UserAnalyst: Gemini 2.5 API 호출
-    Note over UserAnalyst: Step 4: AI 분석 (~0.5초)<br/>추출: 예산·차종·용도
-    UserAnalyst-->>Manager: 니즈 분석 완료
-    deactivate UserAnalyst
+    Financial --> Rerank[🎲 Alibaba<br/>개인화 재정렬<br/>60% TOPSIS + 30% TCO]
 
-    Manager->>Searcher: 차량 검색 요청<br/>(budget: 2000-3000, SUV)
-    activate Searcher
-    Searcher->>Redis: 캐시 확인<br/>search:2000-3000:family:SUV
-    alt 캐시 히트 (85%)
-        Redis-->>Searcher: ✅ 캐시 데이터 반환
-        Note over Searcher,Redis: ⏱️ 50ms
-    else 캐시 미스 (15%)
-        Searcher->>DB: SQL 쿼리 실행<br/>WHERE price BETWEEN 2000-3000
-        Note over DB: 인덱스 활용:<br/>idx_vehicles_price
-        DB-->>Searcher: 387대 후보 반환
-        Note over Searcher,DB: ⏱️ 142ms
-        Searcher->>Redis: 캐시 저장 (5분 TTL)
-    end
-    Searcher-->>Manager: 387대 후보 발견
-    deactivate Searcher
-
-    Manager->>Evaluator: TOPSIS 평가 요청<br/>(387대 + 사용자 가중치)
-    activate Evaluator
-    Evaluator->>Evaluator: 6기준 평가<br/>가격·연비·안전성<br/>브랜드·상태·옵션
-    Note over Evaluator: Step 6: TOPSIS (~0.8초)<br/>정규화 → 가중치 적용<br/>→ 이상해 거리 계산
-    Evaluator-->>Manager: Top 50 선별 완료
-    deactivate Evaluator
-
-    Manager->>Financial: TCO 계산 요청<br/>(Top 50)
-    activate Financial
-    Financial->>Financial: 5개 비용 항목 계산<br/>취득세·자동차세·정비비<br/>감가상각·연료비
-    Note over Financial: Step 7: TCO (~0.3초)<br/>법적 근거 기반<br/>개인화 변수 반영
-    Financial-->>Manager: TCO 계산 완료
-    deactivate Financial
-
-    Manager->>Reranking: 개인화 재정렬 요청
-    activate Reranking
-    Reranking->>Reranking: Score = 0.6×TOPSIS<br/>+ 0.3×TCO + 0.1×History
-    Note over Reranking: Step 8: Re-ranking (~0.2초)<br/>개인화 점수 계산
-    Reranking-->>Manager: Top 3 최종 추천
-    deactivate Reranking
-
-    Manager->>WS: 추천 결과 전송
-    WS->>Frontend: WebSocket 실시간 응답<br/>{vehicles: Top3}
-    Note over WS,Frontend: Step 9: 결과 전송<br/>⏱️ 3분 이내
-
-    Frontend->>User: 📊 Top 3 차량 표시<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석
-    Note over User,Frontend: Step 10: 렌더링 완료
-
-    Note over User,Reranking: ✅ 전체 프로세스 완료: 3분 이내<br/>1위. 팰리세이드 2021 (0.92점)<br/>2위. 쏘렌토 2020 (0.87점)<br/>3위. 싼타페 2019 (0.83점)
+    Rerank --> Result[📊 Top 3<br/>+ TCO 차트]
+    Result -->|WebSocket| Frontend
+    Frontend --> User
 ```
 
-**다이어그램 특징:**
-- ✅ GitHub 자동 렌더링 (Mermaid 지원)
-- ✅ 컬러 코딩으로 계층 구분 명확
-- ✅ 이모지로 시각적 식별 용이
-- ✅ 발표 시 전문적인 인상
-
-**주요 성능 지표:**
-- **평균 응답 시간**: 3분 이내 (캐시 히트 시 더 빠름)
-- **캐시 히트율**: 85% (Redis)
-- **DB 쿼리 시간**: 평균 142ms (인덱스 활용)
-- **동시 처리**: 500+ concurrent users
-- **TOPSIS 평가**: 후보 차량 → Top 50 선별
-- **TCO 계산**: Top 50 차량 병렬 처리
+**워크플로우 특징:**
+- **Manager**: Task Decomposition 후 병렬 실행 조율
+- **UserAnalyst**: Gemini 2.5로 사용자 니즈 추출
+- **Searcher**: Redis 캐시 (85% 히트율) → PostgreSQL 검색
+- **Evaluator**: TOPSIS 6기준 다기준 평가 (가격·연비·안전성·브랜드·상태·옵션)
+- **Financial**: TCO 5개 비용 계산 (취득세·자동차세·정비비·감가상각·연료비)
+- **Alibaba Re-ranking**: 개인화 점수 = 60% TOPSIS + 30% TCO + 10% History
+- **총 응답시간**: 3분 이내 (캐시 히트 시 더 빠름)
 
 ---
 
