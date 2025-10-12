@@ -371,18 +371,25 @@ flowchart LR
 
 ---
 
-### 사용자 여정
+### 사용자 여정 (재추천 루프 포함)
 
 ```mermaid
 flowchart LR
     Start([👤 방문]) --> Landing[🏠 랜딩]
     Landing --> Onboarding[📚 온보딩<br/>3단계]
     Onboarding --> Profile[👤 프로필<br/>4단계]
-    Profile --> Chat[💬 AI 상담]
-    Chat --> Agents[🤖 5개 에이전트<br/>협업]
-    Agents --> Rerank[🎲 Alibaba<br/>재정렬]
-    Rerank --> Result[📊 Top 3]
-    Result --> End([완료])
+    Profile --> Chat[💬 AI 상담<br/>사용자 질문]
+    Chat --> Agents[🤖 5개 에이전트<br/>MACRec 협업]
+    Agents --> Rerank[🎲 Alibaba<br/>개인화 재정렬]
+    Rerank --> Result[📊 Top 3 추천<br/>+ TCO 차트]
+    Result --> Decision{만족?}
+    Decision -->|✅ 만족| End([✅ 완료])
+    Decision -->|🔄 불만족| Feedback[💬 피드백<br/>다른 조건 제시]
+    Feedback --> Chat
+
+    style Decision fill:#FF9800,color:#fff
+    style Feedback fill:#E91E63,color:#fff
+    style End fill:#4CAF50,color:#fff
 ```
 
 **워크플로우:**
@@ -390,6 +397,7 @@ flowchart LR
 - ✅ **프로필 4단계**: 기본정보 → 용도 → 예산 → 중요도 (6가지)
 - ✅ **AI 협업**: Manager 조율 → 4개 에이전트 병렬 실행
 - ✅ **실시간 응답**: 3분 이내 Top 3 + TCO 차트
+- 🔄 **재추천 루프**: 불만족 시 다른 조건으로 즉시 재추천
 
 ---
 
