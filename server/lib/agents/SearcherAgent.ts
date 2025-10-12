@@ -77,7 +77,8 @@ export class SearcherAgent {
 
     // 1. userMessage에서 예산 추출 (최우선)
     if (userMessage) {
-      const priceMatch = userMessage.match(/(\d+)만원?/);
+      // 🐛 Fix: "만원" 키워드가 명확히 있는 경우만 예산으로 인식 (15,000km 같은 오인식 방지)
+      const priceMatch = userMessage.match(/(\d{1,4})만원/);
       if (priceMatch && priceMatch[1]) {
         const targetPrice = parseInt(priceMatch[1]);
         messageBudgetOverride = true;
