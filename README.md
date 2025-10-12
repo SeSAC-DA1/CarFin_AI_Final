@@ -354,86 +354,58 @@ flowchart LR
 
 ### 🏛️ 완전한 시스템 아키텍처 (All-in-One)
 
-**Frontend → Backend → AI Agents → Data → Algorithms → Output 전체 흐름**
+**Frontend → Backend → AI Agents → Data → Algorithms → Pipeline → Output 전체 흐름**
 
 ```mermaid
-flowchart TB
-    subgraph Frontend["⚛️ FRONTEND (Vercel)"]
-        Landing["🏠 랜딩 페이지"]
-        Onboarding["📚 온보딩 3단계"]
-        Profile["👤 프로필 설정 4단계"]
-        Chat["💬 AI 채팅 인터페이스"]
-        Dashboard["📊 TCO 대시보드"]
-    end
+flowchart LR
+    User["👤 사용자"] --> Landing["🏠 랜딩"]
+    Landing --> Onboarding["📚 온보딩<br/>3단계"]
+    Onboarding --> Profile["👤 프로필<br/>4단계"]
+    Profile --> Chat["💬 AI 채팅"]
 
-    subgraph Backend["🚀 BACKEND (Railway - Node.js 22)"]
-        API["REST API<br/>Express 4.21"]
-        WS["WebSocket<br/>실시간 통신"]
-        Gemini["🤖 Gemini 2.5 Flash<br/>자연어 처리"]
-    end
+    Chat <-->|"WebSocket<br/>실시간"| Backend["🚀 Backend<br/>Node.js 22<br/>Railway"]
 
-    subgraph MACRec["🤖 MULTI-AGENT SYSTEM (MACRec - SIGIR 2024)"]
-        Manager["👔 Manager Agent<br/>Task Decomposition"]
-        Analyst["📊 User Analyst<br/>프로필 분석"]
-        Searcher["🔍 Searcher Agent<br/>실시간 매물 검색"]
-        Evaluator["⚖️ Evaluator Agent<br/>TOPSIS 평가"]
-        Financial["💰 Financial Agent<br/>TCO 계산"]
-    end
+    Backend --> Gemini["🤖 Gemini 2.5<br/>자연어 처리"]
+    Gemini --> Manager["👔 Manager<br/>MACRec 조율<br/>(SIGIR 2024)"]
 
-    subgraph Data["💾 DATA LAYER"]
-        Postgres["🗄️ PostgreSQL 15<br/>실시간 매물 데이터<br/>4개 인덱스"]
-        Redis["⚡ Redis 7<br/>검색 캐싱<br/>85% 히트율"]
-    end
+    Manager --> Agents["⚡ 병렬 실행"]
 
-    subgraph Algorithms["📐 ALGORITHMS (논문 기반)"]
-        TOPSIS["📊 TOPSIS<br/>6기준 다기준 평가<br/>(Multiple Studies)"]
-        Rerank["🎲 Alibaba Re-ranking<br/>개인화 재정렬<br/>(RecSys 2019)"]
-        TCO["💰 TCO Calculator<br/>5개 비용 항목<br/>(지방세법 + DOE/ANL)"]
-    end
+    Agents --> Analyst["📊 User Analyst<br/>프로필 분석"]
+    Agents --> Searcher["🔍 Searcher<br/>매물 검색"]
+    Agents --> Evaluator["⚖️ Evaluator<br/>TOPSIS"]
+    Agents --> Financial["💰 Financial<br/>TCO 계산"]
 
-    subgraph Pipeline["🔄 DATA PIPELINE (구현 예정)"]
-        Airflow["⏰ Airflow DAG<br/>매일 02:00"]
-        Crawl["🕷️ 크롤링<br/>KB차차차 + 엔카"]
-        Clean["🧹 데이터 정제<br/>중복 제거"]
-    end
+    Searcher <--> Postgres["🗄️ PostgreSQL 15<br/>실시간 매물<br/>4개 인덱스"]
+    Searcher <--> Redis["⚡ Redis 7<br/>캐싱<br/>85% 히트율"]
 
-    subgraph Output["🏆 OUTPUT"]
-        Result["Top 3 추천 차량<br/>+ TCO 비교 차트<br/>+ 재추천 루프"]
-    end
+    Analyst --> Integrate["🔗 결과 통합"]
+    Searcher --> Integrate
+    Evaluator --> Integrate
+    Financial --> Integrate
 
-    Landing --> Onboarding --> Profile --> Chat
-    Chat <-->|"WSS 실시간"| WS
-    Dashboard -.->|"시각화"| Chat
+    Integrate --> TOPSIS["📐 TOPSIS<br/>6기준 평가"]
+    TOPSIS --> Rerank["🎲 Alibaba<br/>재정렬<br/>(RecSys 2019)"]
+    Rerank --> TCO["💰 TCO 계산<br/>5개 비용<br/>지방세법+DOE"]
+    TCO --> Result["🏆 Top 3 추천<br/>+ TCO 차트"]
 
-    WS --> API
-    API --> Gemini
-    Gemini --> Manager
+    Result --> Dashboard["📊 대시보드"]
+    Dashboard --> User
 
-    Manager --> Analyst & Searcher & Evaluator & Financial
+    Airflow["⏰ Airflow DAG<br/>(구현 예정)"] --> Crawl["🕷️ 크롤링<br/>KB차차차+엔카"]
+    Crawl --> Clean["🧹 정제"]
+    Clean --> Postgres
 
-    Searcher <--> Postgres
-    Searcher <--> Redis
-
-    Analyst --> TOPSIS
-    Evaluator --> TOPSIS
-    Searcher --> TOPSIS
-
-    TOPSIS --> Rerank
-    Rerank --> TCO
-    Financial --> TCO
-
-    TCO --> Result
-    Result --> Dashboard
-
-    Airflow --> Crawl --> Clean --> Postgres
-
-    style Frontend fill:#00BCD4,color:#fff
+    style Landing fill:#00BCD4,color:#fff
     style Backend fill:#9C27B0,color:#fff
-    style MACRec fill:#3B82F6,color:#fff
-    style Data fill:#2196F3,color:#fff
-    style Algorithms fill:#FF9800,color:#fff
-    style Pipeline fill:#4CAF50,color:#fff
-    style Output fill:#10B981,color:#fff
+    style Manager fill:#E91E63,color:#fff
+    style Agents fill:#673AB7,color:#fff
+    style Postgres fill:#2196F3,color:#fff
+    style Redis fill:#FF5722,color:#fff
+    style TOPSIS fill:#00BCD4,color:#fff
+    style Rerank fill:#FF9800,color:#fff
+    style TCO fill:#4CAF50,color:#fff
+    style Result fill:#10B981,color:#fff
+    style Airflow fill:#607D8B,color:#fff
 ```
 
 **레이어별 구성**:
@@ -455,79 +427,6 @@ flowchart TB
 - ✅ **개인화 추천**: 6가지 가중치 × TOPSIS × Alibaba 재정렬
 - ✅ **법적 근거 TCO**: 지방세법 제11조·127조 + DOE/ANL 88원/km
 - 🔄 **자동화 파이프라인**: Airflow 크롤링 (구현 예정)
-
----
-
-### 전체 구조 (기술 스택 중심)
-
-```mermaid
-flowchart LR
-    User["👤 사용자"] --> Frontend["⚛️ React 18.3<br/>Vercel 배포<br/>━━━━━━━<br/>랜딩·온보딩<br/>프로필·채팅"]
-
-    Frontend <-->|"WebSocket<br/>실시간 통신"| Backend["🚀 Node.js 22<br/>Railway 배포"]
-
-    Backend --> Manager["👔 Manager<br/>MACRec 조율"]
-
-    Manager --> Analyst["📊 User Analyst<br/>Gemini 2.5"]
-    Manager --> Searcher["🔍 Searcher<br/>DB 검색"]
-    Manager --> Evaluator["⚖️ Evaluator<br/>TOPSIS"]
-    Manager --> Finance["💰 Financial<br/>TCO 계산"]
-
-    Searcher --> DB["🗄️ PostgreSQL<br/>실시간 매물"]
-    Searcher --> Redis["⚡ Redis<br/>85% 히트율"]
-
-    Evaluator --> Rerank["🎲 Alibaba<br/>재정렬"]
-    Finance --> Rerank
-
-    Rerank --> Frontend
-
-    style Frontend fill:#00BCD4,color:#fff
-    style Backend fill:#9C27B0,color:#fff
-    style Manager fill:#E91E63,color:#fff
-    style Rerank fill:#FF9800,color:#fff
-    style DB fill:#2196F3,color:#fff
-    style Redis fill:#FF5722,color:#fff
-```
-
-**아키텍처 특징:**
-- ✅ **Frontend**: React 18.3 + TypeScript 5.6 (Vercel 배포)
-- ✅ **Backend**: Node.js 22 + Express 4.21 ([Railway 배포 완료](https://carfinaifinal-production.up.railway.app/))
-- ✅ **통신**: Native WebSocket (ws 8.18.0) 실시간 양방향
-- ✅ **AI**: MACRec 프로토콜 기반 5개 에이전트 협업
-- ✅ **데이터**: PostgreSQL 실시간 매물 + Redis 캐싱 (85% 히트율)
-- 🔄 **파이프라인**: Airflow 자동 크롤링 (구현 예정)
-
----
-
-### 데이터 파이프라인 (Airflow 예정)
-
-```mermaid
-flowchart LR
-    Trigger["⏰ 매일 02:00<br/>Airflow DAG"] --> Crawl1["📥 KB차차차<br/>크롤링"]
-    Trigger --> Crawl2["📥 엔카<br/>크롤링"]
-
-    Crawl1 --> Clean["🧹 데이터 정제<br/>중복·결측치 제거"]
-    Crawl2 --> Clean
-
-    Clean --> Load["💾 PostgreSQL<br/>UPSERT"]
-    Load --> Cache["🔥 Redis<br/>캐시 초기화"]
-    Cache --> Complete["✅ 완료"]
-
-    style Trigger fill:#9C27B0,color:#fff
-    style Crawl1 fill:#4CAF50,color:#fff
-    style Crawl2 fill:#4CAF50,color:#fff
-    style Clean fill:#FF9800,color:#fff
-    style Load fill:#2196F3,color:#fff
-    style Cache fill:#FF5722,color:#fff
-    style Complete fill:#8BC34A,color:#fff
-```
-
-**파이프라인 특징:**
-- 🕷️ **병렬 크롤링**: KB차차차 + 엔카 동시 수집
-- 🧹 **데이터 정제**: 중복 제거, 결측치 처리, 타입 변환
-- 💾 **증분 업데이트**: UPSERT로 변경분만 적재
-- ⏱️ **예상 소요시간**: 약 1시간
-- 📅 **상태**: 구현 예정 (AWS EC2 + Docker)
 
 ---
 
