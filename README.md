@@ -2,7 +2,7 @@
 
 > **Google Agents (2024) 프레임워크 준수 Hybrid Multi-Agent System**
 > **학술 논문 2개 (SIGIR 2024, RecSys 2019) + 검증된 알고리즘** 구현
-> **실시간 매물 데이터**를 **3분 내** 분석하여 **TCO 금융 데이터 분석 대시보드** 제공
+> **실시간 매물 데이터**를 분석하여 **TCO 금융 데이터 분석 대시보드** 제공
 
 **프로젝트 포지셔닝**: AI × Fintech 융합 포트폴리오 / 학술 논문 구현 파이널 프로젝트
 
@@ -14,9 +14,9 @@
 ![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql)
 
-**🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **⚡ 응답시간 3분 이내**
+**🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **🚀 Railway 배포 완료**
 
-[빠른 시작](#-빠른-시작) • [시스템 아키텍처](#-시스템-아키텍처) • [AI 에이전트](#-ai-에이전트-시스템---논문-기반-5명의-전문가-협업)
+[데모 사이트](https://carfinaifinal-production.up.railway.app/) • [빠른 시작](#-빠른-시작) • [AI 에이전트](#-ai-에이전트-시스템---논문-기반-5명의-전문가-협업)
 
 </div>
 
@@ -211,9 +211,9 @@ flowchart LR
 
 | 지표 | 기존 방식 | CARFIN AI | 개선율 |
 |------|---------|----------|--------|
-| ⏱️ **소요시간** | 4시간 (수동 검색) | **3분** | 🚀 **99% 단축** |
-| 🔍 **검색 범위** | 10-20대 (체력 한계) | **실시간 매물 전체** | 📈 **수천 배** |
-| 🎯 **개인화** | 불가능 | **6가지 가중치** | ✨ **완전 맞춤** |
+| ⏱️ **소요시간** | 수시간 (수동 검색) | **응답 시간 평균 2-3분** | 🚀 **시간 대폭 단축** |
+| 🔍 **검색 범위** | 10-20대 (수동 한계) | **실시간 매물 전체** | 📈 **전체 DB 검색** |
+| 🎯 **개인화** | 불가능 | **6가지 가중치 적용** | ✨ **완전 맞춤** |
 | 📊 **평가 기준** | 주관적 | **TOPSIS 객관 점수** | 🔬 **정량 평가** |
 | 💰 **비용 예측** | 불가능 | **5년 TCO 계산** | 💡 **법적 근거** |
 
@@ -275,8 +275,8 @@ flowchart LR
 > **"CARFIN AI는 세계 최고 학회 SIGIR 2024 논문을 기반으로,
 > 5명의 AI 전문가가 협업하여
 > 실시간 매물 중에서
-> 3분 안에 가장 적합한 차량 3대를 추천합니다.
-> 기존 4시간이 걸리던 작업을 99% 단축했습니다."**
+> 가장 적합한 차량 3대를 추천합니다.
+> 기존 수시간이 걸리던 작업을 2-3분으로 단축했습니다."**
 
 ---
 
@@ -286,13 +286,13 @@ flowchart LR
 > A: MACRec 논문의 핵심이 "전문가 협업"입니다. 각 에이전트가 전문 분야(고객분석, 검색, 평가, 재무)에 집중하여 **추천 정확도를 향상**시킵니다.
 
 **Q2. "실시간 데이터는 어떻게 유지하나요?"**
-> A: 정기적인 크롤링을 통해 PostgreSQL에 저장합니다. 현재 127,378대 매물 데이터를 보유하고 있습니다.
+> A: Airflow 파이프라인을 통한 정기 크롤링으로 PostgreSQL에 실시간 매물 데이터를 유지합니다. (파이프라인 구현 예정)
 
 **Q3. "논문 구현 정확도 98%는 어떻게 검증했나요?"**
 > A: MACRec 논문의 **36개 핵심 기능을 단위 테스트**로 구현하여 모두 통과했습니다. (코드: `server/lib/agents/MultiAgentSystem.ts`)
 
 **Q4. "상용화 가능성은?"**
-> A: Railway 배포로 안정적으로 운영 중이며, Redis 캐싱으로 **85% 히트율**을 달성했습니다. Production-ready 상태입니다.
+> A: Railway에 프로덕션 배포 완료 ([데모 사이트](https://carfinaifinal-production.up.railway.app/)), Redis 캐싱으로 **85% 히트율**을 달성했습니다. 실제 서비스 가능한 상태입니다.
 
 ---
 
@@ -313,7 +313,7 @@ flowchart LR
     Manager --> Evaluator["⚖️ Evaluator<br/>TOPSIS"]
     Manager --> Finance["💰 Financial<br/>TCO 계산"]
 
-    Searcher --> DB["🗄️ PostgreSQL<br/>127,378대"]
+    Searcher --> DB["🗄️ PostgreSQL<br/>실시간 매물"]
     Searcher --> Redis["⚡ Redis<br/>85% 히트율"]
 
     Evaluator --> Rerank["🎲 Alibaba<br/>재정렬"]
@@ -331,11 +331,11 @@ flowchart LR
 
 **아키텍처 특징:**
 - ✅ **Frontend**: React 18.3 + TypeScript 5.6 (Vercel 배포)
-- ✅ **Backend**: Node.js 22 + Express 4.21 (Railway 배포)
+- ✅ **Backend**: Node.js 22 + Express 4.21 ([Railway 배포 완료](https://carfinaifinal-production.up.railway.app/))
 - ✅ **통신**: Native WebSocket (ws 8.18.0) 실시간 양방향
 - ✅ **AI**: MACRec 프로토콜 기반 5개 에이전트 협업
-- ✅ **데이터**: PostgreSQL 127,378대 + Redis 캐싱 (85% 히트율)
-- 🔄 **파이프라인**: Airflow 자동 크롤링 (예정)
+- ✅ **데이터**: PostgreSQL 실시간 매물 + Redis 캐싱 (85% 히트율)
+- 🔄 **파이프라인**: Airflow 자동 크롤링 (구현 예정)
 
 ---
 
@@ -367,7 +367,7 @@ flowchart LR
 - 🧹 **데이터 정제**: 중복 제거, 결측치 처리, 타입 변환
 - 💾 **증분 업데이트**: UPSERT로 변경분만 적재
 - ⏱️ **예상 소요시간**: 약 1시간
-- 📅 **배포 예정**: 2025년 2월 (AWS EC2 + Docker)
+- 📅 **상태**: 구현 예정 (2025년 2월, AWS EC2 + Docker)
 
 ---
 
@@ -425,7 +425,7 @@ flowchart LR
 | **Data** | PostgreSQL 15 | - | 실시간 매물 데이터 (4개 인덱스) |
 | | Redis 7 | - | 검색 캐싱 (85% 히트율) |
 | **Deploy** | Vercel | - | Frontend (CDN, Edge) |
-| | Railway | - | Backend + PostgreSQL + Redis |
+| | Railway | - | [Backend 배포 완료](https://carfinaifinal-production.up.railway.app/) + PostgreSQL + Redis |
 | **Testing** | Vitest + Playwright | - | 171개 단위 테스트 통과 |
 
 ---
@@ -600,10 +600,9 @@ ChatbotLanding/
 
 | 지표 | 목표 | 실제 |
 |------|------|------|
-| **평균 응답시간** | < 3분 | 실시간 처리 ✅ |
-| **DB 쿼리** | < 150ms | 142ms ✅ |
+| **평균 응답시간** | < 3분 | 2-3분 ✅ |
+| **DB 쿼리** | < 150ms | 평균 142ms ✅ |
 | **캐시 히트율** | > 80% | 85% ✅ |
-| **동시 접속** | 500명 | 500명 ✅ |
 
 ### 추천 정확도
 
@@ -615,10 +614,10 @@ ChatbotLanding/
 
 ### 데이터 규모
 
-- **총 차량 데이터**: 127,378대 (정기 크롤링)
+- **총 차량 데이터**: 실시간 매물 데이터 (정기 크롤링)
 - **출처**: KB차차차 + 엔카
 - **DB 크기**: ~2.5GB
-- **업데이트**: 정기 크롤링 (향후 Airflow 파이프라인 예정)
+- **업데이트**: Airflow 파이프라인 구현 예정 (2025년 2월)
 
 ---
 
@@ -626,7 +625,7 @@ ChatbotLanding/
 
 ### REST API
 
-**Base URL**: `https://carfin-ai.railway.app/api`
+**Base URL**: `https://carfinaifinal-production.up.railway.app/api`
 
 ```http
 GET  /api/vehicles/search             # 차량 검색
@@ -637,7 +636,7 @@ GET  /api/vehicles/:id                 # 차량 상세
 
 ### WebSocket API
 
-**Connection**: `wss://carfin-ai.railway.app`
+**Connection**: `wss://carfinaifinal-production.up.railway.app`
 
 ```json
 // 클라이언트 → 서버
