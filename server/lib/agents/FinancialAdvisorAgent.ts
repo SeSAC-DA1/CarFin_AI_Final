@@ -191,8 +191,10 @@ export class FinancialAdvisorAgent {
 
     try {
       // 1. 일시불 계산
+      console.log('💰 일시불 옵션 계산 시작');
       const cashOption = this.calculateCashOption(vehicle, tcoBreakdown, userProfile);
       allOptions.push(cashOption);
+      console.log(`✅ 일시불 옵션 계산 완료: ${cashOption.totalCost.toLocaleString()}원`);
 
       // 2. 할부 옵션 (24/36/48/60개월)
       const loanTerms = [24, 36, 48, 60];
@@ -200,13 +202,18 @@ export class FinancialAdvisorAgent {
 
       for (const term of loanTerms) {
         try {
+          console.log(`🔄 할부 ${term}개월 옵션 계산 시작`);
           const loanOption = this.calculateLoanOption(vehicle, tcoBreakdown, term, userProfile);
           loanOptions.push(loanOption);
           allOptions.push(loanOption);
+          console.log(`✅ 할부 ${term}개월 계산 완료: 월 ${loanOption.monthlyPayment?.toLocaleString()}원`);
         } catch (err) {
-          console.error(`할부 ${term}개월 계산 실패:`, err);
+          console.error(`❌ 할부 ${term}개월 계산 실패:`, err instanceof Error ? err.message : err);
+          console.error(`❌ 할부 ${term}개월 스택:`, err instanceof Error ? err.stack : '');
         }
       }
+
+      console.log(`📊 할부 옵션 총 ${loanOptions.length}개 생성`);
 
       // 3. 리스 옵션 (24/36개월)
       const leaseTerms = [24, 36];
@@ -214,16 +221,23 @@ export class FinancialAdvisorAgent {
 
       for (const term of leaseTerms) {
         try {
+          console.log(`🔄 리스 ${term}개월 옵션 계산 시작`);
           const leaseOption = this.calculateLeaseOption(vehicle, tcoBreakdown, term, userProfile);
           leaseOptions.push(leaseOption);
           allOptions.push(leaseOption);
+          console.log(`✅ 리스 ${term}개월 계산 완료: 월 ${leaseOption.monthlyPayment?.toLocaleString()}원`);
         } catch (err) {
-          console.error(`리스 ${term}개월 계산 실패:`, err);
+          console.error(`❌ 리스 ${term}개월 계산 실패:`, err instanceof Error ? err.message : err);
+          console.error(`❌ 리스 ${term}개월 스택:`, err instanceof Error ? err.stack : '');
         }
       }
 
+      console.log(`📊 리스 옵션 총 ${leaseOptions.length}개 생성`);
+
       // 4. 최적 옵션 선택
+      console.log(`🎯 최적 옵션 선택 (총 ${allOptions.length}개 옵션 중)`);
       const bestRecommendation = this.selectBestOption(allOptions, userProfile);
+      console.log(`✅ 최적 옵션: ${bestRecommendation.type} (${bestRecommendation.term || 0}개월)`);
 
       // 5. 비교 분석
       const comparison = {
@@ -232,6 +246,8 @@ export class FinancialAdvisorAgent {
         bestValue: bestRecommendation,
         note: this.generateComparisonNote(allOptions)
       };
+
+      console.log(`✅ 금융 옵션 추천 완료: 일시불(1) + 할부(${loanOptions.length}) + 리스(${leaseOptions.length})`);
 
       return {
         vehicleSellType: '일반',
@@ -242,7 +258,8 @@ export class FinancialAdvisorAgent {
         comparison
       };
     } catch (err) {
-      console.error('금융 옵션 계산 실패:', err);
+      console.error('❌ 금융 옵션 계산 실패 (전체 catch):', err instanceof Error ? err.message : err);
+      console.error('❌ 금융 옵션 계산 스택:', err instanceof Error ? err.stack : '');
 
       // Fallback: 일시불만 제공
       const cashFallback = this.calculateBasicCashOption(vehicle, tcoBreakdown, userProfile);
