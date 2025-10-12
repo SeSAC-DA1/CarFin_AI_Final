@@ -187,12 +187,23 @@ export class FinancialAdvisorAgent {
     tcoBreakdown: TCOBreakdown,
     userProfile: UserDrivingProfile
   ): Promise<FinancingRecommendation> {
+    // 🐛 Fix: userProfile 기본값 확실하게 설정
+    const safeUserProfile: UserDrivingProfile = {
+      annualKm: userProfile?.annualKm || 15000,
+      ownershipYears: userProfile?.ownershipYears || 3,
+      age: userProfile?.age || 35,
+      monthlyIncome: userProfile?.monthlyIncome,
+      hasOtherLoans: userProfile?.hasOtherLoans || false
+    };
+
+    console.log(`💰 안전한 프로필 생성: 연간 ${safeUserProfile.annualKm}km, ${safeUserProfile.ownershipYears}년 보유`);
+
     const allOptions: FinancingOption[] = [];
 
     try {
       // 1. 일시불 계산
       console.log('💰 일시불 옵션 계산 시작');
-      const cashOption = this.calculateCashOption(vehicle, tcoBreakdown, userProfile);
+      const cashOption = this.calculateCashOption(vehicle, tcoBreakdown, safeUserProfile);
       allOptions.push(cashOption);
       console.log(`✅ 일시불 옵션 계산 완료: ${cashOption.totalCost.toLocaleString()}원`);
 
@@ -203,7 +214,7 @@ export class FinancialAdvisorAgent {
       for (const term of loanTerms) {
         try {
           console.log(`🔄 할부 ${term}개월 옵션 계산 시작`);
-          const loanOption = this.calculateLoanOption(vehicle, tcoBreakdown, term, userProfile);
+          const loanOption = this.calculateLoanOption(vehicle, tcoBreakdown, term, safeUserProfile);
           loanOptions.push(loanOption);
           allOptions.push(loanOption);
           console.log(`✅ 할부 ${term}개월 계산 완료: 월 ${loanOption.monthlyPayment?.toLocaleString()}원`);
@@ -222,7 +233,7 @@ export class FinancialAdvisorAgent {
       for (const term of leaseTerms) {
         try {
           console.log(`🔄 리스 ${term}개월 옵션 계산 시작`);
-          const leaseOption = this.calculateLeaseOption(vehicle, tcoBreakdown, term, userProfile);
+          const leaseOption = this.calculateLeaseOption(vehicle, tcoBreakdown, term, safeUserProfile);
           leaseOptions.push(leaseOption);
           allOptions.push(leaseOption);
           console.log(`✅ 리스 ${term}개월 계산 완료: 월 ${leaseOption.monthlyPayment?.toLocaleString()}원`);
@@ -236,7 +247,7 @@ export class FinancialAdvisorAgent {
 
       // 4. 최적 옵션 선택
       console.log(`🎯 최적 옵션 선택 (총 ${allOptions.length}개 옵션 중)`);
-      const bestRecommendation = this.selectBestOption(allOptions, userProfile);
+      const bestRecommendation = this.selectBestOption(allOptions, safeUserProfile);
       console.log(`✅ 최적 옵션: ${bestRecommendation.type} (${bestRecommendation.term || 0}개월)`);
 
       // 5. 비교 분석
