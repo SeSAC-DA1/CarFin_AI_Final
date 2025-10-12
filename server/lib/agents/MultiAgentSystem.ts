@@ -91,7 +91,7 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "manager",
-      content: `🔍 ${allVehicles.length.toLocaleString()}대의 차량 중에서 조건에 맞는 차를 찾아드릴게요`
+      content: `🔍 ${vehicles.length.toLocaleString()}대의 차량 중에서 조건에 맞는 차를 찾아드릴게요`
     };
 
     // ═══════════════════════════════════════════════════════════════
