@@ -439,13 +439,50 @@ export default function Onboarding() {
             </CardContent>
           </Card>
 
-          {/* Result */}
+          {/* Result - 아하 모먼트 */}
           <div className="text-center p-8 bg-gradient-to-r from-primary/10 to-chart-2/10 rounded-xl border-2 border-primary/20">
-            <p className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
-              3일 → 3분
-            </p>
-            <p className="text-lg text-muted-foreground mb-1">99% 이상 시간 절약</p>
-            <p className="text-sm text-muted-foreground">정확도는 더 높아집니다</p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-4xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
+                3일 → 3분
+              </p>
+            </div>
+
+            <div className="space-y-3 max-w-2xl mx-auto">
+              <p className="text-lg font-bold text-foreground">
+                💡 왜 더 빠른데 더 정확할까요?
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div className="bg-white/50 p-4 rounded-lg border border-primary/20">
+                  <p className="font-bold text-primary mb-2">📚 학술 논문 기반</p>
+                  <p className="text-muted-foreground">SIGIR 2024 MACRec 프로토콜<br />RecSys 2019 Alibaba 재정렬</p>
+                </div>
+
+                <div className="bg-white/50 p-4 rounded-lg border border-chart-2/20">
+                  <p className="font-bold text-chart-2 mb-2">🎯 6가지 객관적 기준</p>
+                  <p className="text-muted-foreground">TOPSIS 다기준 분석으로<br />감정 배제한 정량 평가</p>
+                </div>
+
+                <div className="bg-white/50 p-4 rounded-lg border border-chart-3/20">
+                  <p className="font-bold text-chart-3 mb-2">💰 법적 근거 기반 TCO</p>
+                  <p className="text-muted-foreground">지방세법·DOE/ANL 기준<br />숨은 비용까지 정확 계산</p>
+                </div>
+
+                <div className="bg-white/50 p-4 rounded-lg border border-chart-4/20">
+                  <p className="font-bold text-chart-4 mb-2">🤖 5개 AI 협업</p>
+                  <p className="text-muted-foreground">Manager가 조율하는<br />전문가 분업 시스템</p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-primary/10 rounded-lg border-2 border-primary/30">
+                <p className="font-bold text-primary text-base">
+                  ⚡ 사람은 피곤하고 실수하지만, AI는 127,378대를 3분 안에 정밀 분석합니다
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )
