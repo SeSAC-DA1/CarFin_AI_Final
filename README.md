@@ -56,42 +56,85 @@
 
 ### 전체 구조
 
+```mermaid
+graph TB
+    subgraph Frontend["⚛️ Frontend (Vercel)"]
+        Landing["🏠 랜딩 페이지"]
+        Onboarding["📚 온보딩 3단계"]
+        Profile["👤 프로필 설정 4단계<br/>예산·용도·중요도"]
+        Chat["💬 AI 상담 채팅"]
+
+        Landing --> Onboarding --> Profile --> Chat
+    end
+
+    subgraph Backend["🚀 Backend (Railway - Node.js + Express)"]
+        WS["🔌 WebSocket Handler"]
+        REST["📡 REST API"]
+
+        subgraph Agents["🤖 5개 AI 에이전트 (MACRec 프로토콜)"]
+            Manager["🎯 Manager Agent<br/>Task Decomposition"]
+            UserAnalyst["🧠 User Analyst<br/>Gemini 2.5"]
+            Searcher["🔍 Searcher Agent<br/>Redis + PostgreSQL"]
+            Evaluator["⭐ Evaluator Agent<br/>TOPSIS 6기준"]
+            Financial["💰 Financial Advisor<br/>TCO 5비용"]
+
+            Manager --> UserAnalyst
+            Manager --> Searcher
+            Manager --> Evaluator
+            Manager --> Financial
+        end
+
+        Reranking["🎲 Alibaba Re-ranking<br/>개인화 재정렬"]
+
+        WS --> Manager
+        REST --> Manager
+        Evaluator --> Reranking
+        Financial --> Reranking
+    end
+
+    subgraph DataLayer["💾 데이터 계층"]
+        DB[("🗄️ PostgreSQL<br/>127,378대 차량<br/>4개 인덱스")]
+        Cache[("🔥 Redis Cache<br/>5-10분 TTL<br/>85% 히트율")]
+        AI["🤖 Google Gemini<br/>2.5 Flash API"]
+    end
+
+    subgraph Pipeline["🕷️ Airflow 파이프라인 (예정)"]
+        Crawl["📥 KB차차차 + 엔카<br/>크롤링 (병렬)"]
+        Clean["🧹 데이터 정제<br/>중복·결측치·이상치"]
+        Load["💾 PostgreSQL<br/>UPSERT 적재"]
+
+        Crawl --> Clean --> Load --> DB
+    end
+
+    Chat -->|"WebSocket + REST"| WS
+    Chat -->|"REST API"| REST
+
+    Searcher --> Cache
+    Searcher --> DB
+    UserAnalyst --> AI
+
+    Reranking -->|"WebSocket 실시간"| Chat
+
+    Pipeline -.->|"매일 02:00 자동 업데이트"| DB
+
+    style Frontend fill:#00BCD4,stroke:#006064,stroke-width:3px,color:#fff
+    style Backend fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
+    style Agents fill:#7B1FA2,stroke:#4A148C,stroke-width:2px,color:#fff
+    style DataLayer fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+    style Pipeline fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style Manager fill:#E91E63,stroke:#880E4F,stroke-width:2px,color:#fff
+    style Reranking fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style DB fill:#1976D2,stroke:#0D47A1,stroke-width:2px,color:#fff
+    style Cache fill:#FF5722,stroke:#D84315,stroke-width:2px,color:#fff
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (Vercel)                         │
-│                React + TypeScript + shadcn/ui                │
-│                                                               │
-│  [랜딩] → [온보딩] → [프로필 설정] → [AI 상담 채팅]              │
-└────────────────────────┬────────────────────────────────────┘
-                         │ WebSocket + REST API
-                         ↓
-┌─────────────────────────────────────────────────────────────┐
-│              Backend (Railway - Node.js + Express)           │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │       5개 AI 에이전트 (MACRec 프로토콜)              │    │
-│  │  Manager → User Analyst → Searcher                  │    │
-│  │              ↓                                       │    │
-│  │         Evaluator (TOPSIS) → Financial (TCO)        │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                               │
-│  [논문 구현] MACRec + Alibaba Re-ranking + TOPSIS           │
-└────────────┬──────────────┬──────────────┬─────────────────┘
-             │              │              │
-             ↓              ↓              ↓
-    ┌────────────┐  ┌────────────┐  ┌────────────┐
-    │ PostgreSQL │  │   Redis    │  │  Gemini    │
-    │ 127,378대  │  │   캐시     │  │ 2.5 Flash  │
-    │ 차량 데이터 │  │  5-10분    │  │  AI API    │
-    └────────────┘  └────────────┘  └────────────┘
-          ↑
-          │ 매일 02:00 자동 업데이트 (예정)
-          │
-    ┌────────────────────────────────┐
-    │    Airflow 크롤링 파이프라인    │
-    │  KB차차차 + 엔카 → 정제 → 적재  │
-    └────────────────────────────────┘
-```
+
+**아키텍처 특징:**
+- ✅ **프론트엔드**: Vercel 배포, React 18.3 + TypeScript 5.6
+- ✅ **백엔드**: Railway 배포, Node.js 22 + Express 4.21
+- ✅ **실시간 통신**: Native WebSocket (ws 8.18.0)
+- ✅ **AI 협업**: MACRec 프로토콜 기반 5개 에이전트
+- ✅ **데이터**: PostgreSQL 127,378대 + Redis 캐싱 (85% 히트율)
+- ✅ **자동화**: Airflow 일일 크롤링 파이프라인 (예정)
 
 ### 사용자 여정 (User Journey)
 
