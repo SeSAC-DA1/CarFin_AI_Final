@@ -373,17 +373,44 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
         console.timeEnd('[STEP 3/5] MultiAgent Collaboration');
         console.time('[STEP 4/5] Vehicle Data Mapping');
 
-        const vehicles = step.data.vehicles.map((rec: VehicleRecommendation) => ({
-          ...rec.vehicle,
-          rank: rec.rank, // ✅ 랭킹 추가!
-          image: getVehicleImage(rec.vehicle.manufacturer, rec.vehicle.photo),
-          topsisScore: rec.topsisScore,
-          matchingScore: rec.matchingScore,
-          matchScore: rec.matchingScore, // ✅ matchScore도 추가 (프론트 호환성)
-          reason: rec.reason,
-          pros: rec.pros,
-          cons: rec.cons
-        }));
+        const vehicles = step.data.vehicles.map((rec: VehicleRecommendation) => {
+          const v = rec.vehicle;
+          console.log(`🚗 차량 데이터 매핑: ${v.manufacturer} ${v.model} - price: ${v.price}`);
+
+          return {
+            // 🐛 Fix: 명시적으로 모든 필드 매핑 (price가 누락되지 않도록)
+            vehicleId: v.vehicleId,
+            manufacturer: v.manufacturer,
+            model: v.model,
+            modelYear: v.modelYear,
+            price: v.price,  // 🔴 명시적 price 매핑
+            distance: v.distance,
+            fuelType: v.fuelType,
+            location: v.location,
+            sellType: v.sellType,
+            photo: v.photo,
+            detailUrl: v.detailUrl,
+            options: v.options,
+            carType: v.carType,
+            grade: v.grade,
+            transmission: v.transmission,
+            displacement: v.displacement,
+            color: v.color,
+            originPrice: v.originPrice,
+            tco: v.tco,
+            financingOptions: v.financingOptions,
+
+            // 추가 메타데이터
+            rank: rec.rank,
+            image: getVehicleImage(v.manufacturer, v.photo),
+            topsisScore: rec.topsisScore,
+            matchingScore: rec.matchingScore,
+            matchScore: rec.matchingScore,
+            reason: rec.reason,
+            pros: rec.pros,
+            cons: rec.cons
+          };
+        });
 
         console.timeEnd('[STEP 4/5] Vehicle Data Mapping');
         console.time('[STEP 5/5] Send Results');
