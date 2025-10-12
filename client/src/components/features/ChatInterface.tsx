@@ -149,9 +149,8 @@ export default function ChatInterface() {
 
   const handleFeedbackRecommend = (feedback: string) => {
     console.log('🔄 재추천 요청:', feedback);
-    // 피드백을 포함한 새로운 메시지 전송
-    const feedbackMessage = `이전 추천에 대한 피드백: ${feedback}. 이를 반영해서 다시 추천해주세요.`;
-    handleSendMessage(feedbackMessage);
+    // 🐛 Fix: FeedbackSection에서 이미 "이전 추천에 대한 피드백:" 접두사 포함됨 - 중복 제거
+    handleSendMessage(feedback);
   };
 
   const handleFeedbackSatisfied = () => {

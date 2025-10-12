@@ -174,7 +174,12 @@ export default function VehicleInsightDashboard({
   const vehicleData = fullDetails?.vehicle || vehicle;
   const insurance = fullDetails?.insurance as VehicleInsurance | null;
   const inspection = fullDetails?.inspection as VehicleInspection | null;
-  const optionsByCategory = parseOptions(vehicleData.hasOptions);
+
+  // 🐛 Fix: API가 options를 별도 배열로 반환하므로 문자열로 변환
+  const optionsString = fullDetails?.options
+    ? fullDetails.options.join(', ')
+    : vehicleData.hasOptions;
+  const optionsByCategory = parseOptions(optionsString);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
