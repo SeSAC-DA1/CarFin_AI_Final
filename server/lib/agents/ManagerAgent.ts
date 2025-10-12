@@ -149,7 +149,7 @@ export class ManagerAgent {
           action: 'filter_vehicles',
           priority: 1,
           dependencies: [],
-          input: { criteria: extractedProfile }
+          input: { criteria: extractedProfile, userMessage }
         },
         {
           taskId: 'task_3',
