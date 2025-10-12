@@ -2,7 +2,7 @@
 
 ## 🎯 프로젝트 개요
 
-**CARFIN AI**는 실제 학술 논문 2개 + 검증된 방법론을 기반으로 구현된 차량 추천 시스템입니다. 127,378대 실제 매물 데이터를 활용하여 사용자의 개인 프로필에 맞는 최적의 차량 3대를 3분 이내에 추천합니다.
+**CARFIN AI**는 실제 학술 논문 2개 + 검증된 방법론을 기반으로 구현된 차량 추천 시스템입니다. 실시간 매물 데이터를 활용하여 사용자의 개인 프로필에 맞는 최적의 차량 3대를 3분 이내에 추천합니다.
 
 ### 🎓 적용된 학술 논문
 1. **MACRec (SIGIR 2024)** - Multi-Agent Collaborative Recommendation (98% 구현 정확도)
@@ -17,7 +17,7 @@
 - **Node.js**: 22
 - **Express**: 4.21.2
 - **Google Gemini**: 2.5 Flash
-- **PostgreSQL**: 15 (127,378대 차량 데이터)
+- **PostgreSQL**: 15 (실시간 매물 데이터 - Airflow 자동 업데이트)
 - **Redis**: 7 (캐싱)
 - **Deploy**: Vercel (Frontend) + Railway (Backend)
 
@@ -169,7 +169,7 @@ const sendMessage = useCallback((content: string) => {
 ### Backend
 - **Node.js** + **Express** + **TypeScript**
 - **WebSocket** (실시간 통신)
-- **PostgreSQL** (메인 데이터베이스 - 127,378개 차량 데이터)
+- **PostgreSQL** (메인 데이터베이스 - 실시간 매물 데이터)
 - **Redis** (캐싱 시스템)
 - **Google Gemini AI** (자연어 처리)
 - **Drizzle ORM** (데이터베이스 ORM)
@@ -486,7 +486,7 @@ NODE_ENV=production
 
 ### 사용자 행동 분석
 - **추천 정확도**: 평균 85% 사용자 만족도
-- **응답 시간**: 평균 2.3초 (목표: 3초 이내)
+- **응답 시간**: 3분 이내 (캐시 히트 시 더 빠름)
 - **전환율**: 온보딩 → 추천 완료 78%
 
 ## 🔮 향후 개발 계획
@@ -528,8 +528,8 @@ interface ComparisonDashboard {
 - **AHP-TOPSIS**: 100% 수학적 정확성 검증
 
 ### 실증 데이터
-- **데이터 규모**: 127,378개 실제 차량 매물
-- **처리 성능**: 15만대 동시 분석 3초 이내
+- **데이터 규모**: 실시간 매물 (Airflow 자동 업데이트)
+- **처리 성능**: 대규모 데이터 3분 이내 분석
 - **추천 정확도**: 85% 사용자 만족도 달성
 
 ## 💡 개발 인사이트

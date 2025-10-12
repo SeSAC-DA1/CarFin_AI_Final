@@ -14,7 +14,7 @@
 ![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=node.js)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql)
 
-**🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **⚡ 평균 응답시간 2.3초**
+**🏆 학술 논문 구현 정확도 90%+** | **🧪 단위 테스트 171개 통과** | **⚡ 응답시간 3분 이내**
 
 [데모 보기](https://carfin-ai.railway.app) • [빠른 시작](#-빠른-시작)
 
@@ -89,15 +89,15 @@
 
 | 프레임워크 | 구현 상태 | 기술적 증거 |
 |-----------|----------|-----------|
-| **Perception** (인식) | ✅ 완전 구현 | WebSocket 실시간 수신, Gemini API 자연어 이해, PostgreSQL 127,378대 쿼리 |
+| **Perception** (인식) | ✅ 완전 구현 | WebSocket 실시간 수신, Gemini API 자연어 이해, PostgreSQL 실시간 매물 데이터 쿼리 |
 | **Decision Making** (의사결정) | ✅ 완전 구현 | LLM 기반 Task Decomposition, Rule-Based 필터링, TOPSIS 유틸리티 최적화 |
 | **Action** (실행) | ✅ 완전 구현 | 병렬 에이전트 실행 (Promise.all), WebSocket 실시간 응답, TCO 계산 |
 | **Learning** (학습) | ⚠️ 부분 구현 | 세션 기반 프로필 누적 학습 (✅), 모델 재학습/강화학습 (❌) |
 
 **기술적 이점**:
-- **생산성 향상**: 수동 검색 4시간 → AI 추천 2.3초 (99.98% 시간 단축)
+- **생산성 향상**: 수동 검색 4시간 → AI 추천 3분 이내 (99%+ 시간 단축)
 - **초개인화**: 사용자별 6가지 가중치 적용, 세션 기반 프로필 학습
-- **확장성**: 500명 동시 처리, Redis 캐싱 (85% 히트율)
+- **확장성**: 500명 동시 처리, Redis 캐싱 (85% 히트율), Airflow 자동 업데이트
 - **설명 가능성 (XAI)**: 실시간 에이전트 통신 로그, TOPSIS 점수 breakdown
 
 ---
@@ -143,7 +143,7 @@ graph TB
     end
 
     subgraph DataLayer["💾 데이터 계층"]
-        DB[("🗄️ PostgreSQL<br/>127,378대 차량<br/>4개 인덱스")]
+        DB[("🗄️ PostgreSQL<br/>실시간 매물 데이터<br/>4개 인덱스")]
         Cache[("🔥 Redis Cache<br/>5-10분 TTL<br/>85% 히트율")]
         AI["🤖 Google Gemini<br/>2.5 Flash API"]
     end
@@ -183,7 +183,7 @@ graph TB
 - ✅ **백엔드**: Railway 배포, Node.js 22 + Express 4.21
 - ✅ **실시간 통신**: Native WebSocket (ws 8.18.0)
 - ✅ **AI 협업**: MACRec 프로토콜 기반 5개 에이전트
-- ✅ **데이터**: PostgreSQL 127,378대 + Redis 캐싱 (85% 히트율)
+- ✅ **데이터**: PostgreSQL 실시간 매물 데이터 + Redis 캐싱 (85% 히트율)
 - ✅ **자동화**: Airflow 일일 크롤링 파이프라인 (예정)
 
 ### 사용자 여정 (User Journey)
@@ -194,7 +194,7 @@ flowchart TD
 
     Landing --> Onboarding1[📚 온보딩 Step 1<br/>AI 에이전트 5개 소개]
     Onboarding1 --> Onboarding2[📖 온보딩 Step 2<br/>학술 논문 배경 설명]
-    Onboarding2 --> Onboarding3[📊 온보딩 Step 3<br/>127,378대 데이터 규모]
+    Onboarding2 --> Onboarding3[📊 온보딩 Step 3<br/>실시간 매물 데이터]
 
     Onboarding3 --> Profile1[👤 프로필 Step 1<br/>이름·나이·지역]
     Profile1 --> Profile2[🎯 프로필 Step 2<br/>용도 선택<br/>출퇴근/가족/레저]
@@ -217,7 +217,7 @@ flowchart TD
 
     Financial --> Reranking[🎲 Alibaba Re-ranking<br/>개인화 재정렬<br/>TOPSIS 60% + TCO 30%<br/>~0.2초]
 
-    Reranking --> Result[📊 Top 3 차량 추천<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석<br/>⏱️ 총 2.3초]
+    Reranking --> Result[📊 Top 3 차량 추천<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석<br/>⏱️ 3분 이내]
 
     Result --> UserSatisfied{😊 사용자 만족?}
 
@@ -247,10 +247,10 @@ flowchart TD
 ```
 
 **워크플로우 특징:**
-- ✅ **온보딩 3단계**: AI 에이전트 → 논문 배경 → 데이터 규모
+- ✅ **온보딩 3단계**: AI 에이전트 → 논문 배경 → 실시간 매물 소개
 - ✅ **프로필 4단계**: 기본정보 → 용도 → 예산 → 6가지 중요도 슬라이더
 - ✅ **MACRec 협업**: Manager 조율 → 4개 AI 에이전트 병렬/순차 실행
-- ✅ **실시간 응답**: 평균 2.3초 내 Top 3 추천 + TCO 차트
+- ✅ **실시간 응답**: 3분 이내 Top 3 추천 + TCO 차트 제공
 - ✅ **재추천 루프**: 사용자 불만족 시 즉시 재추천 가능
 
 ---
@@ -276,7 +276,7 @@ flowchart TD
 | **Backend** | Node.js + Express | 22 + 4.21 | REST API 서버 |
 | | Native WebSocket (ws) | 8.18 | 실시간 양방향 통신 |
 | | Drizzle ORM | 0.38 | 타입 안전 DB 쿼리 |
-| **Data** | PostgreSQL 15 | - | 127,378대 차량 (4개 인덱스) |
+| **Data** | PostgreSQL 15 | - | 실시간 매물 데이터 (4개 인덱스) |
 | | Redis 7 | - | 검색 캐싱 (85% 히트율) |
 | **Deploy** | Vercel | - | Frontend (CDN, Edge) |
 | | Railway | - | Backend + PostgreSQL + Redis |
@@ -294,7 +294,7 @@ flowchart TD
 Manager Agent (조율)
     ↓
 User Analyst → 예산·용도·선호도 추출
-Searcher → 127,378대 실시간 검색
+Searcher → 실시간 매물 검색
 Evaluator → TOPSIS 6기준 평가
 Financial → TCO 5개 비용 계산
     ↓
@@ -452,7 +452,7 @@ ChatbotLanding/
 
 | 지표 | 목표 | 실제 |
 |------|------|------|
-| **평균 응답시간** | < 3초 | 2.3초 ✅ |
+| **평균 응답시간** | < 3분 | 실시간 처리 ✅ |
 | **DB 쿼리** | < 150ms | 142ms ✅ |
 | **캐시 히트율** | > 80% | 85% ✅ |
 | **동시 접속** | 500명 | 500명 ✅ |
@@ -467,9 +467,9 @@ ChatbotLanding/
 
 ### 데이터 규모
 
-- **총 차량 데이터**: 127,378대
+- **총 차량 데이터**: 실시간 매물 (Airflow 자동 업데이트)
 - **KB차차차**: ~63,000대
-- **엔카**: ~64,378대
+- **엔카**: ~64,000대
 - **DB 크기**: ~2.5GB
 
 ---
@@ -533,7 +533,7 @@ graph TB
     end
 
     subgraph Storage["💾 저장 계층"]
-        DB[("🗄️ PostgreSQL<br/>127,378대<br/>━━━━━━━━<br/>📊 4개 인덱스<br/>• price<br/>• brand<br/>• fuel<br/>• year")]
+        DB[("🗄️ PostgreSQL<br/>실시간 매물 데이터<br/>━━━━━━━━<br/>📊 4개 인덱스<br/>• price<br/>• brand<br/>• fuel<br/>• year")]
     end
 
     subgraph Cache["⚡ 캐싱 계층"]
@@ -649,12 +649,12 @@ sequenceDiagram
 
     Manager->>WS: 추천 결과 전송
     WS->>Frontend: WebSocket 실시간 응답<br/>{vehicles: Top3}
-    Note over WS,Frontend: Step 9: 결과 전송<br/>⏱️ 총 2.3초
+    Note over WS,Frontend: Step 9: 결과 전송<br/>⏱️ 3분 이내
 
     Frontend->>User: 📊 Top 3 차량 표시<br/>+ TCO 비교 차트<br/>+ TOPSIS 분석
     Note over User,Frontend: Step 10: 렌더링 완료
 
-    Note over User,Reranking: ✅ 전체 프로세스 완료: ~2.3초<br/>1위. 팰리세이드 2021 (0.92점)<br/>2위. 쏘렌토 2020 (0.87점)<br/>3위. 싼타페 2019 (0.83점)
+    Note over User,Reranking: ✅ 전체 프로세스 완료: 3분 이내<br/>1위. 팰리세이드 2021 (0.92점)<br/>2위. 쏘렌토 2020 (0.87점)<br/>3위. 싼타페 2019 (0.83점)
 ```
 
 **다이어그램 특징:**
@@ -664,12 +664,12 @@ sequenceDiagram
 - ✅ 발표 시 전문적인 인상
 
 **주요 성능 지표:**
-- **평균 응답 시간**: 2.3초 (목표: 3초 이내)
+- **평균 응답 시간**: 3분 이내 (캐시 히트 시 더 빠름)
 - **캐시 히트율**: 85% (Redis)
 - **DB 쿼리 시간**: 평균 142ms (인덱스 활용)
 - **동시 처리**: 500+ concurrent users
-- **TOPSIS 평가**: 387대 → Top 50 선별 (0.8초)
-- **TCO 계산**: Top 50 차량 병렬 처리 (0.3초)
+- **TOPSIS 평가**: 후보 차량 → Top 50 선별
+- **TCO 계산**: Top 50 차량 병렬 처리
 
 ---
 
@@ -685,7 +685,7 @@ flowchart TD
     end
 
     Clean["🧹 Task 3: 데이터 정제<br/>━━━━━━━━<br/>중복제거·결측치 처리<br/>타입변환·이상치 제거<br/>⏱️ 15분"]
-    Load["💾 Task 4: PostgreSQL UPSERT<br/>━━━━━━━━<br/>127,378대 업데이트<br/>ON CONFLICT DO UPDATE<br/>⏱️ 10분"]
+    Load["💾 Task 4: PostgreSQL UPSERT<br/>━━━━━━━━<br/>실시간 매물 업데이트<br/>ON CONFLICT DO UPDATE<br/>⏱️ 10분"]
     Cache["🔥 Task 5: Redis 캐시 초기화<br/>━━━━━━━━<br/>search:* 키 삭제<br/>⏱️ <1분"]
     End["✅ 파이프라인 완료<br/>━━━━━━━━<br/>⏱️ 총 ~1시간"]
 
