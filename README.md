@@ -126,94 +126,284 @@ TCO = 취득세 (7%, 지방세법 제11조)
 
 ## 🏗️ 시스템 아키텍처
 
-### 전체 구조도
+### 전체 시스템 구조도 (Mermaid)
 
+```mermaid
+graph TB
+    subgraph Frontend["🌐 Frontend (Vercel)"]
+        Home[Home.tsx<br/>랜딩 페이지]
+        Onboarding[Onboarding.tsx<br/>온보딩 3단계]
+        Profile[ProfileSetup.tsx<br/>프로필 4단계]
+        Chat[Chat.tsx<br/>AI 상담 + WebSocket]
+    end
+
+    subgraph Backend["⚙️ Backend (Railway)"]
+        API[Express REST API]
+        WS[WebSocket Handler<br/>실시간 통신]
+
+        subgraph CoreSystems["핵심 시스템"]
+            MACRec[MultiAgentSystem.ts<br/>MACRec 프로토콜]
+            TOPSIS[TOPSISEngine.ts<br/>6기준 평가]
+            Alibaba[AlibabaReranker.ts<br/>개인화 재정렬]
+            TCO[TCOCalculator.ts<br/>총 소유비용]
+            Gemini[GeminiService.ts<br/>AI 대화]
+        end
+    end
+
+    subgraph Data["💾 데이터 레이어"]
+        PG[(PostgreSQL<br/>127,378대 차량)]
+        Redis[(Redis Cache<br/>5-10분 TTL)]
+        GeminiAPI[Google Gemini 2.0<br/>자연어 처리]
+    end
+
+    subgraph Pipeline["🔄 Airflow Pipeline (예정)"]
+        Scheduler[Airflow Scheduler<br/>매일 02:00 KST]
+        KB[Task: KB차차차 크롤링<br/>Selenium + BS4]
+        Encar[Task: 엔카 크롤링<br/>Selenium + BS4]
+        Clean[Task: 데이터 정제<br/>Pandas + 중복제거]
+        Load[Task: PostgreSQL 적재<br/>SQLAlchemy UPSERT]
+        Clear[Task: Redis 캐시 초기화<br/>redis-py FLUSHDB]
+        Notify[Task: Slack 알림<br/>성공/실패 통지]
+    end
+
+    %% Frontend → Backend 흐름
+    Home --> Onboarding --> Profile --> Chat
+    Chat -->|HTTPS + WSS| API
+    Chat -->|WebSocket| WS
+
+    %% Backend → Core Systems
+    API --> MACRec
+    WS --> MACRec
+    MACRec --> TOPSIS
+    TOPSIS --> Alibaba
+    Alibaba --> TCO
+    MACRec --> Gemini
+
+    %% Backend → Data
+    MACRec --> PG
+    TOPSIS --> Redis
+    Gemini --> GeminiAPI
+    MACRec --> Redis
+
+    %% Airflow Pipeline 흐름
+    Scheduler --> KB
+    Scheduler --> Encar
+    KB --> Clean
+    Encar --> Clean
+    Clean --> Load
+    Load --> PG
+    Load --> Clear
+    Clear --> Redis
+    Clear --> Notify
+
+    %% 스타일링
+    classDef frontend fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef backend fill:#10B981,stroke:#059669,color:#fff
+    classDef data fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef pipeline fill:#8B5CF6,stroke:#6D28D9,color:#fff
+
+    class Home,Onboarding,Profile,Chat frontend
+    class API,WS,MACRec,TOPSIS,Alibaba,TCO,Gemini backend
+    class PG,Redis,GeminiAPI data
+    class Scheduler,KB,Encar,Clean,Load,Clear,Notify pipeline
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (Vercel)                        │
-│  React 18 + TypeScript + shadcn/ui + Framer Motion + Wouter    │
-│                                                                   │
-│  Pages:                                                           │
-│  ├─ Home.tsx (랜딩)                                              │
-│  ├─ Onboarding.tsx (온보딩 3단계)                                │
-│  ├─ ProfileSetup.tsx (프로필 4단계)                              │
-│  └─ Chat.tsx (AI 상담 + WebSocket)                               │
-└─────────────────────────────────────────────────────────────────┘
-                                 ↓ HTTPS
-┌─────────────────────────────────────────────────────────────────┐
-│                        Backend (Railway)                         │
-│               Node.js + Express + TypeScript                     │
-│                                                                   │
-│  WebSocket Handler:                                              │
-│  ├─ 실시간 양방향 통신 (Socket.IO 대체)                          │
-│  └─ 프로필 데이터 자동 전송                                       │
-│                                                                   │
-│  Core Systems:                                                   │
-│  ├─ MultiAgentSystem.ts (MACRec 구현)                           │
-│  ├─ TOPSISEngine.ts (다기준 의사결정)                            │
-│  ├─ AlibabaReranker.ts (개인화 재정렬)                           │
-│  ├─ TCOCalculator.ts (총 소유비용 계산)                          │
-│  └─ GeminiService.ts (Google AI 통합)                            │
-└─────────────────────────────────────────────────────────────────┘
-         ↓                        ↓                        ↓
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│  PostgreSQL      │  │  Redis Cache     │  │  Google Gemini   │
-│  (Railway)       │  │  (Railway)       │  │  AI API          │
-│                  │  │                  │  │                  │
-│  127,378개       │  │  검색 결과       │  │  자연어 처리     │
-│  차량 데이터     │  │  TOPSIS 결과     │  │  대화 생성       │
-│  (KB차차차·엔카) │  │  캐싱 (5-10분)   │  │  (Gemini 2.0)    │
-└──────────────────┘  └──────────────────┘  └──────────────────┘
-         ↑
-         │ 실시간 크롤링 (예정)
-         │
-┌──────────────────────────────────────────────────────────────────┐
-│                    Airflow Data Pipeline (예정)                  │
-│                                                                   │
-│  DAG Schedule: 매일 02:00 KST                                    │
-│  ├─ Task 1: KB차차차 크롤링 (Selenium + BeautifulSoup)           │
-│  ├─ Task 2: 엔카 크롤링 (Selenium + BeautifulSoup)               │
-│  ├─ Task 3: 데이터 정제 (Pandas + 중복 제거)                     │
-│  ├─ Task 4: PostgreSQL 적재 (SQLAlchemy)                         │
-│  └─ Task 5: Redis 캐시 초기화 (redis-py)                         │
-│                                                                   │
-│  모니터링: Airflow UI + Slack 알림                                │
-└──────────────────────────────────────────────────────────────────┘
+
+### 기술 스택 계층도
+
+```mermaid
+graph LR
+    subgraph Presentation["🎨 Presentation Layer"]
+        React[React 18.3.1]
+        TS1[TypeScript 5.7.2]
+        Shadcn[shadcn/ui]
+        Tailwind[Tailwind CSS]
+        Framer[Framer Motion]
+    end
+
+    subgraph Application["🧠 Application Layer"]
+        Express[Express 4.21.2]
+        TS2[TypeScript 5.7.2]
+        WebSocket[Native WebSocket]
+        Drizzle[Drizzle ORM]
+    end
+
+    subgraph Business["📊 Business Logic Layer"]
+        Agent[멀티에이전트<br/>시스템]
+        Paper[논문 구현<br/>알고리즘]
+        TCOCalc[TCO<br/>계산기]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        PostgreSQL[PostgreSQL 15<br/>127K 차량]
+        RedisCache[Redis 7<br/>캐시]
+        GeminiAI[Gemini 2.0<br/>AI API]
+    end
+
+    subgraph Infrastructure["🚀 Infrastructure"]
+        Vercel[Vercel<br/>Frontend CDN]
+        Railway[Railway<br/>Backend + DB]
+        AirflowEC2[Airflow on EC2<br/>크롤링 파이프라인]
+    end
+
+    React --> Express
+    Shadcn --> React
+    Tailwind --> React
+    Framer --> React
+    TS1 --> React
+
+    Express --> Agent
+    Express --> Paper
+    Express --> TCOCalc
+    WebSocket --> Agent
+    TS2 --> Express
+    Drizzle --> Express
+
+    Agent --> PostgreSQL
+    Agent --> RedisCache
+    Paper --> PostgreSQL
+    Paper --> RedisCache
+    TCOCalc --> PostgreSQL
+    Agent --> GeminiAI
+
+    React --> Vercel
+    Express --> Railway
+    PostgreSQL --> Railway
+    RedisCache --> Railway
+    AirflowEC2 --> PostgreSQL
+
+    classDef layer1 fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef layer2 fill:#10B981,stroke:#059669,color:#fff
+    classDef layer3 fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef layer4 fill:#EF4444,stroke:#DC2626,color:#fff
+    classDef layer5 fill:#8B5CF6,stroke:#6D28D9,color:#fff
+
+    class React,TS1,Shadcn,Tailwind,Framer layer1
+    class Express,TS2,WebSocket,Drizzle layer2
+    class Agent,Paper,TCOCalc layer3
+    class PostgreSQL,RedisCache,GeminiAI layer4
+    class Vercel,Railway,AirflowEC2 layer5
 ```
 
-### 데이터 흐름 (Data Flow)
+### 전체 워크플로우 (End-to-End)
 
+```mermaid
+sequenceDiagram
+    participant User as 👤 사용자
+    participant Frontend as 🌐 Frontend
+    participant WebSocket as 🔌 WebSocket
+    participant Backend as ⚙️ Backend
+    participant MACRec as 🤖 MACRec<br/>멀티에이전트
+    participant DB as 💾 PostgreSQL
+    participant Cache as ⚡ Redis
+    participant Gemini as 🧠 Gemini AI
+
+    Note over User,Frontend: 1️⃣ 온보딩 & 프로필 설정
+    User->>Frontend: 랜딩 페이지 방문
+    Frontend->>User: 온보딩 3단계 안내
+    User->>Frontend: 프로필 4단계 입력<br/>(예산, 용도, 중요도)
+    Frontend->>Frontend: localStorage 저장
+
+    Note over User,WebSocket: 2️⃣ AI 상담 시작
+    User->>Frontend: "3000만원 이하 가족용 SUV 찾아요"
+    Frontend->>WebSocket: WebSocket 연결 + 프로필 전송
+    WebSocket->>Backend: user_message + userProfile
+
+    Note over Backend,Gemini: 3️⃣ 멀티에이전트 협업 (MACRec)
+    Backend->>MACRec: collaborate(message, profile)
+
+    MACRec->>Gemini: User Analyst: 니즈 분석 요청
+    Gemini-->>MACRec: 예산·용도·선호도 추출
+    WebSocket-->>Frontend: 진행상황: "사용자 니즈 분석 중..."
+
+    MACRec->>Cache: Searcher: 캐시 확인
+    alt 캐시 히트
+        Cache-->>MACRec: 캐시된 검색 결과 반환
+    else 캐시 미스
+        MACRec->>DB: 127,378대 차량 검색<br/>(인덱스 활용)
+        DB-->>MACRec: 387대 필터링 결과
+        MACRec->>Cache: 검색 결과 캐싱 (5분)
+    end
+    WebSocket-->>Frontend: 진행상황: "실시간 매물 검색 중..."
+
+    MACRec->>MACRec: Evaluator: TOPSIS 6기준 평가
+    MACRec->>Cache: TOPSIS 결과 캐싱 (10분)
+    WebSocket-->>Frontend: 진행상황: "6가지 기준 평가 중..."
+
+    MACRec->>MACRec: Financial Advisor: TCO 계산<br/>(5개 비용 항목)
+    WebSocket-->>Frontend: 진행상황: "총 소유비용 계산 중..."
+
+    Note over Backend,MACRec: 4️⃣ 개인화 재정렬 (Alibaba)
+    MACRec->>MACRec: AlibabaReranker.rerank()<br/>(사용자 프로필 기반)
+    MACRec-->>Backend: Top 3 최종 추천
+
+    Note over Frontend,User: 5️⃣ 실시간 응답
+    Backend->>WebSocket: vehicles + topsisScore + tco
+    WebSocket->>Frontend: 최종 추천 3대 전송
+    Frontend->>User: 차량 카드 + TCO 차트 표시
+
+    Note over User,Frontend: 6️⃣ 사용자 피드백
+    User->>Frontend: 만족도 선택 (만족/재추천)
+    alt 만족
+        Frontend->>User: "감사합니다! 🎉"
+    else 재추천
+        User->>Frontend: 피드백 선택<br/>(가격↓, 안전성↑, 연비↑ 등)
+        Frontend->>WebSocket: 재추천 요청 + 피드백
+        Note over WebSocket,MACRec: 3️⃣로 돌아가서 재실행
+    end
 ```
-1. 사용자 입력
-   └─→ ProfileSetup (4단계 데이터 수집)
-       └─→ localStorage 저장
 
-2. AI 상담 시작
-   └─→ Chat.tsx (WebSocket 연결)
-       └─→ 프로필 데이터 자동 전송
-           └─→ ChatWebSocketHandler
+### 데이터 파이프라인 워크플로우 (Airflow)
 
-3. 백엔드 처리
-   └─→ MultiAgentSystem.collaborate()
-       ├─→ User Analyst: 프로필 분석
-       ├─→ Searcher: PostgreSQL 검색 (인덱스 활용)
-       │   └─→ Redis 캐시 확인 → 캐시 미스 시 DB 쿼리
-       ├─→ Evaluator: TOPSIS 평가
-       │   └─→ Redis 캐시 저장 (10분)
-       └─→ Financial Advisor: TCO 계산
+```mermaid
+graph TD
+    Start([매일 02:00 KST<br/>Airflow Scheduler 시작])
 
-4. 개인화 재정렬
-   └─→ AlibabaReranker.rerank()
-       └─→ 사용자 프로필 기반 순위 조정
+    Start --> Parallel{병렬 크롤링}
 
-5. 실시간 응답
-   └─→ WebSocket 스트리밍
-       └─→ 단계별 진행상황 전송
-           └─→ 최종 Top 3 차량 전송
+    Parallel -->|Task 1| KB[KB차차차 크롤링<br/>Selenium + BeautifulSoup]
+    Parallel -->|Task 2| Encar[엔카 크롤링<br/>Selenium + BeautifulSoup]
 
-6. 사용자 피드백
-   └─→ FeedbackSection
-       └─→ 만족도 수집 → 재추천 또는 완료
+    KB --> KBData[(kb_vehicles_YYYYMMDD.csv<br/>~63,000대)]
+    Encar --> EncarData[(encar_vehicles_YYYYMMDD.csv<br/>~64,378대)]
+
+    KBData --> Clean[Task 3: 데이터 정제<br/>Pandas]
+    EncarData --> Clean
+
+    Clean --> CleanData[(cleaned_vehicles_YYYYMMDD.csv<br/>127,378대<br/>중복 제거 + 결측치 처리)]
+
+    CleanData --> Load[Task 4: PostgreSQL 적재<br/>SQLAlchemy UPSERT]
+
+    Load --> PG[(PostgreSQL<br/>vehicles 테이블<br/>127,378 rows)]
+
+    PG --> ClearCache[Task 5: Redis 캐시 초기화<br/>redis-cli FLUSHDB]
+
+    ClearCache --> RedisEmpty[(Redis<br/>캐시 비움)]
+
+    RedisEmpty --> Notify[Task 6: Slack 알림<br/>SlackWebhookOperator]
+
+    Notify --> Success{성공?}
+
+    Success -->|✅ 성공| SlackSuccess[Slack 채널<br/>✅ 크롤링 성공<br/>127,378대 업데이트 완료]
+    Success -->|❌ 실패| SlackFail[Slack 채널<br/>❌ 크롤링 실패<br/>에러 로그 확인 필요]
+
+    SlackSuccess --> End([파이프라인 종료])
+    SlackFail --> Retry{재시도<br/>2회 이내?}
+
+    Retry -->|재시도| Start
+    Retry -->|실패| Alert[🚨 관리자 긴급 알림<br/>Email + Slack DM]
+    Alert --> End
+
+    classDef start fill:#10B981,stroke:#059669,color:#fff
+    classDef task fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef data fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef decision fill:#EF4444,stroke:#DC2626,color:#fff
+    classDef end fill:#6B7280,stroke:#4B5563,color:#fff
+
+    class Start start
+    class KB,Encar,Clean,Load,ClearCache,Notify task
+    class KBData,EncarData,CleanData,PG,RedisEmpty data
+    class Parallel,Success,Retry decision
+    class End,Alert end
 ```
 
 ---
