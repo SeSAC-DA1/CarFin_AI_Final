@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 🔧 성능 측정 미들웨어 적용
   app.use(performanceMiddleware);
 
-  // 🏥 Health Check Endpoint (Railway 배포용)
+  // 🏥 Health Check Endpoint (Railway 배포용 - railway-production 브랜치)
   app.get("/api/system/health", async (_req, res) => {
     try {
       // 데이터베이스 연결 확인
@@ -66,6 +66,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         database: testQuery !== undefined ? "connected" : "disconnected",
         uptime: process.uptime(),
         memory: process.memoryUsage(),
+        environment: process.env.NODE_ENV || "development",
+        branch: "railway-production",
       });
     } catch (error) {
       res.status(503).json({
