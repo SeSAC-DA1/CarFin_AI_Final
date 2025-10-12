@@ -70,33 +70,40 @@ export class SearcherAgent {
   private filterVehicles(vehicles: Vehicle[], criteria: any, userMessage?: string): Vehicle[] {
     const currentYear = new Date().getFullYear();
 
-    // 예산 범위 설정
+    // 🐛 Fix: userMessage가 명시적 예산을 지정한 경우 프로필 예산보다 우선 적용
     let minPrice = 0;
     let maxPrice = 5000; // 만원 단위
+    let messageBudgetOverride = false;
 
-    if (criteria.budget && Array.isArray(criteria.budget)) {
-      minPrice = criteria.budget[0] || 0;
-      maxPrice = criteria.budget[1] || 5000;
-    } else if (userMessage) {
-      // 메시지에서 예산 추출
+    // 1. userMessage에서 예산 추출 (최우선)
+    if (userMessage) {
       const priceMatch = userMessage.match(/(\d+)만원?/);
       if (priceMatch && priceMatch[1]) {
         const targetPrice = parseInt(priceMatch[1]);
+        messageBudgetOverride = true;
 
         // 🐛 Fix: "이하" 키워드 감지 - 정확한 예산 준수
         if (userMessage.includes('이하') || userMessage.includes('까지') || userMessage.includes('안') || userMessage.includes('내')) {
           minPrice = 0;
           maxPrice = targetPrice; // 정확히 지정된 금액까지만
-          console.log(`📍 예산 제한: ${targetPrice}만원 이하로 엄격하게 필터링`);
+          console.log(`📍 userMessage 예산 우선: ${targetPrice}만원 이하로 엄격하게 필터링`);
         } else {
           // "대략", "정도" 등의 경우만 ±20% 여유
           minPrice = Math.floor(targetPrice * 0.8);
           maxPrice = Math.ceil(targetPrice * 1.2);
+          console.log(`📍 userMessage 예산 우선: ${targetPrice}만원 ±20% 유연 필터링`);
         }
       }
     }
 
-    console.log(`💰 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원`);
+    // 2. criteria.budget (프로필 예산)은 userMessage 예산이 없을 때만 사용
+    if (!messageBudgetOverride && criteria.budget && Array.isArray(criteria.budget)) {
+      minPrice = criteria.budget[0] || 0;
+      maxPrice = criteria.budget[1] || 5000;
+      console.log(`📍 프로필 예산 사용: ${minPrice}~${maxPrice}만원`);
+    }
+
+    console.log(`💰 최종 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원`);
 
     // 🐛 Fix: userMessage에서 직접 차종 추출 (criteria.carType이 없을 경우 대비)
     let targetCarType = criteria.carType;

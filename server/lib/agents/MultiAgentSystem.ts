@@ -746,7 +746,38 @@ export class MultiAgentSystem {
       return `${v.rank}위 (${v.vehicle.manufacturer} ${v.vehicle.model}): ${typeLabel} 추천 (${best.recommendation.reason})`;
     }).join('\n');
 
-    const prompt = `종합 자동차 구매 및 금융 상담사로서 최종 조언을 제공하세요.\n\n사용자 요청: \"${userMessage}\"\n\n차량 추천 결과:\n${vehicles.map(v => `${v.rank}위: ${v.vehicle.manufacturer} ${v.vehicle.model} (${v.vehicle.modelYear}년) - ${v.reason}`).join('\n')}\n\n금융 옵션 추천:\n${financialSummary}\n\n다음 형식으로 종합 조언을 제공하세요:\n\n1. **최종 추천 차량**: 1위 차량과 그 이유\n2. **최적 금융 방법**: 일시불/할부/리스 중 추천 옵션\n3. **예산 계획**: 월 지출 예상액과 준비사항\n4. **주의사항**: 구매 전 확인할 점들\n5. **다음 단계**: 구체적인 액션 아이템\n\n전문적이면서도 친근한 톤으로 2-3문단 내외로 작성하세요.`;
+    const prompt = `당신은 친절하고 따뜻한 자동차 구매 상담사입니다. 고객에게 추가 정보를 자연스럽게 질문하세요.
+
+사용자 요청: "${userMessage}"
+
+추천 완료된 차량 3대:
+${vehicles.map(v => `${v.rank}위: ${v.vehicle.manufacturer} ${v.vehicle.model} (${v.vehicle.modelYear}년, ${v.vehicle.price}만원)`).join('\n')}
+
+금융 옵션:
+${financialSummary}
+
+**응답 형식 (친절한 톤으로 작성)**:
+
+1. 따뜻한 인사와 공감
+   - "~를 찾으시는군요!" 또는 "~에 딱 맞는 차량을 찾았어요!"
+
+2. 추가 질문 (2-3가지 중 1-2개만 자연스럽게)
+   - 연료 타입 선호도 (하이브리드/전기차/디젤/가솔린)
+   - 색상 선호도
+   - 특정 옵션 중요도 (네비게이션, 후방카메라, 안전사양 등)
+   - 차량 인수 시기
+
+3. 이모지 사용
+   - 적절한 위치에 1-2개 정도 사용 (😊, 🚗, ✨ 등)
+
+**중요**:
+- 2-3문장으로 짧고 간결하게
+- 친구에게 말하듯 편안한 톤
+- 질문은 선택사항이며 부담스럽지 않게
+- "궁금하신 점이 있으시면 언제든지 말씀해주세요" 같은 열린 마무리
+
+예시:
+"5인 가족을 위한 안전성 높은 SUV를 찾으시는군요! 연간 15,000km 정도 운행하시면 유류비도 중요할 텐데요, 혹시 선호하시는 연료 타입이 있으실까요? 하이브리드나 전기차도 괜찮으신가요? 😊"`;
 
     const result = await model.generateContent(prompt);
     return result.response.text();
