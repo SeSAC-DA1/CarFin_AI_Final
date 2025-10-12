@@ -125,7 +125,7 @@ export class MultiAgentSystem {
             }
             const candidateVehicles = searcherResult?.output || vehicles;
             console.log(`🔍 Evaluator에 전달: ${candidateVehicles.length}대 차량`);
-            return await this.evaluator.execute(task, candidateVehicles, userProfile);
+            return await this.evaluator.execute(task, candidateVehicles, rawProfile);
           }
 
           throw new Error(`Unknown agent: ${task.agent}`);
@@ -162,7 +162,7 @@ export class MultiAgentSystem {
         // Searcher 결과를 Evaluator에 전달
         const searcherResult = allResults.find(r => r.agent === 'searcher');
         const candidateVehicles = searcherResult?.output || vehicles;
-        result = await this.evaluator.execute(task, candidateVehicles, userProfile);
+        result = await this.evaluator.execute(task, candidateVehicles, rawProfile);
       } else {
         throw new Error(`Unknown agent: ${task.agent}`);
       }
