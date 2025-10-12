@@ -456,30 +456,31 @@ export default function Onboarding() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div className="bg-white/50 p-4 rounded-lg border border-primary/20">
+                <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/30">
                   <p className="font-bold text-primary mb-2">📚 학술 논문 기반</p>
                   <p className="text-muted-foreground">SIGIR 2024 MACRec 프로토콜<br />RecSys 2019 Alibaba 재정렬</p>
                 </div>
 
-                <div className="bg-white/50 p-4 rounded-lg border border-chart-2/20">
+                <div className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 p-4 rounded-lg border border-chart-2/30">
                   <p className="font-bold text-chart-2 mb-2">🎯 6가지 객관적 기준</p>
                   <p className="text-muted-foreground">TOPSIS 다기준 분석으로<br />감정 배제한 정량 평가</p>
                 </div>
 
-                <div className="bg-white/50 p-4 rounded-lg border border-chart-3/20">
+                <div className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 p-4 rounded-lg border border-chart-3/30">
                   <p className="font-bold text-chart-3 mb-2">💰 법적 근거 기반 TCO</p>
                   <p className="text-muted-foreground">지방세법·DOE/ANL 기준<br />숨은 비용까지 정확 계산</p>
                 </div>
 
-                <div className="bg-white/50 p-4 rounded-lg border border-chart-4/20">
+                <div className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 p-4 rounded-lg border border-chart-4/30">
                   <p className="font-bold text-chart-4 mb-2">🤖 5개 AI 협업</p>
                   <p className="text-muted-foreground">Manager가 조율하는<br />전문가 분업 시스템</p>
                 </div>
               </div>
 
-              <div className="mt-4 p-4 bg-primary/10 rounded-lg border-2 border-primary/30">
-                <p className="font-bold text-primary text-base">
-                  ⚡ 사람은 피곤하고 실수하지만, AI는 127,378대를 3분 안에 정밀 분석합니다
+              <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 via-chart-2/10 to-chart-3/10 rounded-lg border-2 border-primary/30">
+                <p className="font-medium text-foreground text-base leading-relaxed">
+                  💡 수백 개 매물을 일일이 비교하는 대신,<br className="hidden md:block" />
+                  <strong className="text-primary">실시간 데이터를 3분 안에 체계적으로 분석</strong>해드립니다
                 </p>
               </div>
             </div>
