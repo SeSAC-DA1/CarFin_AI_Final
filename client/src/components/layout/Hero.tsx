@@ -188,14 +188,25 @@ export default function Hero() {
                     </div>
                   </div>
 
-                  {/* 최적화 AI */}
+                  {/* 금융 상담 AI */}
                   <div className="flex gap-2 items-start">
                     <div className="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">🎨</span>
+                      <span className="text-sm">💰</span>
                     </div>
                     <div className="flex-1 bg-purple-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-purple-500/10">
-                      <p className="text-xs text-purple-600 mb-0.5">최적화 AI</p>
-                      <p className="text-sm">"개인화 재정렬 완료. 당신에게 딱 맞는 3대를 선정했어요!"</p>
+                      <p className="text-xs text-purple-600 mb-0.5">금융 상담 AI</p>
+                      <p className="text-sm">"일시불·할부·리스 중 가장 유리한 방법을 분석 중이에요"</p>
+                    </div>
+                  </div>
+
+                  {/* 최종 추천 (시스템) */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">✨</span>
+                    </div>
+                    <div className="flex-1 bg-green-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-green-500/10">
+                      <p className="text-xs text-green-600 mb-0.5">시스템</p>
+                      <p className="text-sm">"당신에게 딱 맞는 3대를 선정했어요! 🎉"</p>
                     </div>
                   </div>
                 </div>
