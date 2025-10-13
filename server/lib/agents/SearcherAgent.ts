@@ -145,6 +145,18 @@ export class SearcherAgent {
       console.log(`🏷️ 브랜드 필터: ${targetBrands.join(', ')}`);
     }
 
+    // 🌍 원산지 필터 (국산 vs 수입)
+    const origin = normalizedCriteria.origin;
+    const domesticBrands = ['현대', '기아', '제네시스', '쌍용', '르노', '쉐보레', '한국gm', 'gm', '대우'];
+    const foreignBrands = ['bmw', '벤츠', 'mercedes', '아우디', 'audi', '포르쉐', 'porsche',
+                           '렉서스', 'lexus', '도요타', 'toyota', '혼다', 'honda',
+                           '닛산', 'nissan', '인피니티', 'infiniti', '폭스바겐', 'volkswagen',
+                           '볼보', 'volvo', '재규어', 'jaguar', '랜드로버', 'land rover'];
+
+    if (origin) {
+      console.log(`🌍 원산지 필터: ${origin}`);
+    }
+
     // 상용차 키워드 (제외 대상)
     const commercialVehicleKeywords = [
       'st1', '포터', '봉고', '다마스', '라보',
@@ -160,6 +172,23 @@ export class SearcherAgent {
         modelLower.includes(keyword) || carTypeLower.includes(keyword)
       );
       if (isCommercialVehicle) return false;
+
+      // 🌍 원산지 필터링
+      if (origin) {
+        const vehicleBrand = (v.manufacturer || '').toLowerCase();
+        const isDomestic = domesticBrands.some(brand => vehicleBrand.includes(brand.toLowerCase()));
+        const isForeign = foreignBrands.some(brand => vehicleBrand.includes(brand.toLowerCase()));
+
+        if (origin === '국산' && !isDomestic) {
+          console.log(`🚫 외제차 제외: ${v.manufacturer} ${v.model}`);
+          return false;
+        }
+
+        if (origin === '수입' && !isForeign) {
+          console.log(`🚫 국산차 제외: ${v.manufacturer} ${v.model}`);
+          return false;
+        }
+      }
 
       // 가격 필터
       if (v.price && (v.price < minPrice || v.price > maxPrice)) return false;
