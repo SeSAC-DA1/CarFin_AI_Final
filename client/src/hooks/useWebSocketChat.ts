@@ -180,6 +180,9 @@ export function useWebSocketChat() {
           setProgress({
             step: data.step || 'unknown',
             message: data.message || '처리 중...',
+            progress: data.progress,  // 🆕 Phase 2: 진행률 필드 추가
+            agent: data.agent,        // 🆕 Phase 2: 현재 Agent 필드 추가
+            count: data.count,        // 🆕 Phase 2: 발견 차량 수 필드 추가
           });
         } else if (data.type === 'vehicle_insights') {
           setInsights({

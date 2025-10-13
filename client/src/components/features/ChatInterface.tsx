@@ -251,7 +251,7 @@ export default function ChatInterface() {
                   </div>
                 )}
 
-                {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
+                {progress && progress.step !== 'complete' && !showMACRecCollaboration && (
                   <div className="animate-fade-in space-y-4">
                     {/* 🆕 Phase 2: 실시간 에이전트 협업 뷰어 */}
                     <AgentCollaborationViewer
