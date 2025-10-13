@@ -44,9 +44,14 @@ export default function Hero() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full border-2" data-testid="button-learn-more">
-                <Link href="/onboarding">
-                  어떻게 하는지 볼래요
+              <Button asChild size="lg" variant="outline" className="rounded-full border-2 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-500/30 hover:bg-blue-500/20" data-testid="button-demo-a">
+                <Link href="/profile-setup?demo=A">
+                  🎬 시나리오 A (가족용 SUV)
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="rounded-full border-2 bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-500/30 hover:bg-purple-500/20" data-testid="button-demo-b">
+                <Link href="/profile-setup?demo=B">
+                  🎬 시나리오 B (출퇴근 세단)
                 </Link>
               </Button>
             </div>

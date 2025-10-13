@@ -98,6 +98,16 @@ export default function ProfileSetup() {
     hasOtherLoans: undefined   // 🆕 Phase 3-E: 선택 필드
   });
 
+  // 🎬 URL 파라미터로 시연 모드 자동 로드
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const demoMode = params.get('demo');
+
+    if (demoMode === 'A' || demoMode === 'B') {
+      loadDemoProfile(demoMode as 'A' | 'B');
+    }
+  }, []);
+
   const updateProfile = (field: string, value: any) => {
     setProfileData(prev => ({
       ...prev,
@@ -111,6 +121,61 @@ export default function ProfileSetup() {
       ? currentArray.filter(i => i !== item)
       : [...currentArray, item];
     updateProfile(field, newArray);
+  };
+
+  // 🎬 시연용 프로필 자동 입력
+  const loadDemoProfile = (scenario: 'A' | 'B') => {
+    if (scenario === 'A') {
+      // 시나리오 A: 가족용 SUV 추천
+      setProfileData({
+        name: '김민준',
+        age: '30대',
+        location: '서울',
+        usage: ['출퇴근', '가족용', '주말 나들이'],
+        budget: [2500, 3500],
+        preferredBrands: ['현대', '기아'],
+        vehicleTypes: ['SUV'],
+        fuelType: '디젤',
+        transmission: '오토',
+        importance: {
+          price: 8,
+          fuelEfficiency: 7,
+          safety: 9,
+          design: 6,
+          brand: 5
+        },
+        annualKm: 15000,
+        ownershipYears: 5,
+        monthlyIncome: 500,
+        hasOtherLoans: false
+      });
+    } else if (scenario === 'B') {
+      // 시나리오 B: 출퇴근용 세단 추천
+      setProfileData({
+        name: '이수진',
+        age: '20대',
+        location: '서울',
+        usage: ['출퇴근'],
+        budget: [1500, 2500],
+        preferredBrands: ['현대', '기아'],
+        vehicleTypes: ['세단'],
+        fuelType: '하이브리드',
+        transmission: '오토',
+        importance: {
+          price: 9,
+          fuelEfficiency: 10,
+          safety: 7,
+          design: 7,
+          brand: 5
+        },
+        annualKm: 18000, // 출퇴근 왕복 60km × 300일
+        ownershipYears: 5,
+        monthlyIncome: 350,
+        hasOtherLoans: false
+      });
+    }
+    // 모든 스텝을 마지막으로 이동
+    setCurrentStep(steps.length - 1);
   };
 
   const steps: ProfileStep[] = [
@@ -559,9 +624,31 @@ export default function ProfileSetup() {
             <br />
             <span className="text-foreground">설정하기</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             몇 가지 질문에 답해주시면 더 정확한 차량 추천을 받을 수 있어요
           </p>
+
+          {/* 🎬 시연용 프로필 자동 입력 버튼 */}
+          <div className="flex justify-center gap-3 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadDemoProfile('A')}
+              className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-500/30 hover:bg-blue-500/20"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              시나리오 A (가족용 SUV)
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadDemoProfile('B')}
+              className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-500/30 hover:bg-purple-500/20"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              시나리오 B (출퇴근 세단)
+            </Button>
+          </div>
         </div>
 
         {/* Progress Bar */}
