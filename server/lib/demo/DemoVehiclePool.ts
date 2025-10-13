@@ -204,6 +204,7 @@ export function createDemoVehiclePool(
 
   console.log(`🎯 [DemoPool] 시연용 차량 풀 생성 시작`);
   console.log(`📊 입력: ${allVehicles.length}대, 차종: ${requestedCarType || '미지정'}, 예산: ${budget ? `${budget[0]}~${budget[1]}만원` : '미지정'}`);
+  console.log(`📅 연식 필터: ${minYear}년 ~ ${currentYear}년 (5년 이내, 미래 연식 차단)`);
 
   const vetted = allVehicles.filter(v => {
     // 1️⃣ 더미 가격 제거
@@ -226,9 +227,9 @@ export function createDemoVehiclePool(
       }
     }
 
-    // 4️⃣ 연식 체크 (5년 이내)
-    if (!v.modelYear || v.modelYear < minYear) {
-      console.log(`🚫 연식 초과: ${v.manufacturer} ${v.model} (${v.modelYear}년)`);
+    // 4️⃣ 연식 체크 (5년 이내 + 미래 연식 차단)
+    if (!v.modelYear || v.modelYear < minYear || v.modelYear > currentYear) {
+      console.log(`🚫 연식 범위 초과: ${v.manufacturer} ${v.model} (${v.modelYear}년, 허용: ${minYear}~${currentYear}년)`);
       return false;
     }
 
