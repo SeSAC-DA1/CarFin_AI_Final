@@ -123,26 +123,26 @@ export default function ProfileSetup() {
     updateProfile(field, newArray);
   };
 
-  // 🎬 시연용 프로필 자동 입력
+  // 🎬 시연 시나리오 A: 3000만원 이하 가솔린 국내차 SUV
   const loadDemoProfile = (scenario: 'A' | 'B') => {
     if (scenario === 'A') {
-      // 시나리오 A: 가족용 SUV 추천
+      // 시나리오 A: 3000만원 이하 가솔린 국내차 SUV (강화된 버전)
       setProfileData({
         name: '김민준',
         age: '30대',
         location: '서울',
-        usage: ['출퇴근', '가족용', '주말 나들이'],
-        budget: [2500, 3500],
+        usage: ['가족용', '주말 나들이'],
+        budget: [0, 3000],  // 3000만원 이하
         preferredBrands: ['현대', '기아'],
         vehicleTypes: ['SUV'],
-        fuelType: '디젤',
+        fuelType: '가솔린',
         transmission: '오토',
         importance: {
-          price: 8,
-          fuelEfficiency: 7,
-          safety: 9,
-          design: 6,
-          brand: 5
+          price: 7,
+          fuelEfficiency: 6,
+          safety: 10,  // 안전성 최우선
+          design: 5,
+          brand: 6
         },
         annualKm: 15000,
         ownershipYears: 5,
@@ -150,7 +150,7 @@ export default function ProfileSetup() {
         hasOtherLoans: false
       });
     } else if (scenario === 'B') {
-      // 시나리오 B: 출퇴근용 세단 추천
+      // 시나리오 B: 더 이상 사용 안함 (시나리오 A만 유지)
       setProfileData({
         name: '이수진',
         age: '20대',

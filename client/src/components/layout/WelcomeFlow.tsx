@@ -8,40 +8,27 @@ interface WelcomeFlowProps {
   onQuickStart: (message: string) => void;
 }
 
-// 🎬 시연용 최적화 스크립트 (구체적 조건 포함)
+// 🎬 시연 시나리오 A (강화된 버전 - 단일 시나리오)
 const demoScripts = [
   {
     id: "scenario-a",
-    label: "시나리오 A: 가족용 SUV",
-    badge: "권장",
+    label: "시연 시나리오 A",
+    badge: "시연용",
     badgeColor: "bg-green-500",
     icon: Users,
-    script: "3000만원 이하 가족용 SUV 찾습니다. 5인 가족이고 안전성이 가장 중요해요. 주말에 가족 여행 자주 가고, 연간 15,000km 정도 달립니다. 5년 보유 예정입니다.",
-    expectedVehicles: "현대 투싼, 기아 스포티지, 쌍용 토레스",
-    estimatedTime: "약 3분",
-    conditions: ["✓ 예산: 3000만원 이하", "✓ 용도: 가족용", "✓ 중요도: 안전성 최우선", "✓ TCO: 15,000km/년, 5년"]
-  },
-  {
-    id: "scenario-b",
-    label: "시나리오 B: 출퇴근용 세단",
-    badge: "인기",
-    badgeColor: "bg-blue-500",
-    icon: TrendingUp,
-    script: "2500만원 예산으로 출퇴근용 세단 찾습니다. 편도 25km 거리 매일 출퇴근하고, 연비가 제일 중요합니다. 연간 20,000km 정도 예상되고 3년 보유 계획입니다.",
-    expectedVehicles: "아반떼, K3, SM6 하이브리드",
-    estimatedTime: "약 2.5분",
-    conditions: ["✓ 예산: 2500만원 이하", "✓ 용도: 출퇴근", "✓ 중요도: 연비 최우선", "✓ TCO: 20,000km/년, 3년"]
-  },
-  {
-    id: "scenario-c",
-    label: "시나리오 C: 신혼부부용 컴팩트",
-    badge: "추천",
-    badgeColor: "bg-purple-500",
-    icon: Sparkles,
-    script: "2800만원 예산으로 신혼부부용 차량 찾습니다. 디자인과 안전성 둘 다 중요하고, 주말 드라이브 자주 갑니다. 연간 12,000km 정도 달리고 4년 보유 예정입니다.",
-    expectedVehicles: "셀토스, 베뉴, 코나",
-    estimatedTime: "약 3분",
-    conditions: ["✓ 예산: 2800만원 이하", "✓ 용도: 신혼부부", "✓ 중요도: 디자인+안전", "✓ TCO: 12,000km/년, 4년"]
+    script: "3000만원 이하 가솔린 국내차 SUV 찾습니다. 5인 가족이고 안전성이 가장 중요해요. 연식은 5년 이내로 주행거리 10만km 이내 무사고 차량으로 추천해 주세요.",
+    expectedVehicles: "현대 싼타페, 기아 쏘렌토, 현대 팰리세이드, 기아 카니발",
+    estimatedTime: "약 2-3분",
+    conditions: [
+      "✓ 예산: 3000만원 이하",
+      "✓ 연료: 가솔린",
+      "✓ 브랜드: 국내차 (현대/기아)",
+      "✓ 차종: SUV 전용",
+      "✓ 연식: 5년 이내 (2020년+)",
+      "✓ 주행거리: 10만km 이내",
+      "✓ 사고이력: 무사고",
+      "✓ 중요도: 안전성 최우선"
+    ]
   }
 ];
 
@@ -214,8 +201,8 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
       )
     },
     {
-      title: "🎬 시연용 권장 시나리오",
-      subtitle: "정확한 추천을 위해 구체적인 조건이 포함된 스크립트를 선택하세요",
+      title: "🎬 시연 시나리오",
+      subtitle: "정확한 추천을 위해 구체적인 조건이 포함된 시나리오를 사용하세요",
       content: (
         <div className="space-y-6">
           {/* 시연 안내 */}
@@ -224,11 +211,12 @@ export default function WelcomeFlow({ onStart, onQuickStart }: WelcomeFlowProps)
               <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-foreground mb-2">
-                  💡 시연 시 권장사항
+                  💡 시연 시나리오 안내
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• 시나리오 A-C 중 하나를 선택하시면 <strong className="text-foreground">3분 이내 정확한 추천</strong>을 받으실 수 있습니다</li>
-                  <li>• 각 시나리오는 <strong className="text-foreground">예산·용도·중요도·TCO 조건</strong>이 모두 포함되어 최적화되어 있습니다</li>
+                  <li>• 아래 시나리오를 선택하시면 <strong className="text-foreground">2-3분 이내 정확한 추천</strong>을 받으실 수 있습니다</li>
+                  <li>• <strong className="text-foreground">300-500대의 검증된 차량 풀</strong>에서만 추천합니다 (더미 데이터 완전 제거)</li>
+                  <li>• <strong className="text-foreground">인기 SUV 모델 우선</strong>: 싼타페, 쏘렌토, 팰리세이드, 카니발</li>
                   <li>• 직접 입력 시에도 위 조건들을 포함하시면 더 정확한 추천이 가능합니다</li>
                 </ul>
               </div>
