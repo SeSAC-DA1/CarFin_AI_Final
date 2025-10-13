@@ -18,7 +18,7 @@ import type { Vehicle } from '@shared/types/vehicle';
 export const DEMO_FILTERS = {
   // 💰 가격 필터 (정상 가격대만)
   price: {
-    min: 1500,              // 1500만원 이상
+    min: 500,               // 500만원 이상 (경차 포함)
     max: 5000,              // 5000만원 이하
     excludePatterns: [
       999, 7777, 9999, 1111, 2222, 3333, 4444, 5555, 6666, 8888  // 더미 가격
@@ -208,54 +208,27 @@ export function createDemoVehiclePool(
 
   const vetted = allVehicles.filter(v => {
     // 1️⃣ 더미 가격 제거
-    if (isDummyPrice(v.price)) {
-      console.log(`🚫 더미 가격: ${v.manufacturer} ${v.model} (${v.price}만원)`);
-      return false;
-    }
+    if (isDummyPrice(v.price)) return false;
 
-    // 2️⃣ 가격 범위 (1500~5000만원)
-    if (!v.price || v.price < DEMO_FILTERS.price.min || v.price > DEMO_FILTERS.price.max) {
-      console.log(`🚫 가격 범위 초과: ${v.manufacturer} ${v.model} (${v.price}만원)`);
-      return false;
-    }
+    // 2️⃣ 가격 범위 (500~5000만원 기본, 사용자 예산 우선)
+    const effectiveMin = budget ? budget[0] : DEMO_FILTERS.price.min;
+    const effectiveMax = budget ? budget[1] : DEMO_FILTERS.price.max;
+    if (!v.price || v.price < effectiveMin || v.price > effectiveMax) return false;
 
-    // 3️⃣ 사용자 예산 체크 (있는 경우)
-    if (budget) {
-      const [minBudget, maxBudget] = budget;
-      if (v.price < minBudget || v.price > maxBudget) {
-        return false;
-      }
-    }
+    // 3️⃣ 연식 체크 (5년 이내 + 미래 연식 차단)
+    if (!v.modelYear || v.modelYear < minYear || v.modelYear > currentYear) return false;
 
-    // 4️⃣ 연식 체크 (5년 이내 + 미래 연식 차단)
-    if (!v.modelYear || v.modelYear < minYear || v.modelYear > currentYear) {
-      console.log(`🚫 연식 범위 초과: ${v.manufacturer} ${v.model} (${v.modelYear}년, 허용: ${minYear}~${currentYear}년)`);
-      return false;
-    }
+    // 4️⃣ 주행거리 체크 (10만km 이하)
+    if (v.distance && v.distance > DEMO_FILTERS.distance.max) return false;
 
-    // 5️⃣ 주행거리 체크 (10만km 이하)
-    if (v.distance && v.distance > DEMO_FILTERS.distance.max) {
-      console.log(`🚫 주행거리 초과: ${v.manufacturer} ${v.model} (${v.distance.toLocaleString()}km)`);
-      return false;
-    }
+    // 5️⃣ 신뢰 브랜드만 (DB에서 이미 필터링되었으므로 중복 체크 제거)
+    // if (!DEMO_FILTERS.trustedBrands.includes(v.manufacturer || '')) return false;
 
-    // 6️⃣ 신뢰 브랜드만
-    if (!DEMO_FILTERS.trustedBrands.includes(v.manufacturer || '')) {
-      console.log(`🚫 브랜드 제외: ${v.manufacturer} ${v.model}`);
-      return false;
-    }
+    // 6️⃣ 유효한 링크 필수
+    if (!hasValidDetailUrl(v)) return false;
 
-    // 7️⃣ 유효한 링크 필수
-    if (!hasValidDetailUrl(v)) {
-      console.log(`🚫 링크 없음/판매완료: ${v.manufacturer} ${v.model}`);
-      return false;
-    }
-
-    // 8️⃣ 차종 매칭 (요청된 경우)
-    if (requestedCarType && !matchesCarType(v, requestedCarType)) {
-      console.log(`🚫 차종 불일치: ${v.manufacturer} ${v.model} (${v.carType}) ≠ ${requestedCarType}`);
-      return false;
-    }
+    // 7️⃣ 차종 매칭 (요청된 경우)
+    if (requestedCarType && !matchesCarType(v, requestedCarType)) return false;
 
     // ✅ 모든 필터 통과
     return true;
