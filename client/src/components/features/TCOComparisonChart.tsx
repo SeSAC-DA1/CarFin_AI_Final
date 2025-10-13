@@ -114,7 +114,11 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
               <YAxis
                 tick={{ fontSize: 12 }}
                 stroke="#888"
-                tickFormatter={(value) => `${(value / 100).toFixed(0)}백만원`}
+                tickFormatter={(value) => {
+                  // 🔧 단위 표시 개선: 0백만원 → 0원, 30백만원 → 3,000만원
+                  if (value === 0) return '0원';
+                  return `${(value / 100).toLocaleString()}백만원`;
+                }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend

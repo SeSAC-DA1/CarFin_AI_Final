@@ -447,13 +447,29 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     const rawVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
     console.log(`🔍 DB 쿼리 완료: ${rawVehicles.length}대`);
 
-    // 🔧 Phase 2: detailUrl 필터링 (링크 있는 차량만)
-    const allVehicles = rawVehicles.filter(v =>
-      v.detailUrl &&
-      v.detailUrl.trim() !== '' &&
-      (v.detailUrl.includes('http') || v.detailUrl.startsWith('/'))
-    );
-    console.log(`🔗 링크 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대`);
+    // 🔧 Phase 2: detailUrl + 가격 필터링 (링크 있고 가격 정상인 차량만)
+    const allVehicles = rawVehicles.filter(v => {
+      // detailUrl 검증
+      const hasValidLink = v.detailUrl &&
+        v.detailUrl.trim() !== '' &&
+        (v.detailUrl.includes('http') || v.detailUrl.startsWith('/'));
+
+      // 가격 정상 범위 검증 (500만원 ~ 10000만원)
+      const hasValidPrice = v.price && v.price >= 500 && v.price <= 10000;
+
+      if (!hasValidLink) {
+        console.log(`🚫 링크 없음: ${v.manufacturer} ${v.model} (${v.price}만원)`);
+        return false;
+      }
+
+      if (!hasValidPrice) {
+        console.log(`🚫 비정상 가격: ${v.manufacturer} ${v.model} (${v.price}만원)`);
+        return false;
+      }
+
+      return true;
+    });
+    console.log(`🔗 링크+가격 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대`);
 
     console.timeEnd('[STEP 1/5] Database Query');
     console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
