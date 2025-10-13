@@ -111,7 +111,7 @@ export class SearcherAgent {
     // 2. normalizedCriteria.budget (프로필 예산)은 userMessage 예산이 없을 때만 사용
     if (!messageBudgetOverride && normalizedCriteria.budget && Array.isArray(normalizedCriteria.budget)) {
       minPrice = normalizedCriteria.budget[0] || 0;
-      maxPrice = normalizedCriteria.budget[1] || 5000;
+      maxPrice = normalizedCriteria.budget[1] || 3500; // 🔧 5000 → 3500 (데모 안정성)
       console.log(`📍 프로필 예산 사용: ${minPrice}~${maxPrice}만원`);
     }
 

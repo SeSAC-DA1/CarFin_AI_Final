@@ -120,11 +120,12 @@ export class TCOCalculator {
     const { vehicle, annualKm, ownershipYears, currentYear } = input;
     const warnings: string[] = [];
 
-    console.log(`🧮 TCO 계산 시작: ${vehicle.manufacturer} ${vehicle.model} (${vehicle.modelYear})`);
+    // 🔇 TCO 계산 로그 생략 (프로덕션 성능 최적화)
+    // console.log(`🧮 TCO 계산 시작: ${vehicle.manufacturer} ${vehicle.model} (${vehicle.modelYear})`);
 
     // 1. 취득세 계산
     const acquisitionTax = this.calculateAcquisitionTax(vehicle.price);
-    console.log(`  💰 취득세: ${acquisitionTax.toLocaleString()}원`);
+    // console.log(`  💰 취득세: ${acquisitionTax.toLocaleString()}원`);
 
     // 2. 자동차세 계산
     let displacement = vehicle.displacement;
@@ -138,11 +139,11 @@ export class TCOCalculator {
       ownershipYears,
       currentYear
     );
-    console.log(`  🏛️ 자동차세 (${ownershipYears}년): ${vehicleTax.toLocaleString()}원`);
+    // console.log(`  🏛️ 자동차세 (${ownershipYears}년): ${vehicleTax.toLocaleString()}원`);
 
     // 3. 정비/소모품비 계산
     const maintenance = this.calculateMaintenance(annualKm, ownershipYears);
-    console.log(`  🔧 정비/소모품: ${maintenance.toLocaleString()}원`);
+    // console.log(`  🔧 정비/소모품: ${maintenance.toLocaleString()}원`);
 
     // 4. 감가상각 계산
     const depreciation = this.calculateDepreciation(
@@ -151,7 +152,7 @@ export class TCOCalculator {
       vehicle.modelYear,
       ownershipYears
     );
-    console.log(`  📉 감가상각: ${depreciation.toLocaleString()}원`);
+    // console.log(`  📉 감가상각: ${depreciation.toLocaleString()}원`);
 
     // 5. 연료비 계산
     const fuelCostResult = this.calculateFuelCost(
@@ -162,11 +163,11 @@ export class TCOCalculator {
     if (fuelCostResult.fallbackUsed) {
       warnings.push(`연비 정보 없음: ${vehicle.fuelType} 평균 연비 사용`);
     }
-    console.log(`  ⛽ 연료비: ${fuelCostResult.cost.toLocaleString()}원`);
+    // console.log(`  ⛽ 연료비: ${fuelCostResult.cost.toLocaleString()}원`);
 
     // 6. 총합 계산
     const totalCost = acquisitionTax + vehicleTax + maintenance + depreciation + fuelCostResult.cost;
-    console.log(`  ✅ 총 소유 비용: ${totalCost.toLocaleString()}원`);
+    // console.log(`  ✅ 총 소유 비용: ${totalCost.toLocaleString()}원`);
 
     // 7. 신뢰도 계산
     const confidence = this.calculateConfidence(vehicle, warnings);
