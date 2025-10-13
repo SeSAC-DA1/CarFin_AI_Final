@@ -7,6 +7,7 @@ import type { Vehicle } from "@shared/types/vehicle";
 import { ProfileExtractor, type ExtractedProfileUpdate } from "../lib/agents/ProfileExtractor";
 import { ProfileCompletenessAnalyzer } from "../lib/agents/ProfileCompletenessAnalyzer";
 import { SmartQuestionEngine } from "../lib/agents/SmartQuestionEngine";
+import { railwayRedisService } from "../lib/cache/RailwayRedisService";
 
 function getVehicleImage(manufacturer: string, photo?: string | null): string {
   if (photo && photo.trim() !== '') {
@@ -322,11 +323,60 @@ function sendDetailedProgress(
   });
 }
 
+// 🆕 헬퍼 함수: Sleep
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function handleMultiAgentRecommendation(session: ChatSession, userMessage: string) {
   const startTime = Date.now();
   console.time('[TOTAL] Recommendation');
 
   try {
+    // ============================================================
+    // 🆕 Phase 3: Redis 캐싱 체크
+    // ============================================================
+    const cacheKey = `recommend:v2:${JSON.stringify({
+      carType: session.rawProfile?.carType,
+      budget: session.rawProfile?.budget,
+      brands: session.rawProfile?.brands,
+      usage: session.rawProfile?.usage
+    })}`;
+
+    // 캐시 확인
+    const cachedResult = await railwayRedisService.getRecommendationCache(cacheKey);
+
+    if (cachedResult) {
+      console.log('💾 캐시 히트! 즉시 응답');
+
+      // 빠른 진행 애니메이션 (체감을 위해)
+      sendDetailedProgress(session.ws, 'cache_loading', '💨 이전 분석 결과 활용 중...', {
+        progress: 50
+      });
+      await sleep(200);
+
+      sendDetailedProgress(session.ws, 'cache_complete', '✅ 추천 불러오기 완료!', {
+        progress: 100
+      });
+      await sleep(300);
+
+      // 캐시된 결과 반환
+      sendMessage(session.ws, {
+        type: 'recommendations',
+        agent: 'cache',
+        content: cachedResult.content,
+        data: cachedResult.data,
+        timestamp: new Date()
+      });
+
+      console.timeEnd('[TOTAL] Recommendation');
+      console.log(`✅ 캐시 응답 완료: ${Date.now() - startTime}ms`);
+      return;
+    }
+
+    console.log('🔍 캐시 미스 - 전체 추천 프로세스 실행');
+    // ============================================================
+
     // 🎯 Step 1: Manager Agent 시작
     sendDetailedProgress(session.ws, 'manager_start', '🎯 Manager Agent 가동 중...', {
       progress: 10,
@@ -485,6 +535,27 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
         });
 
         console.time('[STEP 5/5] Send Results');
+
+        // ============================================================
+        // 🆕 Phase 3: 추천 결과 캐싱 (10분 TTL)
+        // ============================================================
+        const recommendationResult = {
+          content: step.content,
+          data: {
+            vehicles: vehicles,
+            comprehensiveAdvice: step.data.comprehensiveAdvice,
+            macrecMetadata: step.data.macrecMetadata
+          }
+        };
+
+        await railwayRedisService.setRecommendationCache(
+          cacheKey,
+          recommendationResult,
+          600 // 10분 TTL
+        );
+        console.log('💾 추천 결과 캐시 저장 완료');
+        // ============================================================
+
         // 🐛 Fix: type을 'recommendations'로 그대로 전달 (프론트엔드 호환)
         sendMessage(session.ws, {
           type: 'recommendations',

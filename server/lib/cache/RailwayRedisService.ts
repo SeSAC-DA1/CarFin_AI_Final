@@ -366,6 +366,33 @@ class RailwayRedisService {
   isHealthy(): boolean {
     return this.isConnected && this.client !== null;
   }
+
+  /**
+   * 🆕 Phase 3: 추천 결과 캐싱
+   */
+  async getRecommendationCache(key: string): Promise<any | null> {
+    try {
+      const cached = await this.get<any>(key, 'recommendation');
+      if (cached) {
+        console.log('💾 추천 캐시 히트!', key.substring(0, 60));
+        return cached;
+      }
+      return null;
+    } catch (error) {
+      console.warn('Redis 추천 캐시 조회 실패 (무시):', error);
+      return null;
+    }
+  }
+
+  async setRecommendationCache(key: string, value: any, ttl: number = 600): Promise<void> {
+    try {
+      await this.set(key, value, ttl, 'recommendation');
+      console.log(`💾 추천 캐시 저장 완료 (TTL: ${ttl}s)`, key.substring(0, 60));
+    } catch (error) {
+      console.warn('Redis 추천 캐시 저장 실패 (무시):', error);
+      // Graceful degradation - 캐시 실패해도 추천은 진행
+    }
+  }
 }
 
 // 싱글톤 인스턴스
