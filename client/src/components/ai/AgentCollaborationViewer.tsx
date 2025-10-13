@@ -16,13 +16,32 @@ interface AgentCollaborationViewerProps {
   foundCount?: number;
 }
 
+// 🆕 Step 기반 진행률 계산 (fallback)
+function getProgressFromStep(step: string): number {
+  const progressMap: Record<string, number> = {
+    'cache_loading': 50,
+    'cache_complete': 100,
+    'manager_start': 10,
+    'profile_analysis': 20,
+    'db_search_start': 40,
+    'db_search_done': 60,
+    'topsis_start': 75,
+    'reranking': 90,
+    'complete': 100
+  };
+  return progressMap[step] || 0;
+}
+
 export function AgentCollaborationViewer({
   currentStep,
   progress,
   foundCount
 }: AgentCollaborationViewerProps) {
 
-  // 현재 단계에 따라 에이전트 상태 결정
+  // 🔧 FIX: progress prop이 0이면 step 기반 계산 사용
+  const displayProgress = progress || getProgressFromStep(currentStep);
+
+  // 현재 단계에 따라 에이전트 상태 결정 (🆕 5개 Agent로 확장)
   const agents: Agent[] = [
     {
       id: 'manager',
@@ -47,6 +66,22 @@ export function AgentCollaborationViewer({
       status: ['db_search_start', 'db_search_done'].includes(currentStep) ? 'working' :
               ['manager_start', 'profile_analysis'].includes(currentStep) ? 'pending' : 'completed',
       message: foundCount ? `${foundCount.toLocaleString()}대 발견` : '차량 검색'
+    },
+    {
+      id: 'evaluator',
+      name: 'Evaluator',
+      icon: '⭐',
+      status: currentStep === 'topsis_start' ? 'working' :
+              ['manager_start', 'profile_analysis', 'db_search_start', 'db_search_done'].includes(currentStep) ? 'pending' : 'completed',
+      message: 'TOPSIS 6가지 평가'
+    },
+    {
+      id: 'financial_advisor',
+      name: 'Financial Advisor',
+      icon: '💰',
+      status: currentStep === 'reranking' ? 'working' :
+              ['manager_start', 'profile_analysis', 'db_search_start', 'db_search_done', 'topsis_start'].includes(currentStep) ? 'pending' : 'completed',
+      message: '금융 옵션 분석'
     }
   ];
 
@@ -57,20 +92,20 @@ export function AgentCollaborationViewer({
         <div className="mb-6">
           <div className="flex justify-between mb-2">
             <span className="text-sm font-medium">AI 협업 진행률</span>
-            <span className="text-sm font-bold text-primary">{progress}%</span>
+            <span className="text-sm font-bold text-primary">{displayProgress}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-primary to-chart-2"
               initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
+              animate={{ width: `${displayProgress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             />
           </div>
         </div>
 
-        {/* 에이전트 카드 */}
-        <div className="grid grid-cols-3 gap-4">
+        {/* 에이전트 카드 (🆕 5개 Agent 표시) */}
+        <div className="grid grid-cols-5 gap-3">
           {agents.map((agent) => (
             <motion.div
               key={agent.id}
@@ -80,7 +115,7 @@ export function AgentCollaborationViewer({
               transition={{ delay: 0.1 }}
             >
               <div className={`
-                p-4 rounded-lg border-2 transition-all duration-300
+                p-3 rounded-lg border-2 transition-all duration-300
                 ${agent.status === 'working'
                   ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
                   : agent.status === 'completed'
@@ -89,13 +124,13 @@ export function AgentCollaborationViewer({
               `}>
                 {/* 아이콘 */}
                 <div className="flex items-center justify-center mb-2">
-                  <span className={`text-3xl ${agent.status === 'working' ? 'animate-bounce' : ''}`}>
+                  <span className={`text-2xl ${agent.status === 'working' ? 'animate-bounce' : ''}`}>
                     {agent.icon}
                   </span>
                 </div>
 
                 {/* 이름 */}
-                <h4 className="text-center font-semibold mb-1">{agent.name}</h4>
+                <h4 className="text-center font-semibold text-xs mb-1">{agent.name}</h4>
 
                 {/* 메시지 */}
                 <p className="text-xs text-center text-muted-foreground mb-2">
