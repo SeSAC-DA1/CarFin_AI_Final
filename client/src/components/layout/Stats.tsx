@@ -1,7 +1,7 @@
 const stats = [
   { value: "5개 AI", label: "멀티에이전트 협업", sublabel: "동시 실시간 분석" },
   { value: "논문 2개", label: "SIGIR·RecSys 구현", sublabel: "국제학회 검증" },
-  { value: "AirFlow", label: "실시간 데이터 수집", sublabel: "빠른 분석" },
+  { value: "AirFlow", label: "실시간 데이터 수집", sublabel: "검증된 방법론 기반" },
   { value: "TOPSIS", label: "다기준 의사결정", sublabel: "6가지 정밀 평가" }
 ];
 
