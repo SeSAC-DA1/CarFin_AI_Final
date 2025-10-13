@@ -70,6 +70,17 @@ export class SearcherAgent {
   private filterVehicles(vehicles: Vehicle[], criteria: any, userMessage?: string): Vehicle[] {
     const currentYear = new Date().getFullYear();
 
+    // 🔧 프로필 정규화 (필드명 통일)
+    const normalizedCriteria = {
+      ...criteria,
+      carType: criteria.carType || criteria.vehicleTypes?.[0] || null,
+      carTypes: criteria.carTypes || criteria.vehicleTypes || [],
+      brand: criteria.brand || criteria.preferredBrands?.[0] || null,
+      brands: criteria.brands || criteria.preferredBrands || [],
+    };
+
+    console.log('📋 정규화된 criteria:', JSON.stringify(normalizedCriteria, null, 2));
+
     // 🐛 Fix: userMessage가 명시적 예산을 지정한 경우 프로필 예산보다 우선 적용
     let minPrice = 0;
     let maxPrice = 5000; // 만원 단위
@@ -97,17 +108,17 @@ export class SearcherAgent {
       }
     }
 
-    // 2. criteria.budget (프로필 예산)은 userMessage 예산이 없을 때만 사용
-    if (!messageBudgetOverride && criteria.budget && Array.isArray(criteria.budget)) {
-      minPrice = criteria.budget[0] || 0;
-      maxPrice = criteria.budget[1] || 5000;
+    // 2. normalizedCriteria.budget (프로필 예산)은 userMessage 예산이 없을 때만 사용
+    if (!messageBudgetOverride && normalizedCriteria.budget && Array.isArray(normalizedCriteria.budget)) {
+      minPrice = normalizedCriteria.budget[0] || 0;
+      maxPrice = normalizedCriteria.budget[1] || 5000;
       console.log(`📍 프로필 예산 사용: ${minPrice}~${maxPrice}만원`);
     }
 
     console.log(`💰 최종 예산 범위: ${minPrice}만원 ~ ${maxPrice}만원`);
 
-    // 🐛 Fix: userMessage에서 직접 차종 추출 (criteria.carType이 없을 경우 대비)
-    let targetCarType = criteria.carType;
+    // 🐛 Fix: userMessage에서 직접 차종 추출 (normalizedCriteria.carType이 없을 경우 대비)
+    let targetCarType = normalizedCriteria.carType;
     if (!targetCarType && userMessage) {
       const lowerMsg = userMessage.toLowerCase();
       if (lowerMsg.includes('suv') || lowerMsg.includes('에스유브이')) {
@@ -124,6 +135,14 @@ export class SearcherAgent {
 
     if (targetCarType) {
       console.log(`🚗 차종 필터: ${targetCarType}`);
+    }
+
+    // 브랜드 필터
+    const targetBrands = normalizedCriteria.brands && normalizedCriteria.brands.length > 0
+      ? normalizedCriteria.brands
+      : null;
+    if (targetBrands) {
+      console.log(`🏷️ 브랜드 필터: ${targetBrands.join(', ')}`);
     }
 
     // 상용차 키워드 (제외 대상)
@@ -155,18 +174,67 @@ export class SearcherAgent {
       if (targetCarType) {
         const requestedType = targetCarType.toLowerCase();
         if (requestedType === 'suv') {
-          // 🐛 Fix: 스포츠왜건을 SUV로 잘못 분류하는 문제 수정
+          // ❌ 명시적으로 승합차 제외
+          if (carTypeLower.includes('승합') ||
+              carTypeLower.includes('미니밴') ||
+              carTypeLower.includes('van') ||
+              carTypeLower.includes('mpv')) {
+            console.log(`🚫 SUV 제외: ${v.model} (${v.carType} - 승합차)`);
+            return false;
+          }
+
+          // ❌ 세단도 제외
+          if (carTypeLower.includes('세단') || carTypeLower.includes('sedan')) {
+            console.log(`🚫 SUV 제외: ${v.model} (${v.carType} - 세단)`);
+            return false;
+          }
+
+          // ❌ 경차도 제외
+          if (carTypeLower.includes('경차') || carTypeLower.includes('경형')) {
+            console.log(`🚫 SUV 제외: ${v.model} (${v.carType} - 경차)`);
+            return false;
+          }
+
+          // ✅ SUV 매칭
           const isSUV = carTypeLower.includes('suv') ||
                         carTypeLower.includes('rv') ||
                         (carTypeLower.includes('스포츠') && carTypeLower.includes('유틸리티'));
-          if (!isSUV) return false;
+
+          if (!isSUV) {
+            console.log(`🚫 SUV 아님: ${v.model} (${v.carType})`);
+            return false;
+          }
+
+          console.log(`✅ SUV 매칭: ${v.model} (${v.carType})`);
+
         } else if (requestedType === '세단') {
           const isSedan = carTypeLower.includes('세단') || carTypeLower.includes('sedan');
           if (!isSedan) return false;
         } else if (requestedType === '경차') {
           const isKCar = carTypeLower.includes('경차') || carTypeLower.includes('경형');
           if (!isKCar) return false;
+        } else if (requestedType === '승합' || requestedType === '승합차') {
+          const isVan = carTypeLower.includes('승합') ||
+                        carTypeLower.includes('미니밴') ||
+                        carTypeLower.includes('van') ||
+                        carTypeLower.includes('mpv');
+          if (!isVan) return false;
         }
+      }
+
+      // 브랜드 필터 (선호 브랜드가 있을 경우)
+      if (targetBrands && targetBrands.length > 0) {
+        const vehicleBrand = (v.manufacturer || '').toLowerCase();
+        const matchesBrand = targetBrands.some(brand =>
+          vehicleBrand.includes(brand.toLowerCase())
+        );
+
+        if (!matchesBrand) {
+          console.log(`🚫 브랜드 불일치: ${v.manufacturer} (선호: ${targetBrands.join(', ')})`);
+          return false;
+        }
+
+        console.log(`✅ 브랜드 매칭: ${v.manufacturer}`);
       }
 
       return true;
