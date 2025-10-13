@@ -33,8 +33,7 @@
     "health": "curl -f http://localhost:5000/api/system/health || exit 1",
     "monitor": "node -e \"console.log('🔍 시스템 모니터링 실행 중...')\"",
     "clean": "rm -rf dist node_modules/.vite",
-    "fresh": "npm run clean && npm install && npm run build",
-    "prestart": "npm run build"
+    "fresh": "npm run clean && npm install && npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.22.0",
