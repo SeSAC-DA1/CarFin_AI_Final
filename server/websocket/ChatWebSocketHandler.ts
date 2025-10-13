@@ -174,35 +174,12 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
       console.log(`✅ 추천 시스템 실행 (시연모드: ${isDemoScenario})`);
       await handleMultiAgentRecommendation(session, userMessage);
 
-      // 추천 완료 후 추가 정보가 필요하면 자연스럽게 질문 (선택사항)
-      if (completenessReport.completenessScore < 60 && completenessReport.nextQuestionPriority) {
-        const nextField = completenessReport.nextQuestionPriority;
-
-        // Essential 필드는 건너뛰고, Important/Optional만 질문
-        if (nextField.category !== 'essential' && session.lastQuestionAsked !== nextField.name) {
-          try {
-            const questionEngine = new SmartQuestionEngine(process.env.GOOGLE_API_KEY!);
-            const smartQuestion = await questionEngine.generateSmartQuestion(nextField, {
-              missingField: nextField,
-              conversationHistory: session.conversationHistory,
-              userLastMessage: userMessage,
-              currentProfile: session.rawProfile,
-            });
-
-            console.log(`💬 추가 정보 질문 (선택): ${smartQuestion.question}`);
-            session.lastQuestionAsked = nextField.name;
-
-            sendMessage(session.ws, {
-              type: 'agent_message',
-              agent: 'concierge',
-              content: `\n\n더 정확한 추천을 위해 추가 정보를 알려주시면 좋을 것 같아요!\n${smartQuestion.question}`,
-              timestamp: new Date(),
-            });
-          } catch (questionError) {
-            console.warn('⚠️ 추가 질문 생성 실패 (무시):', questionError);
-          }
-        }
-      }
+      // 🐛 FIX: 추천 결과 표시를 방해하지 않도록 추가 질문 비활성화
+      // 사용자가 추천 결과를 보고 더 많은 정보를 제공하면 자연스럽게 다시 추천
+      // if (completenessReport.completenessScore < 60 && completenessReport.nextQuestionPriority) {
+      //   const nextField = completenessReport.nextQuestionPriority;
+      //   // ... (추가 질문 로직 비활성화)
+      // }
     } else {
       // 정보가 전혀 없는 경우에만 필수 질문
       console.log('❌ 최소 정보 부족 → Essential 필드 질문');
