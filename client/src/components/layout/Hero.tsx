@@ -53,7 +53,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl leading-relaxed">
-              <span className="text-foreground/90 font-medium">5개 전문 AI가 실시간 협업 추천</span>
+              <span className="text-foreground/90 font-medium">논문 기반 멀티에이전트 협업 (SIGIR·RecSys)</span>
               <br />
               <span className="text-muted-foreground">총 소유비용(TCO) 법적 근거 기반 계산</span>
               <br />
@@ -119,77 +119,93 @@ export default function Hero() {
           <div className="relative hidden lg:block">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-chart-2/20 rounded-3xl blur-3xl" />
-              <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-8 border border-card-border space-y-6">
-                <div className="text-center mb-6">
-                  <p className="text-2xl font-bold">3단계로 끝나는 AI 차량 추천</p>
-                  <p className="text-sm text-muted-foreground mt-1">총 소요시간: 약 3분</p>
-                </div>
-
-                <div className="space-y-5">
-                  {/* STEP 1 */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">1</div>
-                      <p className="font-semibold text-base">📋 프로필 설정 <span className="text-muted-foreground text-sm">(2분)</span></p>
+              <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-6 border border-card-border space-y-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-primary" />
                     </div>
-                    <div className="ml-10 text-sm text-muted-foreground space-y-0.5">
-                      <p>• 예산 3000만원 이하</p>
-                      <p>• 가족용 SUV, 연비·안전성 중요</p>
-                    </div>
-                  </div>
-
-                  {/* STEP 2 */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-chart-2 text-white flex items-center justify-center font-bold text-sm">2</div>
-                      <p className="font-semibold text-base">🤖 5개 AI 동시 협업 <span className="text-muted-foreground text-sm">(1분)</span></p>
-                    </div>
-                    <div className="ml-10 p-3 bg-muted/30 rounded-lg border border-border space-y-1.5 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span>🎯</span>
-                        <span className="font-medium">총괄 AI</span>
-                        <span className="text-muted-foreground">→ 작업 분배 중...</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>👤</span>
-                        <span className="font-medium">분석 AI</span>
-                        <span className="text-muted-foreground">→ 프로필 분석 완료</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>🔍</span>
-                        <span className="font-medium">검색 AI</span>
-                        <span className="text-muted-foreground">→ {isLoading ? '...' : `${vehicleCount.toLocaleString()}대`} 중 500대 발견</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>⭐</span>
-                        <span className="font-medium">평가 AI</span>
-                        <span className="text-muted-foreground">→ 6가지 기준 평가 중</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>🎨</span>
-                        <span className="font-medium">최적화 AI</span>
-                        <span className="text-muted-foreground">→ 개인화 재정렬</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* STEP 3 */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-chart-3 text-white flex items-center justify-center font-bold text-sm">3</div>
-                      <p className="font-semibold text-base">✨ 딱 3대 추천 완료</p>
-                    </div>
-                    <div className="ml-10 text-sm text-muted-foreground space-y-0.5">
-                      <p>• 가격·연비·안전성·브랜드·상태·옵션</p>
-                      <p className="text-primary font-medium">• 당신에게 딱 맞는 3대</p>
+                    <div>
+                      <p className="font-semibold text-sm">실시간 AI 협업</p>
+                      <p className="text-xs text-muted-foreground">약 3분 소요</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4">
-                  <div className="flex-1 h-10 bg-muted/50 rounded-full" />
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                    <ArrowRight className="w-5 h-5 text-primary-foreground" />
+                <div className="space-y-2.5">
+                  {/* 사용자 메시지 */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">👤</span>
+                    </div>
+                    <div className="flex-1 bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2">
+                      <p className="text-xs text-muted-foreground mb-0.5">사용자</p>
+                      <p className="text-sm">"3000만원 이하 가족용 SUV 찾아요. 연비랑 안전성이 중요해요"</p>
+                    </div>
+                  </div>
+
+                  {/* 총괄 AI */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">🎯</span>
+                    </div>
+                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-primary/10">
+                      <p className="text-xs text-primary mb-0.5">총괄 AI</p>
+                      <p className="text-sm">"5개 AI에게 작업을 분배했어요"</p>
+                    </div>
+                  </div>
+
+                  {/* 분석 AI */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-chart-2/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">👤</span>
+                    </div>
+                    <div className="flex-1 bg-chart-2/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-chart-2/10">
+                      <p className="text-xs text-chart-2 mb-0.5">분석 AI</p>
+                      <p className="text-sm">"프로필 분석 완료: 예산 3000만원, 가족용 SUV, 연비·안전성 우선"</p>
+                    </div>
+                  </div>
+
+                  {/* 검색 AI */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-chart-3/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">🔍</span>
+                    </div>
+                    <div className="flex-1 bg-chart-3/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-chart-3/10">
+                      <p className="text-xs text-chart-3 mb-0.5">검색 AI</p>
+                      <p className="text-sm">"{isLoading ? '...' : vehicleCount.toLocaleString()}대 중 500대 발견!"</p>
+                    </div>
+                  </div>
+
+                  {/* 평가 AI */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">⭐</span>
+                    </div>
+                    <div className="flex-1 bg-amber-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-amber-500/10">
+                      <p className="text-xs text-amber-600 mb-0.5">평가 AI</p>
+                      <p className="text-sm">"6가지 기준(가격·연비·안전성·브랜드·상태·옵션)으로 평가 중..."</p>
+                    </div>
+                  </div>
+
+                  {/* 최적화 AI */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">🎨</span>
+                    </div>
+                    <div className="flex-1 bg-purple-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-purple-500/10">
+                      <p className="text-xs text-purple-600 mb-0.5">최적화 AI</p>
+                      <p className="text-sm">"개인화 재정렬 완료. 당신에게 딱 맞는 3대를 선정했어요!"</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <div className="flex-1 h-9 bg-muted/50 rounded-full flex items-center px-4">
+                    <span className="text-xs text-muted-foreground">메시지를 입력하세요...</span>
+                  </div>
+                  <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
+                    <ArrowRight className="w-4 h-4 text-primary-foreground" />
                   </div>
                 </div>
               </div>
