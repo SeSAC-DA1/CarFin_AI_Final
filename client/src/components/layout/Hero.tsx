@@ -36,7 +36,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
           {/* Left: Text Content */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
@@ -116,10 +116,10 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="relative hidden lg:block">
+          <div className="relative hidden lg:block lg:pl-8">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-chart-2/20 rounded-3xl blur-3xl" />
-              <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-6 border border-card-border space-y-4">
+              <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-8 border border-card-border space-y-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -132,81 +132,81 @@ export default function Hero() {
                   </div>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {/* 사용자 메시지 */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">👤</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">👤</span>
                     </div>
-                    <div className="flex-1 bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2">
-                      <p className="text-xs text-muted-foreground mb-0.5">사용자</p>
-                      <p className="text-sm">"3000만원 이하 가족용 SUV 찾아요. 연비랑 안전성이 중요해요"</p>
+                    <div className="flex-1 bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-2.5">
+                      <p className="text-xs text-muted-foreground mb-1">사용자</p>
+                      <p className="text-sm leading-relaxed">"3000만원 이하 가족용 SUV 찾아요. 연비랑 안전성이 중요해요"</p>
                     </div>
                   </div>
 
                   {/* 총괄 AI */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">🎯</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">🎯</span>
                     </div>
-                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-primary/10">
-                      <p className="text-xs text-primary mb-0.5">총괄 AI</p>
-                      <p className="text-sm">"5개 AI에게 작업을 분배했어요"</p>
+                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-primary/10">
+                      <p className="text-xs text-primary mb-1">총괄 AI</p>
+                      <p className="text-sm leading-relaxed">"5개 AI에게 작업을 분배했어요"</p>
                     </div>
                   </div>
 
                   {/* 분석 AI */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-chart-2/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">👤</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-chart-2/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">👤</span>
                     </div>
-                    <div className="flex-1 bg-chart-2/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-chart-2/10">
-                      <p className="text-xs text-chart-2 mb-0.5">분석 AI</p>
-                      <p className="text-sm">"프로필 분석 완료: 예산 3000만원, 가족용 SUV, 연비·안전성 우선"</p>
+                    <div className="flex-1 bg-chart-2/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-chart-2/10">
+                      <p className="text-xs text-chart-2 mb-1">분석 AI</p>
+                      <p className="text-sm leading-relaxed">"프로필 분석 완료: 예산 3000만원, 가족용 SUV, 연비·안전성 우선"</p>
                     </div>
                   </div>
 
                   {/* 검색 AI */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-chart-3/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">🔍</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-chart-3/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">🔍</span>
                     </div>
-                    <div className="flex-1 bg-chart-3/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-chart-3/10">
-                      <p className="text-xs text-chart-3 mb-0.5">검색 AI</p>
-                      <p className="text-sm">"{isLoading ? '...' : vehicleCount.toLocaleString()}대 중 500대 발견!"</p>
+                    <div className="flex-1 bg-chart-3/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-chart-3/10">
+                      <p className="text-xs text-chart-3 mb-1">검색 AI</p>
+                      <p className="text-sm leading-relaxed">"{isLoading ? '...' : vehicleCount.toLocaleString()}대 중 500대 발견!"</p>
                     </div>
                   </div>
 
                   {/* 평가 AI */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">⭐</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">⭐</span>
                     </div>
-                    <div className="flex-1 bg-amber-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-amber-500/10">
-                      <p className="text-xs text-amber-600 mb-0.5">평가 AI</p>
-                      <p className="text-sm">"6가지 기준(가격·연비·안전성·브랜드·상태·옵션)으로 평가 중..."</p>
+                    <div className="flex-1 bg-amber-500/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-amber-500/10">
+                      <p className="text-xs text-amber-600 mb-1">평가 AI</p>
+                      <p className="text-sm leading-relaxed">"6가지 기준(가격·연비·안전성·브랜드·상태·옵션)으로 평가 중..."</p>
                     </div>
                   </div>
 
                   {/* 금융 상담 AI */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">💰</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">💰</span>
                     </div>
-                    <div className="flex-1 bg-purple-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-purple-500/10">
-                      <p className="text-xs text-purple-600 mb-0.5">금융 상담 AI</p>
-                      <p className="text-sm">"일시불·할부·리스 중 가장 유리한 방법을 분석 중이에요"</p>
+                    <div className="flex-1 bg-purple-500/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-purple-500/10">
+                      <p className="text-xs text-purple-600 mb-1">금융 상담 AI</p>
+                      <p className="text-sm leading-relaxed">"일시불·할부·리스 중 가장 유리한 방법을 분석 중이에요"</p>
                     </div>
                   </div>
 
                   {/* 최종 추천 (시스템) */}
-                  <div className="flex gap-2 items-start">
-                    <div className="w-7 h-7 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">✨</span>
+                  <div className="flex gap-2.5 items-start">
+                    <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-base">✨</span>
                     </div>
-                    <div className="flex-1 bg-green-500/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-green-500/10">
-                      <p className="text-xs text-green-600 mb-0.5">시스템</p>
-                      <p className="text-sm">"당신에게 딱 맞는 3대를 선정했어요! 🎉"</p>
+                    <div className="flex-1 bg-green-500/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-green-500/10">
+                      <p className="text-xs text-green-600 mb-1">시스템</p>
+                      <p className="text-sm leading-relaxed">"당신에게 딱 맞는 3대를 선정했어요! 🎉"</p>
                     </div>
                   </div>
                 </div>
