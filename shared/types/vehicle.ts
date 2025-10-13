@@ -76,6 +76,7 @@ export interface VehicleSearchFilters {
   maxYear?: number | undefined;
   fuelType?: string | undefined;
   manufacturer?: string | undefined;
+  manufacturers?: string[] | undefined;  // 🆕 복수 브랜드 필터 (IN 절)
   model?: string | undefined;
   carType?: string | undefined;
   location?: string | undefined;

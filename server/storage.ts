@@ -26,7 +26,7 @@ import {
 export type { Vehicle, VehicleSearchFilters };
 import { randomUUID } from "crypto";
 import { db, pool } from "./db";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { eq, and, gte, lte, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -228,6 +228,9 @@ export class DBStorage implements IStorage {
     if (filters.fuelType) conditions.push(eq(vehiclesTable.fuelType, filters.fuelType));
     if (filters.carType) conditions.push(eq(vehiclesTable.carType, filters.carType));
     if (filters.manufacturer) conditions.push(eq(vehiclesTable.manufacturer, filters.manufacturer));
+    if (filters.manufacturers && filters.manufacturers.length > 0) {
+      conditions.push(inArray(vehiclesTable.manufacturer, filters.manufacturers));
+    }
     if (filters.model) conditions.push(eq(vehiclesTable.model, filters.model));
     if (filters.location) conditions.push(eq(vehiclesTable.location, filters.location));
 
