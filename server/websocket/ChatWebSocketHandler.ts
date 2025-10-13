@@ -9,6 +9,7 @@ import { ProfileCompletenessAnalyzer } from "../lib/agents/ProfileCompletenessAn
 import { SmartQuestionEngine } from "../lib/agents/SmartQuestionEngine";
 import { railwayRedisService } from "../lib/cache/RailwayRedisService";
 import { createDemoVehiclePool, getDemoScenarioAPool } from "../lib/demo/DemoVehiclePool";
+import { extractCriteriaFromKeywords, getScenarioAFallback } from "../lib/demo/KeywordMappingEngine";
 
 function getVehicleImage(manufacturer: string, photo?: string | null): string {
   if (photo && photo.trim() !== '') {
@@ -386,36 +387,54 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
 
     console.time('[STEP 1/5] Database Query');
 
-    // 🔧 CRITICAL FIX: 사용자 필터를 데이터베이스 쿼리에 직접 적용
-    // ❌ 기존 문제: 랜덤 샘플링 후 필터링 → 편향성 발생, 전체 데이터 활용 불가
-    // ✅ 개선: DB 쿼리 단계에서 필터링 → 정확한 추천, 전체 12만건 활용 가능
+    // 🗺️ PHASE 1: 키워드 매핑 (LLM 없이 확실한 기준 추출)
+    console.log(`\n🗺️ [KeywordMapping] Step 1: 단어 기반 필터 추출 시작`);
+    const keywordCriteria = extractCriteriaFromKeywords(userMessage);
+    console.log(`🗺️ [KeywordMapping] 매칭된 키워드: ${keywordCriteria.matchedKeywords?.join(', ') || '없음'}`);
+
+    // 🛡️ 폴백: 시나리오 A 감지 시 기본값 사용
+    const isScenarioA = (
+      userMessage.includes('SUV') &&
+      (userMessage.includes('3000') || userMessage.includes('삼천'))
+    );
+
+    let finalCriteria = keywordCriteria;
+    if (isScenarioA && keywordCriteria.matchedKeywords!.length === 0) {
+      console.log(`🛡️ [Fallback] 시나리오 A 감지 → 기본 필터 적용`);
+      finalCriteria = getScenarioAFallback();
+    }
+
+    // 🔧 CRITICAL FIX: 키워드 매핑 기준을 DB 쿼리에 직접 적용
+    // ✅ 장점: LLM 해석 오류 없음, 확실한 필터 기준, 실시간 시연 안정성
 
     const searchFilters: any = {
-      limit: 2000, // 800 → 2000으로 증가 (더 많은 후보 확보)
+      limit: 2000,
       offset: 0
     };
 
-    // 1️⃣ 예산 필터 (rawProfile.budget: [최소, 최대])
-    if (session.rawProfile?.budget && Array.isArray(session.rawProfile.budget)) {
-      const [minPrice, maxPrice] = session.rawProfile.budget;
-      if (minPrice > 0) searchFilters.minPrice = minPrice;
-      if (maxPrice > 0 && maxPrice < 10000) searchFilters.maxPrice = maxPrice;
-      console.log(`💰 예산 필터 적용: ${minPrice}만원 ~ ${maxPrice}만원`);
-    }
+    // 1️⃣ 예산 필터 (키워드 매핑 우선, 없으면 프로필)
+    const maxPrice = finalCriteria.maxPrice || session.rawProfile?.budget?.[1] || 5000;
+    const minPrice = finalCriteria.minPrice || session.rawProfile?.budget?.[0] || 0;
+    if (minPrice > 0) searchFilters.minPrice = minPrice;
+    if (maxPrice > 0 && maxPrice < 10000) searchFilters.maxPrice = maxPrice;
+    console.log(`💰 예산 필터: ${minPrice}만원 ~ ${maxPrice}만원 (출처: ${finalCriteria.maxPrice ? '키워드' : '프로필'})`);
 
-    // 2️⃣ 차종 필터 (rawProfile.carType: 'suv' | 'sedan' | 'eco' 등)
-    if (session.rawProfile?.carType) {
+    // 2️⃣ 차종 필터 (키워드 매핑 우선)
+    const targetCarType = finalCriteria.carType || session.rawProfile?.carType;
+    if (targetCarType) {
       const carTypeMap: Record<string, string> = {
         'suv': 'SUV',
+        'SUV': 'SUV',
         'sedan': '세단',
+        '세단': '세단',
         'eco': '경차',
+        '경차': '경차',
+        '준중형차': '준중형차',
         'commercial': '승합'
       };
-      const dbCarType = carTypeMap[session.rawProfile.carType];
-      if (dbCarType) {
-        searchFilters.carType = dbCarType;
-        console.log(`🚗 차종 필터 적용: ${dbCarType}`);
-      }
+      const dbCarType = carTypeMap[targetCarType] || targetCarType;
+      searchFilters.carType = dbCarType;
+      console.log(`🚗 차종 필터: ${dbCarType} (출처: ${finalCriteria.carType ? '키워드' : '프로필'})`);
     }
 
     // 3️⃣ 브랜드 필터 제거 (DB 단계에서는 모든 브랜드 허용)
@@ -453,21 +472,18 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
 
     let allVehicles: Vehicle[];
 
-    // 시나리오 A 감지: "3000만원 이하 SUV"
-    const isScenarioA = (
-      userMessage.includes('SUV') &&
-      (userMessage.includes('3000') || userMessage.includes('삼천'))
-    );
-
+    // 🗺️ 키워드 매핑 기반 시나리오 감지 (isScenarioA는 위에서 이미 선언됨)
     if (isScenarioA) {
       console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
       allVehicles = getDemoScenarioAPool(rawVehicles);
     } else {
-      // 일반 시연: 차종/예산 기반 필터링
-      const requestedCarType = session.rawProfile?.carType || (userMessage.includes('SUV') ? 'SUV' : undefined);
-      const budget = session.rawProfile?.budget as [number, number] | undefined;
+      // 일반 시연: 키워드 매핑 기준 사용
+      const requestedCarType = finalCriteria.carType || session.rawProfile?.carType;
+      const budget = finalCriteria.maxPrice
+        ? [finalCriteria.minPrice || 0, finalCriteria.maxPrice] as [number, number]
+        : session.rawProfile?.budget as [number, number] | undefined;
 
-      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}`);
+      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'} (출처: 키워드 매핑)`);
       allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget);
     }
 
