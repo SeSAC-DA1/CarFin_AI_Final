@@ -53,6 +53,9 @@ export interface Vehicle {
 export interface ProgressUpdate {
   step: string;
   message: string;
+  progress?: number;
+  agent?: string;
+  count?: number;
 }
 
 export interface VehicleInsights {

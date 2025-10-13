@@ -7,6 +7,7 @@ import VehicleRecommendations from "./VehicleRecommendations";
 import QuickReplyButtons from "./QuickReplyButtons";
 import MACRecProgressPanel from "@/components/ai/MACRecProgressPanel";
 import MACRecCollaborationViewer from "@/components/ai/MACRecCollaborationViewer";
+import { AgentCollaborationViewer } from "@/components/ai/AgentCollaborationViewer";
 import WelcomeFlow from "@/components/layout/WelcomeFlow";
 import FeedbackSection from "@/components/layout/FeedbackSection";
 import LoadingSpinner from "@/components/ai/LoadingSpinner";
@@ -251,7 +252,13 @@ export default function ChatInterface() {
                 )}
 
                 {progress && progress.step !== 'completed' && !showMACRecCollaboration && (
-                  <div className="animate-fade-in">
+                  <div className="animate-fade-in space-y-4">
+                    {/* 🆕 Phase 2: 실시간 에이전트 협업 뷰어 */}
+                    <AgentCollaborationViewer
+                      currentStep={progress.step}
+                      progress={progress.progress || 0}
+                      foundCount={progress.count}
+                    />
                     <LoadingSpinner
                       message={progress.message}
                       step={progress.step}

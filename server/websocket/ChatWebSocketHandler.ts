@@ -306,12 +306,38 @@ function updateSessionProfile(session: ChatSession, update: ExtractedProfileUpda
   console.log('✅ 프로필 업데이트:', JSON.stringify(update, null, 2));
 }
 
+// 🆕 헬퍼 함수: 상세 진행 상황 전송
+function sendDetailedProgress(
+  ws: WebSocket,
+  step: string,
+  message: string,
+  meta: { progress?: number; agent?: string; count?: number } = {}
+) {
+  sendMessage(ws, {
+    type: 'progress',
+    step,
+    message,
+    timestamp: new Date(),
+    ...meta
+  });
+}
+
 async function handleMultiAgentRecommendation(session: ChatSession, userMessage: string) {
   const startTime = Date.now();
   console.time('[TOTAL] Recommendation');
 
   try {
-    sendMessage(session.ws, { type: 'progress', step: 'analyzing_needs', message: '🤖 멀티에이전트 시스템 가동... ' });
+    // 🎯 Step 1: Manager Agent 시작
+    sendDetailedProgress(session.ws, 'manager_start', '🎯 Manager Agent 가동 중...', {
+      progress: 10,
+      agent: 'manager'
+    });
+
+    // 🎯 Step 2: 프로필 분석
+    sendDetailedProgress(session.ws, 'profile_analysis', '👤 User Analyst: 프로필 분석 중...', {
+      progress: 20,
+      agent: 'user_analyst'
+    });
 
     console.time('[STEP 1/5] Database Query');
 
@@ -361,9 +387,23 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
 
     console.log(`🔍 최종 검색 필터:`, JSON.stringify(searchFilters, null, 2));
 
+    // 🎯 Step 3: DB 검색 시작
+    const totalVehicles = 159578; // 전체 매물 수
+    sendDetailedProgress(session.ws, 'db_search_start', `🔍 Searcher: ${totalVehicles.toLocaleString()}대 검색 중...`, {
+      progress: 40,
+      agent: 'searcher'
+    });
+
     const allVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
     console.timeEnd('[STEP 1/5] Database Query');
     console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
+
+    // 🎯 Step 4: 검색 완료
+    sendDetailedProgress(session.ws, 'db_search_done', `✅ ${allVehicles.length.toLocaleString()}대 조건 부합 발견!`, {
+      progress: 60,
+      agent: 'searcher',
+      count: allVehicles.length
+    });
 
     if (allVehicles.length === 0) {
       throw new Error('데이터베이스에서 차량을 불러올 수 없습니다.');
@@ -377,6 +417,11 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     }
     const multiAgentSystem = new MultiAgentSystem(apiKey);
     console.timeEnd('[STEP 2/5] MultiAgent System Init');
+
+    // 🎯 Step 5: TOPSIS 평가 시작
+    sendDetailedProgress(session.ws, 'topsis_start', '📊 TOPSIS: 6가지 기준으로 평가 중...', {
+      progress: 75
+    });
 
     console.time('[STEP 3/5] MultiAgent Collaboration');
     // 🐛 Fix: rawProfile 전달 (대화 맥락 누적)
@@ -433,6 +478,12 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
         });
 
         console.timeEnd('[STEP 4/5] Vehicle Data Mapping');
+
+        // 🎯 Step 6: Re-ranking
+        sendDetailedProgress(session.ws, 'reranking', '🎯 Alibaba Re-ranking: 개인화 최적화 중...', {
+          progress: 90
+        });
+
         console.time('[STEP 5/5] Send Results');
         // 🐛 Fix: type을 'recommendations'로 그대로 전달 (프론트엔드 호환)
         sendMessage(session.ws, {
@@ -448,10 +499,14 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
         });
         console.timeEnd('[STEP 5/5] Send Results');
 
+        // 🎯 Step 7: 완료
+        sendDetailedProgress(session.ws, 'complete', '✨ 추천 완료!', {
+          progress: 100
+        });
+
         const totalTime = Date.now() - startTime;
         console.timeEnd('[TOTAL] Recommendation');
         console.log(`✅ [${session.sessionId.substring(0, 8)}] 추천 완료: ${totalTime}ms (${vehicles.length}대)`);
-        sendMessage(session.ws, { type: 'progress', step: 'completed', message: `🎉 AI 추천 완료! (${totalTime}ms)` });
         return;
       }
     }
