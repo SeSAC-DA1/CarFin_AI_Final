@@ -279,8 +279,8 @@ export function getDemoScenarioAPool(allVehicles: Vehicle[]): Vehicle[] {
     // ✅ 추가 안전성 필터: 무사고 차량만
     const modelLower = (v.model || '').toLowerCase();
 
-    // 인기 SUV 모델만 (싼타페, 쏘렌토, 팰리세이드, 카니발)
-    const topModels = ['싼타페', '쏘렌토', '팰리세이드', '카니발'];
+    // 인기 SUV 모델만 (싼타페, 쏘렌토, 팰리세이드, 카니발, 스포티지, 투싼, 셀토스, 코나)
+    const topModels = ['싼타페', '쏘렌토', '팰리세이드', '카니발', '스포티지', '투싼', '셀토스', '코나'];
     return topModels.some(model => modelLower.includes(model.toLowerCase()));
   });
 }
