@@ -32,9 +32,9 @@ const features = [
   },
   {
     icon: Clock,
-    title: "대용량 데이터 빠른 분석",
+    title: "AirFlow 실시간 데이터 수집",
     others: "제한된 매물 검색",
-    carfin: "PostgreSQL + Redis로 12만대 이상 3초 내 분석",
+    carfin: "PostgreSQL + Redis로 빠른 실시간 분석",
     badge: "빅데이터"
   },
   {

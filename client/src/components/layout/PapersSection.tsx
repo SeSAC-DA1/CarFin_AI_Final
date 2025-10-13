@@ -23,7 +23,7 @@ const papers = [
       "Parallel Execution (Agents)",
       "Result Aggregation (협업)"
     ],
-    technicalHighlight: "Google Agent Level 3 구현 완료",
+    technicalHighlight: "5개 AI 동시 협업 구현",
     paperUrl: "https://dl.acm.org/doi/10.1145/3626772.3657836"
   },
   {
@@ -84,8 +84,7 @@ export default function PapersSection() {
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             SIGIR 2024 MACRec 프로토콜을 실제로 구현했습니다.<br/>
-            <span className="font-semibold text-foreground">5개 AI 에이전트</span>가 협업하며,
-            <span className="font-semibold text-foreground"> Google Agent Level 3</span> 수준을 달성했습니다.
+            <span className="font-semibold text-foreground">5개 AI 에이전트</span>가 실시간으로 동시 협업하며 최적의 차량을 찾아드립니다.
           </p>
         </div>
 
