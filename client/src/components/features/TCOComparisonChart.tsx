@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingDown, Wallet, Info, Award } from "lucide-react";
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Wallet, Info, Award, Zap } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
 
@@ -31,20 +31,43 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
   const rankBgColors = ["bg-yellow-500", "bg-blue-500", "bg-red-500"];
   const rankLabels = ["🥇 1위", "🥈 2위", "🥉 3위"];
 
-  // ✅ Phase 6-1: Area Chart 타임라인 데이터 준비
-  const timelineData = vehiclesWithTCO[0].tco!.timeline!.map((_, yearIndex) => {
-    const dataPoint: any = {
-      year: `${yearIndex}년차`
-    };
+  // ✅ Phase 6-2: Radar Chart 데이터 준비 (5개 비용 항목)
+  const radarData = [
+    { category: '취득세', key: 'acquisitionTax', fullMark: 500 },
+    { category: '자동차세', key: 'vehicleTax', fullMark: 300 },
+    { category: '정비비', key: 'maintenance', fullMark: 1000 },
+    { category: '감가상각', key: 'depreciation', fullMark: 1500 },
+    { category: '연료비', key: 'fuelCost', fullMark: 1000 }
+  ].map(item => {
+    const dataPoint: any = { category: item.category };
 
-    vehiclesWithTCO.forEach((vehicle, vIndex) => {
-      const yearData = vehicle.tco!.timeline![yearIndex];
-      const vehicleName = `${vehicle.rank}위`;
-      dataPoint[vehicleName] = Math.round(yearData.cumulative / 10000);
+    vehiclesWithTCO.forEach((vehicle, index) => {
+      const value = vehicle.tco!.breakdown[item.key as keyof typeof vehicle.tco.breakdown];
+      dataPoint[`${vehicle.rank}위`] = Math.round(value / 10000); // 만원 단위
     });
 
     return dataPoint;
   });
+
+  // 자동 인사이트 생성
+  const generateInsights = () => {
+    const insights: string[] = [];
+    const categories = ['acquisitionTax', 'vehicleTax', 'maintenance', 'depreciation', 'fuelCost'];
+    const categoryNames = ['취득세', '자동차세', '정비비', '감가상각', '연료비'];
+
+    categories.forEach((key, idx) => {
+      const values = vehiclesWithTCO.map(v => ({
+        rank: v.rank,
+        value: v.tco!.breakdown[key as keyof typeof v.tco.breakdown]
+      }));
+      const lowest = values.reduce((min, curr) => curr.value < min.value ? curr : min);
+      insights.push(`${lowest.rank}위는 ${categoryNames[idx]}이 가장 낮습니다 (${Math.round(lowest.value / 10000)}만원)`);
+    });
+
+    return insights;
+  };
+
+  const insights = generateInsights();
 
   // 최저 TCO 차량 찾기
   const lowestTCOIndex = vehiclesWithTCO.reduce((minIndex, vehicle, index, array) => {
@@ -96,56 +119,81 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* ✅ Phase 6-1: Area Chart - 연도별 누적 비용 추이 */}
+        {/* ✅ Phase 6-2: Radar Chart - 5개 비용 항목 비교 */}
         <div className="bg-background/50 p-4 rounded-lg border border-border">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <TrendingDown className="w-4 h-4" />
-            {vehiclesWithTCO[0].tco!.ownershipYears}년간 누적 비용 추이
+            <Zap className="w-4 h-4 text-primary" />
+            비용 항목별 비교 분석
           </h3>
 
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis
-                dataKey="year"
-                tick={{ fontSize: 12 }}
-                stroke="#888"
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="#888" strokeOpacity={0.3} />
+              <PolarAngleAxis
+                dataKey="category"
+                tick={{ fontSize: 12, fill: '#888' }}
               />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                stroke="#888"
-                tickFormatter={(value) => {
-                  // 🔧 단위 표시 개선: 0백만원 → 0원, 30백만원 → 3,000만원
-                  if (value === 0) return '0원';
-                  return `${(value / 100).toLocaleString()}백만원`;
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 'auto']}
+                tick={{ fontSize: 10, fill: '#888' }}
+                tickFormatter={(value) => `${value}만원`}
+              />
+              <Tooltip
+                content={({ payload }) => {
+                  if (payload && payload.length) {
+                    return (
+                      <Card className="border-2 shadow-lg">
+                        <CardContent className="p-3 space-y-1">
+                          <p className="font-bold text-sm mb-2">{payload[0].payload.category}</p>
+                          {payload.map((entry: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between gap-4 text-xs">
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: entry.stroke }}
+                                />
+                                {entry.name}
+                              </span>
+                              <span className="font-semibold">{entry.value.toLocaleString()}만원</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  return null;
                 }}
               />
-              <Tooltip content={<CustomTooltip />} />
               <Legend
-                wrapperStyle={{ paddingTop: '20px' }}
+                wrapperStyle={{ paddingTop: '10px' }}
                 iconType="circle"
               />
               {vehiclesWithTCO.map((vehicle, index) => (
-                <Area
+                <Radar
                   key={vehicle.id}
-                  type="monotone"
+                  name={`${vehicle.rank}위`}
                   dataKey={`${vehicle.rank}위`}
-                  stackId="1"
                   stroke={vehicleColors[index]}
                   fill={vehicleColors[index]}
-                  fillOpacity={0.6}
-                  strokeWidth={3}
+                  fillOpacity={0.25}
+                  strokeWidth={2}
                 />
               ))}
-            </AreaChart>
+            </RadarChart>
           </ResponsiveContainer>
 
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          {/* 자동 인사이트 */}
+          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-2 text-xs">
               <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-blue-700 dark:text-blue-300">
-                <strong>차트 해석:</strong> 영역이 넓을수록 누적 비용이 높습니다.
-                시간이 지날수록 감가상각과 연료비가 누적되어 총 소유비용이 증가합니다.
+              <div className="text-blue-700 dark:text-blue-300 space-y-1">
+                <strong>💡 자동 분석 결과:</strong>
+                <ul className="list-disc list-inside space-y-0.5 mt-1">
+                  {insights.slice(0, 3).map((insight, idx) => (
+                    <li key={idx}>{insight}</li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
