@@ -193,8 +193,8 @@ export class SearcherAgent {
       // 가격 필터
       if (v.price && (v.price < minPrice || v.price > maxPrice)) return false;
 
-      // 연식 필터 (15년 이내)
-      if (v.modelYear && v.modelYear < currentYear - 15) return false;
+      // 연식 필터 (10년 이내 → 2016~2026년)
+      if (v.modelYear && v.modelYear < currentYear - 10) return false;
 
       // 주행거리 필터 (20만km 이하)
       if (v.distance && v.distance > 200000) return false;
