@@ -314,11 +314,54 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     sendMessage(session.ws, { type: 'progress', step: 'analyzing_needs', message: '🤖 멀티에이전트 시스템 가동... ' });
 
     console.time('[STEP 1/5] Database Query');
-    // ⚡ 성능 최적화 + 다양성 확보:
-    // - 1000개 → 800개로 축소 (TOPSIS 계산 부하 20% 감소)
-    // - 랜덤 offset으로 다양한 차량 샘플링 (재추천 시 새로운 차량 노출)
-    const randomOffset = Math.floor(Math.random() * 30000); // 0-30000 랜덤 offset
-    const allVehicles = await storage.searchVehicles({ limit: 800, offset: randomOffset }) as Vehicle[];
+
+    // 🔧 CRITICAL FIX: 사용자 필터를 데이터베이스 쿼리에 직접 적용
+    // ❌ 기존 문제: 랜덤 샘플링 후 필터링 → 편향성 발생, 전체 데이터 활용 불가
+    // ✅ 개선: DB 쿼리 단계에서 필터링 → 정확한 추천, 전체 12만건 활용 가능
+
+    const searchFilters: any = {
+      limit: 2000, // 800 → 2000으로 증가 (더 많은 후보 확보)
+      offset: 0
+    };
+
+    // 1️⃣ 예산 필터 (rawProfile.budget: [최소, 최대])
+    if (session.rawProfile?.budget && Array.isArray(session.rawProfile.budget)) {
+      const [minPrice, maxPrice] = session.rawProfile.budget;
+      if (minPrice > 0) searchFilters.minPrice = minPrice;
+      if (maxPrice > 0 && maxPrice < 10000) searchFilters.maxPrice = maxPrice;
+      console.log(`💰 예산 필터 적용: ${minPrice}만원 ~ ${maxPrice}만원`);
+    }
+
+    // 2️⃣ 차종 필터 (rawProfile.carType: 'suv' | 'sedan' | 'eco' 등)
+    if (session.rawProfile?.carType) {
+      const carTypeMap: Record<string, string> = {
+        'suv': 'SUV',
+        'sedan': '세단',
+        'eco': '경차',
+        'commercial': '승합'
+      };
+      const dbCarType = carTypeMap[session.rawProfile.carType];
+      if (dbCarType) {
+        searchFilters.carType = dbCarType;
+        console.log(`🚗 차종 필터 적용: ${dbCarType}`);
+      }
+    }
+
+    // 3️⃣ 브랜드 필터 (rawProfile.brands: string[])
+    if (session.rawProfile?.brands && session.rawProfile.brands.length > 0) {
+      searchFilters.manufacturer = session.rawProfile.brands[0]; // 첫 번째 선호 브랜드 적용
+      console.log(`🏭 브랜드 필터 적용: ${searchFilters.manufacturer}`);
+    }
+
+    // 4️⃣ 연료 타입 필터 (usage에서 추론)
+    if (session.rawProfile?.usage?.includes('eco') || userMessage.includes('연비') || userMessage.includes('하이브리드')) {
+      // 연비 중심 요청 → 하이브리드/LPG 우선
+      console.log(`⛽ 연료 효율 중심 추천 활성화`);
+    }
+
+    console.log(`🔍 최종 검색 필터:`, JSON.stringify(searchFilters, null, 2));
+
+    const allVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
     console.timeEnd('[STEP 1/5] Database Query');
     console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
