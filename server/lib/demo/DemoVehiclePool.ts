@@ -207,31 +207,22 @@ export function createDemoVehiclePool(
 
   console.log(`🎯 [DemoPool] 시연용 차량 풀 생성 시작`);
   console.log(`📊 입력: ${allVehicles.length}대, 차종: ${requestedCarType || '미지정'}, 예산: ${budget ? `${budget[0]}~${budget[1]}만원` : '미지정'}`);
-  console.log(`📅 연식 필터: ${minYear}년 ~ ${currentYear}년 (5년 이내, 미래 연식 차단)`);
-
-  // 단계별 필터링 (진단용)
+  // 단계별 필터링
   let step1 = allVehicles.filter(v => !isDummyPrice(v.price));
-  console.log(`[Filter 1] 더미 가격 제거: ${allVehicles.length}대 → ${step1.length}대`);
 
   const effectiveMin = (budget && budget[0] > 0) ? budget[0] : DEMO_FILTERS.price.min;
   const effectiveMax = budget ? budget[1] : DEMO_FILTERS.price.max;
   let step2 = step1.filter(v => v.price && v.price >= effectiveMin && v.price <= effectiveMax);
-  console.log(`[Filter 2] 가격 범위 (${effectiveMin}~${effectiveMax}만원): ${step1.length}대 → ${step2.length}대`);
 
   let step3 = step2.filter(v => v.modelYear && v.modelYear >= minYear && v.modelYear <= currentYear);
-  console.log(`[Filter 3] 연식 (${minYear}~${currentYear}년): ${step2.length}대 → ${step3.length}대`);
 
   let step4 = step3.filter(v => !v.distance || v.distance <= DEMO_FILTERS.distance.max);
-  console.log(`[Filter 4] 주행거리 (${DEMO_FILTERS.distance.max}km 이하): ${step3.length}대 → ${step4.length}대`);
 
   let step5 = step4.filter(v => hasValidDetailUrl(v));
-  console.log(`[Filter 5] 유효한 링크: ${step4.length}대 → ${step5.length}대`);
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
-  console.log(`[Filter 6] 차종 매칭 (${requestedCarType || '미지정'}): ${step5.length}대 → ${step6.length}대`);
 
   const vetted = step6;
-  console.log(`✅ [DemoPool] 최종 필터링 완료: ${allVehicles.length}대 → ${vetted.length}대`);
 
   // 🏆 인기 모델 우선 정렬
   vetted.sort((a, b) => {
@@ -249,20 +240,7 @@ export function createDemoVehiclePool(
   // 🎯 상위 500대로 제한 (너무 많으면 성능 저하)
   const finalPool = vetted.slice(0, 500);
 
-  console.log(`🎯 [DemoPool] 최종 검증 완료: ${finalPool.length}대 (인기 모델 우선 정렬)`);
-
-  // 📊 통계 출력
-  const stats = {
-    total: finalPool.length,
-    brands: new Set(finalPool.map(v => v.manufacturer)).size,
-    models: new Set(finalPool.map(v => v.model)).size,
-    avgPrice: Math.round(finalPool.reduce((sum, v) => sum + (v.price || 0), 0) / finalPool.length),
-    avgYear: Math.round(finalPool.reduce((sum, v) => sum + (v.modelYear || 0), 0) / finalPool.length),
-    avgDistance: Math.round(finalPool.reduce((sum, v) => sum + (v.distance || 0), 0) / finalPool.length)
-  };
-
-  console.log(`📊 [DemoPool] 통계:`, JSON.stringify(stats, null, 2));
-  console.log(`🏆 [DemoPool] 상위 5개 모델:`, finalPool.slice(0, 5).map(v => `${v.manufacturer} ${v.model} (${v.price}만원)`));
+  console.log(`✅ [DemoPool] 최종: ${allVehicles.length}대 → ${finalPool.length}대 (인기 모델 정렬)`);
 
   return finalPool;
 }

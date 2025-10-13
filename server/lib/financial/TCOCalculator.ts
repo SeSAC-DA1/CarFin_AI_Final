@@ -406,8 +406,6 @@ export class TCOCalculator {
     const { vehicle, annualKm, ownershipYears, currentYear } = input;
     const timeline: TCOYearlyBreakdown[] = [];
 
-    console.log(`📊 TCO 타임라인 계산 시작: ${ownershipYears}년`);
-
     // 배기량 추정
     let displacement = vehicle.displacement;
     if (!displacement) {
@@ -470,8 +468,6 @@ export class TCOCalculator {
         yearTotal,
         cumulative: cumulativeTotal
       });
-
-      console.log(`  📅 ${year}년차: ${yearTotal.toLocaleString()}원 (누적: ${cumulativeTotal.toLocaleString()}원)`);
     }
 
     return timeline;

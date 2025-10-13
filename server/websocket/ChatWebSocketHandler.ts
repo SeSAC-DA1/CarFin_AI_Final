@@ -34,9 +34,7 @@ interface ChatSession {
 const sessions = new Map<string, ChatSession>();
 
 export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
-  console.log(`🔌 [${sessionId.substring(0, 8)}] WebSocket 연결 시작`);
-  console.log(`📊 [${sessionId.substring(0, 8)}] 현재 활성 세션 수:`, sessions.size);
-  console.log(`📡 [${sessionId.substring(0, 8)}] WebSocket.readyState:`, ws.readyState, '(1=OPEN)');
+  console.log(`🔌 [${sessionId.substring(0, 8)}] WebSocket 연결 (활성: ${sessions.size + 1})`);
 
   // 중복 세션 감지
   if (sessions.has(sessionId)) {
@@ -64,25 +62,17 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
 
   ws.on('message', async (data) => {
     const rawData = data.toString();
-    console.log(`🔔 [${sessionId.substring(0, 8)}] RAW 메시지 수신 (${typeof data}):`, rawData.substring(0, 100));
-    console.log(`📊 [${sessionId.substring(0, 8)}] WebSocket.readyState:`, ws.readyState);
-    console.log(`🆔 [${sessionId.substring(0, 8)}] Session exists:`, sessions.has(sessionId));
 
     try {
       const message = JSON.parse(rawData);
-      console.log(`📨 [${sessionId.substring(0, 8)}] 파싱 성공:`, message.type);
 
       if (message.type === 'user_message') {
-        console.log(`💬 [${sessionId.substring(0, 8)}] 사용자 메시지 처리 시작:`, message.content.substring(0, 50));
         await handleUserMessage(sessionId, message.content, message.userProfile);
-        console.log(`✅ [${sessionId.substring(0, 8)}] 사용자 메시지 처리 완료`);
       } else if (message.type === 'get_insights') {
-        console.log(`🔍 [${sessionId.substring(0, 8)}] Insights 요청:`, message.vehicleId);
         await handleGetInsights(sessionId, message.vehicleId);
       }
     } catch (error) {
-      console.error(`❌ [${sessionId.substring(0, 8)}] WebSocket message error:`, error);
-      console.error(`📄 [${sessionId.substring(0, 8)}] 실패한 메시지:`, rawData);
+      console.error(`❌ [${sessionId.substring(0, 8)}] 메시지 처리 실패:`, error);
       sendMessage(ws, {
         type: 'error',
         content: '메시지 처리 중 오류가 발생했습니다.',
@@ -91,9 +81,8 @@ export function setupChatWebSocket(ws: WebSocket, sessionId: string) {
   });
 
   ws.on('close', (code, reason) => {
-    console.log(`🔌 [${sessionId.substring(0, 8)}] WebSocket 연결 해제. Code:`, code, 'Reason:', reason?.toString());
     sessions.delete(sessionId);
-    console.log(`📊 남은 세션 수:`, sessions.size);
+    console.log(`🔌 [${sessionId.substring(0, 8)}] 연결 해제 (남은 세션: ${sessions.size})`);
   });
 
   ws.on('error', (error) => {
@@ -159,17 +148,12 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
 
     // ✅ 핵심 개선: 시연 시나리오 메시지 감지 및 강제 추천
     const isDemoScenario = userMessage.includes('연간') && userMessage.includes('km') && userMessage.includes('보유');
-    console.log(`🎬 시연 모드 감지: ${isDemoScenario}`);
 
     // ✅ 더 관대한 조건: 항상 추천 시도 (내일 발표용)
     const hasMinimalInfo = true; // 🚨 긴급: 항상 true (100% 추천 실행)
 
-    console.log(`✅ 추천 조건 충족: ${hasMinimalInfo}`);
-
     if (hasMinimalInfo || isDemoScenario) {
-      console.log(`✅ 추천 시스템 실행 시작 (시연모드: ${isDemoScenario})`);
       await handleMultiAgentRecommendation(session, userMessage);
-      console.log(`✅ 추천 시스템 실행 완료`);
 
       // 🐛 FIX: 추천 결과 표시를 방해하지 않도록 추가 질문 비활성화
       // 사용자가 추천 결과를 보고 더 많은 정보를 제공하면 자연스럽게 다시 추천
@@ -487,19 +471,14 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
       allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget);
     }
 
-    console.log(`✅ [DemoPool] 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대 (더미 데이터 제거, 링크 검증, 인기 모델 우선)`);
-
     console.timeEnd('[STEP 1/5] Database Query');
-    console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
     // 🎯 Step 4: 검색 완료
-    console.log(`📤 [PROGRESS] db_search_done 전송 시작`);
     sendDetailedProgress(session.ws, 'db_search_done', `✅ ${allVehicles.length.toLocaleString()}대 조건 부합 발견!`, {
       progress: 60,
       agent: 'searcher',
       count: allVehicles.length
     });
-    console.log(`📤 [PROGRESS] db_search_done 전송 완료`);
 
     if (allVehicles.length === 0) {
       console.error('❌ 링크가 있는 차량이 없습니다!');
