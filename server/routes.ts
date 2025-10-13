@@ -94,6 +94,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🔍 Database Diagnostic Endpoint
+  app.get("/api/system/db-diagnostic", async (_req, res) => {
+    try {
+      const { pool } = await import('./db');
+
+      // 총 차량 수
+      const countResult = await pool.query('SELECT COUNT(*) as total FROM vehicles;');
+      const totalCount = parseInt(countResult.rows[0].total);
+
+      // car_type 분포
+      const carTypeResult = await pool.query(`
+        SELECT car_type, COUNT(*) as count
+        FROM vehicles
+        GROUP BY car_type
+        ORDER BY count DESC
+        LIMIT 20;
+      `);
+
+      // SUV 차량 수
+      const suvCountResult = await pool.query("SELECT COUNT(*) FROM vehicles WHERE car_type = 'SUV';");
+      const suvCount = parseInt(suvCountResult.rows[0].count);
+
+      // 투싼 검색
+      const tucsonResult = await pool.query("SELECT COUNT(*) FROM vehicles WHERE model LIKE '%투싼%';");
+      const tucsonCount = parseInt(tucsonResult.rows[0].count);
+
+      // 세단 검색
+      const sedanResult = await pool.query("SELECT COUNT(*) FROM vehicles WHERE car_type = '세단';");
+      const sedanCount = parseInt(sedanResult.rows[0].count);
+
+      // 제조사 분포
+      const manuResult = await pool.query(`
+        SELECT manufacturer, COUNT(*) as count
+        FROM vehicles
+        GROUP BY manufacturer
+        ORDER BY count DESC
+        LIMIT 10;
+      `);
+
+      // 정상 여부 판단
+      const isHealthy = totalCount > 100000 && suvCount > 1000 && tucsonCount > 10;
+
+      res.json({
+        timestamp: new Date().toISOString(),
+        database_health: isHealthy ? 'healthy' : 'corrupted',
+        total_vehicles: totalCount,
+        car_type_distribution: carTypeResult.rows,
+        suv_count: suvCount,
+        tucson_count: tucsonCount,
+        sedan_count: sedanCount,
+        manufacturer_distribution: manuResult.rows,
+        health_checks: {
+          total_vehicles_ok: totalCount > 100000,
+          suv_vehicles_ok: suvCount > 1000,
+          tucson_vehicles_ok: tucsonCount > 10
+        },
+        issues: isHealthy ? [] : [
+          totalCount <= 100000 && `차량 수 부족 (${totalCount} < 100,000)`,
+          suvCount <= 1000 && `SUV 부족 (${suvCount} < 1,000)`,
+          tucsonCount <= 10 && `투싼 부족 (${tucsonCount} < 10)`
+        ].filter(Boolean)
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to run database diagnostic",
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   app.get("/api/vehicles/search", async (req, res) => {
     try {
       const filters: VehicleSearchFilters = {
