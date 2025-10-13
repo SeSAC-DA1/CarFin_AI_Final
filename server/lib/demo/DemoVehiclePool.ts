@@ -209,35 +209,29 @@ export function createDemoVehiclePool(
   console.log(`📊 입력: ${allVehicles.length}대, 차종: ${requestedCarType || '미지정'}, 예산: ${budget ? `${budget[0]}~${budget[1]}만원` : '미지정'}`);
   console.log(`📅 연식 필터: ${minYear}년 ~ ${currentYear}년 (5년 이내, 미래 연식 차단)`);
 
-  const vetted = allVehicles.filter(v => {
-    // 1️⃣ 더미 가격 제거
-    if (isDummyPrice(v.price)) return false;
+  // 단계별 필터링 (진단용)
+  let step1 = allVehicles.filter(v => !isDummyPrice(v.price));
+  console.log(`[Filter 1] 더미 가격 제거: ${allVehicles.length}대 → ${step1.length}대`);
 
-    // 2️⃣ 가격 범위 (500~5000만원 기본, 사용자 예산 우선)
-    const effectiveMin = budget ? budget[0] : DEMO_FILTERS.price.min;
-    const effectiveMax = budget ? budget[1] : DEMO_FILTERS.price.max;
-    if (!v.price || v.price < effectiveMin || v.price > effectiveMax) return false;
+  const effectiveMin = (budget && budget[0] > 0) ? budget[0] : DEMO_FILTERS.price.min;
+  const effectiveMax = budget ? budget[1] : DEMO_FILTERS.price.max;
+  let step2 = step1.filter(v => v.price && v.price >= effectiveMin && v.price <= effectiveMax);
+  console.log(`[Filter 2] 가격 범위 (${effectiveMin}~${effectiveMax}만원): ${step1.length}대 → ${step2.length}대`);
 
-    // 3️⃣ 연식 체크 (5년 이내 + 미래 연식 차단)
-    if (!v.modelYear || v.modelYear < minYear || v.modelYear > currentYear) return false;
+  let step3 = step2.filter(v => v.modelYear && v.modelYear >= minYear && v.modelYear <= currentYear);
+  console.log(`[Filter 3] 연식 (${minYear}~${currentYear}년): ${step2.length}대 → ${step3.length}대`);
 
-    // 4️⃣ 주행거리 체크 (10만km 이하)
-    if (v.distance && v.distance > DEMO_FILTERS.distance.max) return false;
+  let step4 = step3.filter(v => !v.distance || v.distance <= DEMO_FILTERS.distance.max);
+  console.log(`[Filter 4] 주행거리 (${DEMO_FILTERS.distance.max}km 이하): ${step3.length}대 → ${step4.length}대`);
 
-    // 5️⃣ 신뢰 브랜드만 (DB에서 이미 필터링되었으므로 중복 체크 제거)
-    // if (!DEMO_FILTERS.trustedBrands.includes(v.manufacturer || '')) return false;
+  let step5 = step4.filter(v => hasValidDetailUrl(v));
+  console.log(`[Filter 5] 유효한 링크: ${step4.length}대 → ${step5.length}대`);
 
-    // 6️⃣ 유효한 링크 필수
-    if (!hasValidDetailUrl(v)) return false;
+  let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
+  console.log(`[Filter 6] 차종 매칭 (${requestedCarType || '미지정'}): ${step5.length}대 → ${step6.length}대`);
 
-    // 7️⃣ 차종 매칭 (요청된 경우)
-    if (requestedCarType && !matchesCarType(v, requestedCarType)) return false;
-
-    // ✅ 모든 필터 통과
-    return true;
-  });
-
-  console.log(`✅ [DemoPool] 1차 필터링 완료: ${allVehicles.length}대 → ${vetted.length}대`);
+  const vetted = step6;
+  console.log(`✅ [DemoPool] 최종 필터링 완료: ${allVehicles.length}대 → ${vetted.length}대`);
 
   // 🏆 인기 모델 우선 정렬
   vetted.sort((a, b) => {
