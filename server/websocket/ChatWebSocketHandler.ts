@@ -152,28 +152,22 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
 
   // 🆕 개선된 대화 흐름: 최소 정보만 있으면 추천 실행
   try {
-    const analyzer = new ProfileCompletenessAnalyzer();
-    const completenessReport = analyzer.analyzeProfile(session.rawProfile);
-
-    console.log(`📊 프로필 완성도: ${completenessReport.completenessScore}%`);
+    console.log('🔍 [DEBUG] 추천 시스템 진입 시도');
     console.log(`📋 현재 프로필:`, JSON.stringify(session.rawProfile, null, 2));
 
     // ✅ 핵심 개선: 시연 시나리오 메시지 감지 및 강제 추천
     const isDemoScenario = userMessage.includes('연간') && userMessage.includes('km') && userMessage.includes('보유');
+    console.log(`🎬 시연 모드 감지: ${isDemoScenario}`);
 
-    // ✅ 더 관대한 조건: 시연 시나리오거나 하나의 조건만 있어도 추천 시도
-    const hasMinimalInfo = isDemoScenario || session.rawProfile && (
-      (session.rawProfile.budget?.length > 0 && session.rawProfile.usage?.length > 0) || // 예산 + 용도
-      (session.rawProfile.budget?.length > 0 && session.rawProfile.carType) ||          // 예산 + 차종
-      (session.rawProfile.usage?.length > 0 && session.rawProfile.carType) ||           // 용도 + 차종
-      session.rawProfile.budget?.length > 0 ||                                          // 예산만
-      session.rawProfile.carType ||                                                     // 차종만
-      userMessage.length > 20                                                           // 긴 메시지 (시연 시나리오)
-    );
+    // ✅ 더 관대한 조건: 항상 추천 시도 (내일 발표용)
+    const hasMinimalInfo = true; // 🚨 긴급: 항상 true (100% 추천 실행)
+
+    console.log(`✅ 추천 조건 충족: ${hasMinimalInfo}`);
 
     if (hasMinimalInfo || isDemoScenario) {
-      console.log(`✅ 추천 시스템 실행 (시연모드: ${isDemoScenario})`);
+      console.log(`✅ 추천 시스템 실행 시작 (시연모드: ${isDemoScenario})`);
       await handleMultiAgentRecommendation(session, userMessage);
+      console.log(`✅ 추천 시스템 실행 완료`);
 
       // 🐛 FIX: 추천 결과 표시를 방해하지 않도록 추가 질문 비활성화
       // 사용자가 추천 결과를 보고 더 많은 정보를 제공하면 자연스럽게 다시 추천
