@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { Wallet, Info, Award, Zap } from "lucide-react";
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, Legend, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
+import { Wallet, Info, Award, Zap, TrendingUp, Calendar } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,42 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
   const rankColors = ["text-yellow-500", "text-blue-500", "text-red-500"];
   const rankBgColors = ["bg-yellow-500", "bg-blue-500", "bg-red-500"];
   const rankLabels = ["🥇 1위", "🥈 2위", "🥉 3위"];
+
+  // ✅ 5년 누적 TCO 추이 데이터 (Line Chart)
+  const cumulativeTCOData = (() => {
+    if (!vehiclesWithTCO[0].tco?.timeline) return [];
+
+    const maxYears = vehiclesWithTCO[0].tco.timeline.length;
+    return Array.from({ length: maxYears }, (_, yearIndex) => {
+      const dataPoint: any = { year: `${yearIndex}년차` };
+
+      vehiclesWithTCO.forEach((vehicle) => {
+        if (vehicle.tco?.timeline && vehicle.tco.timeline[yearIndex]) {
+          dataPoint[`${vehicle.rank}위`] = Math.round(vehicle.tco.timeline[yearIndex].cumulative / 10000);
+        }
+      });
+
+      return dataPoint;
+    });
+  })();
+
+  // ✅ 연간 비용 Bar Chart 데이터
+  const annualCostData = (() => {
+    if (!vehiclesWithTCO[0].tco?.timeline) return [];
+
+    const maxYears = vehiclesWithTCO[0].tco.timeline.length;
+    return Array.from({ length: maxYears }, (_, yearIndex) => {
+      const dataPoint: any = { year: `${yearIndex}년차` };
+
+      vehiclesWithTCO.forEach((vehicle) => {
+        if (vehicle.tco?.timeline && vehicle.tco.timeline[yearIndex]) {
+          dataPoint[`${vehicle.rank}위`] = Math.round(vehicle.tco.timeline[yearIndex].yearTotal / 10000);
+        }
+      });
+
+      return dataPoint;
+    });
+  })();
 
   // ✅ Phase 6-2: Radar Chart 데이터 준비 (5개 비용 항목)
   const radarData = [
@@ -119,6 +155,148 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* ✅ 5년 누적 TCO 추이 (Line Chart) - 가장 중요! */}
+        <div className="bg-background/50 p-4 rounded-lg border border-border">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            5년 누적 TCO 추이 (시간에 따른 총비용 증가)
+          </h3>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={cumulativeTCOData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#888" strokeOpacity={0.3} />
+              <XAxis
+                dataKey="year"
+                tick={{ fontSize: 12, fill: '#888' }}
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: '#888' }}
+                tickFormatter={(value) => `${value}만원`}
+              />
+              <Tooltip
+                content={({ payload }) => {
+                  if (payload && payload.length) {
+                    return (
+                      <Card className="border-2 shadow-lg">
+                        <CardContent className="p-3 space-y-1">
+                          <p className="font-bold text-sm mb-2">{payload[0].payload.year}</p>
+                          {payload.map((entry: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between gap-4 text-xs">
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: entry.stroke }}
+                                />
+                                {entry.name}
+                              </span>
+                              <span className="font-semibold">{entry.value.toLocaleString()}만원</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: '10px' }}
+                iconType="circle"
+              />
+              {vehiclesWithTCO.map((vehicle, index) => (
+                <Line
+                  key={vehicle.id}
+                  type="monotone"
+                  dataKey={`${vehicle.rank}위`}
+                  stroke={vehicleColors[index]}
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: vehicleColors[index] }}
+                  activeDot={{ r: 6 }}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+
+          <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-start gap-2 text-xs">
+              <Info className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <div className="text-green-700 dark:text-green-300">
+                <strong>💡 누적 TCO 인사이트:</strong> {vehiclesWithTCO[0].rank}위는 5년 누적 비용이 {Math.round(vehiclesWithTCO[0].tco!.total / 10000).toLocaleString()}만원으로 가장 경제적입니다.
+                {vehiclesWithTCO.length > 1 && ` ${vehiclesWithTCO[1].rank}위 대비 ${Math.round((vehiclesWithTCO[0].tco!.total - vehiclesWithTCO[1].tco!.total) / 10000).toLocaleString()}만원 절약!`}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ✅ 연간 비용 Bar Chart */}
+        <div className="bg-background/50 p-4 rounded-lg border border-border">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            연도별 비용 비교 (각 연도별 발생 비용)
+          </h3>
+
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={annualCostData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#888" strokeOpacity={0.3} />
+              <XAxis
+                dataKey="year"
+                tick={{ fontSize: 12, fill: '#888' }}
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: '#888' }}
+                tickFormatter={(value) => `${value}만원`}
+              />
+              <Tooltip
+                content={({ payload }) => {
+                  if (payload && payload.length) {
+                    return (
+                      <Card className="border-2 shadow-lg">
+                        <CardContent className="p-3 space-y-1">
+                          <p className="font-bold text-sm mb-2">{payload[0].payload.year}</p>
+                          {payload.map((entry: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between gap-4 text-xs">
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: entry.fill }}
+                                />
+                                {entry.name}
+                              </span>
+                              <span className="font-semibold">{entry.value.toLocaleString()}만원</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: '10px' }}
+                iconType="square"
+              />
+              {vehiclesWithTCO.map((vehicle, index) => (
+                <Bar
+                  key={vehicle.id}
+                  dataKey={`${vehicle.rank}위`}
+                  fill={vehicleColors[index]}
+                  radius={[4, 4, 0, 0]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-2 text-xs">
+              <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+              <div className="text-amber-700 dark:text-amber-300">
+                <strong>💡 연간 비용 인사이트:</strong> 0년차는 취득세로 인해 비용이 높고, 이후 감가상각이 시간에 따라 감소합니다. 연료비와 정비비는 매년 일정하게 발생합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ✅ Phase 6-2: Radar Chart - 5개 비용 항목 비교 */}
         <div className="bg-background/50 p-4 rounded-lg border border-border">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
