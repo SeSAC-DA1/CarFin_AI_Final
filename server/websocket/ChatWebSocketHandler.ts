@@ -8,6 +8,7 @@ import { ProfileExtractor, type ExtractedProfileUpdate } from "../lib/agents/Pro
 import { ProfileCompletenessAnalyzer } from "../lib/agents/ProfileCompletenessAnalyzer";
 import { SmartQuestionEngine } from "../lib/agents/SmartQuestionEngine";
 import { railwayRedisService } from "../lib/cache/RailwayRedisService";
+import { createDemoVehiclePool, getDemoScenarioAPool } from "../lib/demo/DemoVehiclePool";
 
 function getVehicleImage(manufacturer: string, photo?: string | null): string {
   if (photo && photo.trim() !== '') {
@@ -447,29 +448,30 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     const rawVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
     console.log(`🔍 DB 쿼리 완료: ${rawVehicles.length}대`);
 
-    // 🔧 Phase 2: detailUrl + 가격 필터링 (링크 있고 가격 정상인 차량만)
-    const allVehicles = rawVehicles.filter(v => {
-      // detailUrl 검증
-      const hasValidLink = v.detailUrl &&
-        v.detailUrl.trim() !== '' &&
-        (v.detailUrl.includes('http') || v.detailUrl.startsWith('/'));
+    // 🎯 Phase 4: 시연용 검증된 차량 풀 생성 (300-500대)
+    console.log(`🎬 [DemoPool] 시연 모드 활성화 - 검증된 차량 풀 생성 시작`);
 
-      // 가격 정상 범위 검증 (500만원 ~ 10000만원)
-      const hasValidPrice = v.price && v.price >= 500 && v.price <= 10000;
+    let allVehicles: Vehicle[];
 
-      if (!hasValidLink) {
-        console.log(`🚫 링크 없음: ${v.manufacturer} ${v.model} (${v.price}만원)`);
-        return false;
-      }
+    // 시나리오 A 감지: "3000만원 이하 SUV"
+    const isScenarioA = (
+      userMessage.includes('SUV') &&
+      (userMessage.includes('3000') || userMessage.includes('삼천'))
+    );
 
-      if (!hasValidPrice) {
-        console.log(`🚫 비정상 가격: ${v.manufacturer} ${v.model} (${v.price}만원)`);
-        return false;
-      }
+    if (isScenarioA) {
+      console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
+      allVehicles = getDemoScenarioAPool(rawVehicles);
+    } else {
+      // 일반 시연: 차종/예산 기반 필터링
+      const requestedCarType = session.rawProfile?.carType || (userMessage.includes('SUV') ? 'SUV' : undefined);
+      const budget = session.rawProfile?.budget as [number, number] | undefined;
 
-      return true;
-    });
-    console.log(`🔗 링크+가격 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대`);
+      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}`);
+      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget);
+    }
+
+    console.log(`✅ [DemoPool] 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대 (더미 데이터 제거, 링크 검증, 인기 모델 우선)`);
 
     console.timeEnd('[STEP 1/5] Database Query');
     console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
