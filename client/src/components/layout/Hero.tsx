@@ -1,8 +1,31 @@
 import { ArrowRight, Sparkles, Database, Zap, MessageCircle, Search, BarChart3, Shield, Clock, Award, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [vehicleCount, setVehicleCount] = useState<number>(127378); // 기본값
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 실시간 매물 수 가져오기
+    const fetchVehicleCount = async () => {
+      try {
+        const response = await fetch('/api/vehicles/count');
+        if (response.ok) {
+          const data = await response.json();
+          setVehicleCount(data.count);
+        }
+      } catch (error) {
+        console.error('Failed to fetch vehicle count:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVehicleCount();
+  }, []);
+
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden">
       {/* Background with gradient overlay */}
@@ -54,11 +77,20 @@ export default function Hero() {
             <div className="flex flex-wrap gap-8 pt-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-chart-1/10 rounded-lg">
-                  <Search className="w-6 h-6 text-chart-1" />
+                  <Database className="w-6 h-6 text-chart-1" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">127,378대</p>
-                  <p className="text-xs text-muted-foreground">실시간 매물</p>
+                  <p className="text-lg font-semibold">
+                    {isLoading ? (
+                      <span className="animate-pulse">로딩 중...</span>
+                    ) : (
+                      <span className="font-mono">{vehicleCount.toLocaleString()}대</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-green-500" />
+                    AirFlow 실시간 업데이트
+                  </p>
                 </div>
               </div>
 
