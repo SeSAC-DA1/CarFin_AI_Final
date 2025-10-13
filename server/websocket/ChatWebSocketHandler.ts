@@ -438,14 +438,12 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
     }
 
     // 3️⃣ 브랜드 필터 (시연용 신뢰 브랜드만 - 성능 최적화)
-    // ✅ DB 단계에서 현대/기아/제네시스만 조회 → 쿼리 성능 90% 향상
-    const trustedBrands = ['현대', '기아', '제네시스'];
+    // ✅ DB 단계에서 신뢰 브랜드만 조회 → 쿼리 성능 90% 향상
+    const trustedBrands = ['현대', '기아', '제네시스', '쉐보레', '쉐보레(GM대우)'];
     if (finalCriteria.brands && finalCriteria.brands.length > 0) {
       searchFilters.manufacturers = finalCriteria.brands; // 키워드 매핑 우선
-      console.log(`🏭 브랜드 필터: ${finalCriteria.brands.join(', ')} (출처: 키워드)`);
     } else {
       searchFilters.manufacturers = trustedBrands; // 기본값: 신뢰 브랜드
-      console.log(`🏭 브랜드 필터: ${trustedBrands.join(', ')} (출처: 기본값)`);
     }
 
     // 4️⃣ 연료 타입 필터 (usage에서 추론)

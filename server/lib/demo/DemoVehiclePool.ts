@@ -36,8 +36,8 @@ export const DEMO_FILTERS = {
     max: 100000             // 10만km 이하
   },
 
-  // 🏷️ 신뢰 브랜드 (국내 메이저)
-  trustedBrands: ['현대', '기아', '제네시스'],
+  // 🏷️ 신뢰 브랜드 (국내 메이저 + 쉐보레)
+  trustedBrands: ['현대', '기아', '제네시스', '쉐보레', '쉐보레(GM대우)'],
 
   // 🚗 인기 SUV 모델 (시연 시나리오 A용)
   popularSUVs: [
@@ -50,6 +50,9 @@ export const DEMO_FILTERS = {
     'GV70',
     'GV80',
     '셀토스',
+    '코나',              // 현대 소형 SUV
+    '트랙스',            // 쉐보레 소형 SUV
+    '트랙스 크로스오버',  // 쉐보레 신형
     'XM3'
   ],
 
