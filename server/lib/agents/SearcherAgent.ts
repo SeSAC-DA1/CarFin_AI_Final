@@ -222,20 +222,20 @@ export class SearcherAgent {
         }
       }
 
-      // 브랜드 필터 (선호 브랜드가 있을 경우)
-      if (targetBrands && targetBrands.length > 0) {
-        const vehicleBrand = (v.manufacturer || '').toLowerCase();
-        const matchesBrand = targetBrands.some(brand =>
-          vehicleBrand.includes(brand.toLowerCase())
-        );
-
-        if (!matchesBrand) {
-          console.log(`🚫 브랜드 불일치: ${v.manufacturer} (선호: ${targetBrands.join(', ')})`);
-          return false;
-        }
-
-        console.log(`✅ 브랜드 매칭: ${v.manufacturer}`);
-      }
+      // 🔧 브랜드 필터 완화: 선호 브랜드는 TOPSIS에서 가점으로 처리
+      // ❌ 기존: 선호 브랜드 아니면 무조건 제외 → 추천 불가
+      // ✅ 개선: 모든 브랜드 허용, TOPSIS에서 선호 브랜드 가점
+      // if (targetBrands && targetBrands.length > 0) {
+      //   const vehicleBrand = (v.manufacturer || '').toLowerCase();
+      //   const matchesBrand = targetBrands.some(brand =>
+      //     vehicleBrand.includes(brand.toLowerCase())
+      //   );
+      //   if (!matchesBrand) {
+      //     console.log(`🚫 브랜드 불일치: ${v.manufacturer} (선호: ${targetBrands.join(', ')})`);
+      //     return false;
+      //   }
+      //   console.log(`✅ 브랜드 매칭: ${v.manufacturer}`);
+      // }
 
       return true;
     });

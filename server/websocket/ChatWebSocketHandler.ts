@@ -423,11 +423,14 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
       }
     }
 
-    // 3️⃣ 브랜드 필터 (rawProfile.brands: string[])
-    if (session.rawProfile?.brands && session.rawProfile.brands.length > 0) {
-      searchFilters.manufacturer = session.rawProfile.brands[0]; // 첫 번째 선호 브랜드 적용
-      console.log(`🏭 브랜드 필터 적용: ${searchFilters.manufacturer}`);
-    }
+    // 3️⃣ 브랜드 필터 제거 (DB 단계에서는 모든 브랜드 허용)
+    // ✅ 개선: DB 쿼리에서는 브랜드 제한 없이 충분한 후보 확보
+    // → SearcherAgent와 TOPSIS에서 선호 브랜드 가점 부여
+    // if (session.rawProfile?.brands && session.rawProfile.brands.length > 0) {
+    //   searchFilters.manufacturer = session.rawProfile.brands[0];
+    //   console.log(`🏭 브랜드 필터 적용: ${searchFilters.manufacturer}`);
+    // }
+    console.log(`🏭 브랜드: 모든 브랜드 허용 (선호: ${session.rawProfile?.brands?.join(', ') || '없음'})`);
 
     // 4️⃣ 연료 타입 필터 (usage에서 추론)
     if (session.rawProfile?.usage?.includes('eco') || userMessage.includes('연비') || userMessage.includes('하이브리드')) {
