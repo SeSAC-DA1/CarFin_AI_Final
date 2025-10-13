@@ -442,24 +442,45 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
 
     // 🎯 Step 3: DB 검색 시작
     const totalVehicles = 159578; // 전체 매물 수
+    console.log(`📤 [PROGRESS] db_search_start 전송 시작`);
     sendDetailedProgress(session.ws, 'db_search_start', `🔍 Searcher: ${totalVehicles.toLocaleString()}대 검색 중...`, {
       progress: 40,
       agent: 'searcher'
     });
+    console.log(`📤 [PROGRESS] db_search_start 전송 완료`);
 
-    const allVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
+    console.log(`🔍 DB 쿼리 시작...`);
+    const rawVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
+    console.log(`🔍 DB 쿼리 완료: ${rawVehicles.length}대`);
+
+    // 🔧 Phase 2: detailUrl 필터링 (링크 있는 차량만)
+    const allVehicles = rawVehicles.filter(v =>
+      v.detailUrl &&
+      v.detailUrl.trim() !== '' &&
+      (v.detailUrl.includes('http') || v.detailUrl.startsWith('/'))
+    );
+    console.log(`🔗 링크 검증 완료: ${rawVehicles.length}대 → ${allVehicles.length}대`);
+
     console.timeEnd('[STEP 1/5] Database Query');
     console.log(`📊 데이터 로딩 완료: ${allVehicles.length}개 차량, ${Date.now() - startTime}ms`);
 
     // 🎯 Step 4: 검색 완료
+    console.log(`📤 [PROGRESS] db_search_done 전송 시작`);
     sendDetailedProgress(session.ws, 'db_search_done', `✅ ${allVehicles.length.toLocaleString()}대 조건 부합 발견!`, {
       progress: 60,
       agent: 'searcher',
       count: allVehicles.length
     });
+    console.log(`📤 [PROGRESS] db_search_done 전송 완료`);
 
     if (allVehicles.length === 0) {
-      throw new Error('데이터베이스에서 차량을 불러올 수 없습니다.');
+      console.error('❌ 링크가 있는 차량이 없습니다!');
+      sendMessage(session.ws, {
+        type: 'error',
+        content: '조건에 맞는 차량을 찾을 수 없습니다. 다른 조건으로 다시 시도해주세요.',
+        timestamp: new Date()
+      });
+      throw new Error('링크가 있는 차량이 없습니다.');
     }
 
     console.time('[STEP 2/5] MultiAgent System Init');

@@ -239,8 +239,8 @@ export default function ChatInterface() {
                   <MessageBubble key={index} {...message} />
                 ))}
 
-                {/* MACRec 멀티에이전트 협업 뷰어 */}
-                {showMACRecCollaboration && currentUserQuery && (
+                {/* 🔇 Phase 3: 기존 MACRecCollaborationViewer 비활성화 (중복 방지) */}
+                {/* {showMACRecCollaboration && currentUserQuery && (
                   <div className="animate-slide-up" data-testid="macrec-collaboration">
                     <MACRecCollaborationViewer
                       query={currentUserQuery}
@@ -249,20 +249,15 @@ export default function ChatInterface() {
                       className="mb-4"
                     />
                   </div>
-                )}
+                )} */}
 
-                {progress && progress.step !== 'complete' && !showMACRecCollaboration && (
-                  <div className="animate-fade-in space-y-4">
-                    {/* 🆕 Phase 2: 실시간 에이전트 협업 뷰어 */}
+                {progress && progress.step !== 'complete' && (
+                  <div className="animate-fade-in">
+                    {/* 🆕 Phase 2: 실시간 에이전트 협업 뷰어 (LoadingSpinner 제거) */}
                     <AgentCollaborationViewer
                       currentStep={progress.step}
                       progress={progress.progress || 0}
                       foundCount={progress.count}
-                    />
-                    <LoadingSpinner
-                      message={progress.message}
-                      step={progress.step}
-                      className="bg-card/50 backdrop-blur-sm rounded-xl border border-card-border"
                     />
                   </div>
                 )}
