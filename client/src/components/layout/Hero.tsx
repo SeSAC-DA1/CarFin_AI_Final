@@ -44,7 +44,7 @@ export default function Hero() {
               <span className="text-sm font-medium text-primary">논문 2개 + 검증된 방법론 기반</span>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15]">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.15] whitespace-nowrap">
               <span className="bg-gradient-to-r from-primary via-chart-2 to-primary bg-clip-text text-transparent">
                 멀티 에이전트 기반
               </span>
