@@ -228,7 +228,9 @@ export function createDemoVehiclePool(
 
   let step4 = step3.filter(v => !v.distance || v.distance <= DEMO_FILTERS.distance.max);
 
-  let step5 = step4.filter(v => hasValidDetailUrl(v));
+  // 🐛 CRITICAL FIX: detailUrl 필터 완화 (Railway 프로덕션 DB에 detailUrl 없음)
+  // let step5 = step4.filter(v => hasValidDetailUrl(v));
+  let step5 = step4; // detailUrl 필터 비활성화 (0대 방지)
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
