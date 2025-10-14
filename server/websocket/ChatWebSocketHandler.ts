@@ -35,6 +35,7 @@ interface ChatSession {
   previousResults?: Vehicle[];      // 이전 추천 차량 3대
   previousFilters?: any;            // 이전 검색 필터
   refinementCount?: number;         // 재추천 횟수 (무한 루프 방지)
+  initialVehiclePool?: Vehicle[];   // 🆕 첫 추천 시 생성된 차량 풀 (200-300대) - 재추천 시 재사용
 }
 
 const sessions = new Map<string, ChatSession>();
@@ -510,8 +511,8 @@ async function handleMultiAgentRecommendation(
       }
     }
 
-    // 🐛 CRITICAL FIX: sellType 'all'로 설정 → 리스/렌트 매물 포함 (detailUrl 존재)
-    searchFilters.sellType = 'all';
+    // 🎯 일반 매물만 추천 (리스/렌트 제외)
+    searchFilters.sellType = '일반';
 
     console.log(`🔍 최종 검색 필터:`, JSON.stringify(searchFilters, null, 2));
 
@@ -524,50 +525,61 @@ async function handleMultiAgentRecommendation(
     });
     console.log(`📤 [PROGRESS] db_search_start 전송 완료`);
 
-    console.log(`🔍 DB 쿼리 시작...`);
-    const rawVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
-    console.log(`🔍 DB 쿼리 완료: ${rawVehicles.length}대`);
-
-    // 🎯 Phase 4: 시연용 검증된 차량 풀 생성 (300-500대)
-    console.log(`🎬 [DemoPool] 시연 모드 활성화 - 검증된 차량 풀 생성 시작`);
-
-    let allVehicles: Vehicle[];
-
-    // 🗺️ 키워드 매핑 기반 시나리오 감지 (isScenarioA는 위에서 이미 선언됨)
     // 🔄 Phase 2: 모델 필터 추출 (재추천 시)
     const requestedModel = overrideFilters?.model || searchFilters.model;
-
-    console.log(`🔍 [Phase 2] requestedModel 추출:`, {
-      overrideFilters: overrideFilters,
-      searchFilters: searchFilters,
-      finalRequestedModel: requestedModel
-    });
-
-    // 🎯 재추천: 안전성 우선 키워드 감지
     const safetyKeywords = ['무사고', '안전', '안정', '사고 없는', '사고없는', '깨끗한'];
     const isSafetyPriority = safetyKeywords.some(keyword => userMessage.includes(keyword));
 
-    if (isSafetyPriority && requestedModel) {
-      console.log(`🛡️ [DemoPool] 안전성 우선 재추천: 무사고 ${requestedModel} 차량만`);
-    }
+    let allVehicles: Vehicle[];
 
-    if (isScenarioA) {
-      console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=SUV, budget=[0,3000], model=${requestedModel || 'undefined'}, safety=${isSafetyPriority}`);
-      // 🔄 Phase 2: 재추천 시 모델 필터 + 안전성 우선 적용
-      allVehicles = createDemoVehiclePool(rawVehicles, 'SUV', [0, 3000], requestedModel, isSafetyPriority);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 결과: ${allVehicles.length}대`);
+    // 🎯 재추천 시 초기 풀 재사용 (DB 쿼리 생략)
+    if (requestedModel && session.initialVehiclePool && session.initialVehiclePool.length > 0) {
+      console.log(`🔄 [재추천] 초기 차량 풀 재사용: ${session.initialVehiclePool.length}대에서 "${requestedModel}" 필터링`);
+
+      // 초기 풀에서 모델 필터링
+      allVehicles = session.initialVehiclePool.filter(v => {
+        const modelLower = (v.model || '').toLowerCase();
+        const requestedLower = requestedModel.toLowerCase();
+        return modelLower.includes(requestedLower);
+      });
+
+      console.log(`✅ [재추천] 모델 필터 결과: ${allVehicles.length}대`);
+
+      // 안전성 우선이면 무사고 필터 추가
+      if (isSafetyPriority && allVehicles.length > 10) {
+        const noAccident = allVehicles.filter(v =>
+          (v.myAccidentCost === 0 || v.myAccidentCost === null) &&
+          (v.otherAccidentCost === 0 || v.otherAccidentCost === null)
+        );
+        if (noAccident.length >= 10) {
+          console.log(`🛡️ [재추천] 무사고 필터 적용: ${noAccident.length}대`);
+          allVehicles = noAccident;
+        }
+      }
     } else {
-      // 일반 시연: 키워드 매핑 기준 사용
-      const requestedCarType = finalCriteria.carType || session.rawProfile?.carType;
-      const budget = finalCriteria.maxPrice
-        ? [finalCriteria.minPrice || 0, finalCriteria.maxPrice] as [number, number]
-        : session.rawProfile?.budget as [number, number] | undefined;
+      // 첫 추천: DB 쿼리 + 풀 생성
+      console.log(`🔍 DB 쿼리 시작...`);
+      const rawVehicles = await storage.searchVehicles(searchFilters) as Vehicle[];
+      console.log(`🔍 DB 쿼리 완료: ${rawVehicles.length}대`);
 
-      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}, 모델=${requestedModel || '미지정'}, safety=${isSafetyPriority} (출처: 키워드 매핑)`);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=${requestedCarType}, budget=${JSON.stringify(budget)}, model=${requestedModel || 'undefined'}, safety=${isSafetyPriority}`);
-      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget, requestedModel, isSafetyPriority);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 결과: ${allVehicles.length}대`);
+      console.log(`🎬 [DemoPool] 시연 모드 활성화 - 검증된 차량 풀 생성 시작`);
+
+      if (isScenarioA) {
+        console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
+        allVehicles = createDemoVehiclePool(rawVehicles, 'SUV', [0, 3000], requestedModel, isSafetyPriority);
+      } else {
+        const requestedCarType = finalCriteria.carType || session.rawProfile?.carType;
+        const budget = finalCriteria.maxPrice
+          ? [finalCriteria.minPrice || 0, finalCriteria.maxPrice] as [number, number]
+          : session.rawProfile?.budget as [number, number] | undefined;
+
+        console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}, 모델=${requestedModel || '미지정'}`);
+        allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget, requestedModel, isSafetyPriority);
+      }
+
+      // 첫 추천 시 초기 풀 저장
+      session.initialVehiclePool = [...allVehicles];
+      console.log(`✅ [첫 추천] 초기 차량 풀 저장: ${allVehicles.length}대`);
     }
 
     console.timeEnd('[STEP 1/5] Database Query');

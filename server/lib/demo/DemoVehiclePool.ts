@@ -228,8 +228,13 @@ export function createDemoVehiclePool(
 
   let step4 = step3.filter(v => !v.distance || v.distance <= DEMO_FILTERS.distance.max);
 
-  // ✅ detailUrl 필터 복원 (sellType='all' 설정으로 리스/렌트 매물 포함)
-  let step5 = step4.filter(v => hasValidDetailUrl(v));
+  // 🔄 detailUrl 필터 제거 - 일반 매물도 포함
+  // 단, detailUrl 있는 차량을 우선순위로 정렬
+  let step5 = step4.sort((a, b) => {
+    const aHasUrl = hasValidDetailUrl(a) ? 1 : 0;
+    const bHasUrl = hasValidDetailUrl(b) ? 1 : 0;
+    return bHasUrl - aHasUrl; // detailUrl 있는 차량 우선
+  });
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
