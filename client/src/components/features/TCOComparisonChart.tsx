@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { Wallet, Award, TrendingDown, TrendingUp } from "lucide-react";
+import { Wallet, Award, TrendingDown, TrendingUp, Car, DollarSign, AlertCircle } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
 
@@ -17,60 +16,33 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
     return null;
   }
 
-  // 색상 정의
-  const colors = {
-    취득세: "#8B5CF6", // purple
-    자동차세: "#3B82F6", // blue
-    정비비: "#F59E0B", // amber
-    감가상각: "#EF4444", // red
-    연료비: "#10B981"  // green
-  };
+  // TCO 순위 (낮은 순)
+  const sortedByTCO = [...vehiclesWithTCO].sort((a, b) => a.tco!.total - b.tco!.total);
+  const lowestTCO = sortedByTCO[0];
+  const highestTCO = sortedByTCO[sortedByTCO.length - 1];
 
-  const vehicleColors = ["#F59E0B", "#3B82F6", "#EF4444"]; // 1위, 2위, 3위
-  const rankLabels = ["🥇 1위", "🥈 2위", "🥉 3위"];
+  // 🎯 Agent 인사이트 생성
+  const generateAgentInsights = () => {
+    if (vehiclesWithTCO.length < 2) return [];
 
-  // 수평 스택 바 차트 데이터 (각 차량의 5개 비용 항목)
-  const stackedBarData = vehiclesWithTCO.map((vehicle) => {
-    const tco = vehicle.tco!;
-    return {
-      name: `${vehicle.rank}위 ${vehicle.manufacturer} ${vehicle.model?.substring(0, 10) || ''}`,
-      취득세: Math.round(tco.breakdown.acquisitionTax / 10000),
-      자동차세: Math.round(tco.breakdown.vehicleTax / 10000),
-      정비비: Math.round(tco.breakdown.maintenance / 10000),
-      감가상각: Math.round(tco.breakdown.depreciation / 10000),
-      연료비: Math.round(tco.breakdown.fuelCost / 10000),
-      total: Math.round(tco.total / 10000)
-    };
-  });
+    const insights: string[] = [];
 
-  // 최저 TCO 차량 찾기
-  const lowestTCOIndex = vehiclesWithTCO.reduce((minIndex, vehicle, index, array) => {
-    return vehicle.tco!.total < array[minIndex].tco!.total ? index : minIndex;
-  }, 0);
-
-  // 핵심 인사이트 생성 (사용자가 궁금한 것: 어느 차가 더 저렴하고 왜?)
-  const generateKeyInsight = () => {
-    if (vehiclesWithTCO.length < 2) return null;
-
-    const first = vehiclesWithTCO[0];
-    const second = vehiclesWithTCO[1];
-    const diff = Math.round((second.tco!.total - first.tco!.total) / 10000);
-
-    // 가장 큰 차이를 보이는 비용 항목 찾기
+    // 1. 가장 저렴한 차량과 이유
+    const cheapestDiff = Math.round((highestTCO.tco!.total - lowestTCO.tco!.total) / 10000);
     const categories = [
       { key: 'acquisitionTax', name: '취득세' },
-      { key: 'vehicleTax', name: '자동차세' },
-      { key: 'maintenance', name: '정비비' },
       { key: 'depreciation', name: '감가상각' },
-      { key: 'fuelCost', name: '연료비' }
+      { key: 'fuelCost', name: '연료비' },
+      { key: 'maintenance', name: '정비비' },
+      { key: 'vehicleTax', name: '자동차세' }
     ];
 
     let maxDiff = 0;
     let maxCategory = '';
     categories.forEach(({ key, name }) => {
       const diff = Math.abs(
-        first.tco!.breakdown[key as keyof typeof first.tco.breakdown] -
-        second.tco!.breakdown[key as keyof typeof second.tco.breakdown]
+        lowestTCO.tco!.breakdown[key as keyof typeof lowestTCO.tco.breakdown] -
+        highestTCO.tco!.breakdown[key as keyof typeof highestTCO.tco.breakdown]
       );
       if (diff > maxDiff) {
         maxDiff = diff;
@@ -78,15 +50,129 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
       }
     });
 
-    return {
-      cheaper: first.rank,
-      priceDiff: diff,
-      reason: maxCategory,
-      reasonAmount: Math.round(maxDiff / 10000)
-    };
+    insights.push(
+      `🥇 **${lowestTCO.manufacturer} ${lowestTCO.model}**이 가장 경제적입니다. ${highestTCO.manufacturer} ${highestTCO.model}보다 **${cheapestDiff}만원 저렴**하며, 주요 차이는 **${maxCategory}** (${Math.round(maxDiff / 10000)}만원 차이)입니다.`
+    );
+
+    // 2. 연료비 분석
+    const fuelCosts = vehiclesWithTCO.map(v => ({
+      vehicle: v,
+      cost: v.tco!.breakdown.fuelCost
+    })).sort((a, b) => a.cost - b.cost);
+
+    if (fuelCosts.length >= 2) {
+      const bestFuel = fuelCosts[0];
+      const worstFuel = fuelCosts[fuelCosts.length - 1];
+      const fuelDiff = Math.round((worstFuel.cost - bestFuel.cost) / 10000);
+
+      insights.push(
+        `⛽ 연료비는 **${bestFuel.vehicle.manufacturer} ${bestFuel.vehicle.model}**이 가장 저렴합니다 (${Math.round(bestFuel.cost / 10000)}만원). ${worstFuel.vehicle.manufacturer} ${worstFuel.vehicle.model}보다 ${fuelDiff}만원 절감 가능합니다.`
+      );
+    }
+
+    // 3. 감가상각 분석
+    const depreciations = vehiclesWithTCO.map(v => ({
+      vehicle: v,
+      cost: v.tco!.breakdown.depreciation
+    })).sort((a, b) => a.cost - b.cost);
+
+    if (depreciations.length >= 2) {
+      const bestDep = depreciations[0];
+      const worstDep = depreciations[depreciations.length - 1];
+      const depDiff = Math.round((worstDep.cost - bestDep.cost) / 10000);
+
+      insights.push(
+        `📉 감가상각은 **${bestDep.vehicle.manufacturer} ${bestDep.vehicle.model}**이 가장 적습니다 (${Math.round(bestDep.cost / 10000)}만원). 중고차 가격이 상대적으로 안정적이어서 ${depDiff}만원 덜 손실됩니다.`
+      );
+    }
+
+    return insights;
   };
 
-  const keyInsight = generateKeyInsight();
+  const agentInsights = generateAgentInsights();
+
+  // 차량 카드 렌더링
+  const renderVehicleCard = (vehicle: Vehicle, index: number) => {
+    const tco = vehicle.tco!;
+    const isLowest = vehicle === lowestTCO;
+    const total = Math.round(tco.total / 10000);
+
+    const rankColors = [
+      "border-yellow-500 bg-gradient-to-br from-yellow-50 to-amber-50",
+      "border-gray-400 bg-gradient-to-br from-gray-50 to-slate-50",
+      "border-orange-600 bg-gradient-to-br from-orange-50 to-red-50"
+    ];
+
+    const rankIcons = ["🥇", "🥈", "🥉"];
+
+    return (
+      <div
+        key={vehicle.vehicleId}
+        className={cn(
+          "p-6 rounded-xl border-2 shadow-lg transition-all hover:scale-105",
+          rankColors[index] || "border-gray-300 bg-white"
+        )}
+      >
+        {/* 헤더 */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-3xl">{rankIcons[index]}</span>
+            <div>
+              <h3 className="font-bold text-lg text-slate-900">
+                {vehicle.manufacturer} {vehicle.model}
+              </h3>
+              <p className="text-sm text-slate-600">
+                {vehicle.modelYear}년 • {vehicle.fuelType}
+              </p>
+            </div>
+          </div>
+          {isLowest && (
+            <Badge className="bg-green-600 text-white">최저 TCO</Badge>
+          )}
+        </div>
+
+        {/* 총 비용 */}
+        <div className="mb-4 p-4 bg-white/80 rounded-lg border border-slate-200">
+          <p className="text-xs text-slate-600 mb-1">총 소유비용 ({tco.ownershipYears}년)</p>
+          <p className="text-3xl font-bold text-slate-900">{total.toLocaleString()}만원</p>
+        </div>
+
+        {/* 5개 비용 항목 */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center p-2 bg-purple-50 rounded">
+            <span className="text-xs font-medium text-purple-900">취득세 (7%)</span>
+            <span className="text-sm font-semibold text-purple-800">
+              {Math.round(tco.breakdown.acquisitionTax / 10000).toLocaleString()}만원
+            </span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+            <span className="text-xs font-medium text-blue-900">자동차세</span>
+            <span className="text-sm font-semibold text-blue-800">
+              {Math.round(tco.breakdown.vehicleTax / 10000).toLocaleString()}만원
+            </span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-amber-50 rounded">
+            <span className="text-xs font-medium text-amber-900">정비비 (88원/km)</span>
+            <span className="text-sm font-semibold text-amber-800">
+              {Math.round(tco.breakdown.maintenance / 10000).toLocaleString()}만원
+            </span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-red-50 rounded">
+            <span className="text-xs font-medium text-red-900">감가상각 (20%)</span>
+            <span className="text-sm font-semibold text-red-800">
+              {Math.round(tco.breakdown.depreciation / 10000).toLocaleString()}만원
+            </span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+            <span className="text-xs font-medium text-green-900">연료비</span>
+            <span className="text-sm font-semibold text-green-800">
+              {Math.round(tco.breakdown.fuelCost / 10000).toLocaleString()}만원
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
@@ -95,230 +181,50 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
           <div>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <Wallet className="w-6 h-6 text-primary" />
-              총 소유비용(TCO) 비교 분석
+              총 소유비용(TCO) 3대 비교
             </CardTitle>
             <CardDescription className="mt-2 text-sm">
-              {vehiclesWithTCO[0].tco!.ownershipYears}년 보유 시 누적 비용 추이 (취득세, 자동차세, 정비비, 감가상각, 연료비 포함)
+              {vehiclesWithTCO[0].tco!.ownershipYears}년 보유 시 누적 비용 비교 (취득세, 자동차세, 정비비, 감가상각, 연료비)
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-5">
-        {/* ✅ 핵심 인사이트 박스 (사용자가 가장 궁금한 것: 어느 차가 더 저렴하고 왜?) */}
-        {keyInsight && (
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border-2 border-green-500/30">
-            <div className="flex items-start gap-3">
-              <TrendingDown className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-bold text-green-800 dark:text-green-300 mb-1">
-                  💰 {keyInsight.cheaper}위가 {keyInsight.priceDiff.toLocaleString()}만원 더 저렴합니다
-                </p>
-                <p className="text-green-700 dark:text-green-400 text-xs">
-                  주요 이유: <span className="font-semibold">{keyInsight.reason}</span>이 {keyInsight.reasonAmount.toLocaleString()}만원 낮기 때문
-                </p>
+      <CardContent className="space-y-6">
+        {/* 🎯 Agent 인사이트 */}
+        <div className="p-5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-200">
+          <div className="flex items-start gap-3 mb-3">
+            <Award className="w-6 h-6 text-indigo-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="font-bold text-indigo-900 mb-2">💡 Financial Advisor Agent 분석</h4>
+              <div className="space-y-2">
+                {agentInsights.map((insight, idx) => (
+                  <p key={idx} className="text-sm text-indigo-800 leading-relaxed">
+                    {insight}
+                  </p>
+                ))}
               </div>
             </div>
           </div>
-        )}
-
-        {/* ✅ 수평 스택 바 차트 (5개 비용 항목 한눈에 비교) */}
-        <div className="bg-background/50 p-4 rounded-lg border border-border">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-primary" />
-            5개 비용 항목 비교 ({vehiclesWithTCO[0].tco!.ownershipYears}년 누적)
-          </h3>
-
-          <ResponsiveContainer width="100%" height={120 + vehiclesWithTCO.length * 40}>
-            <BarChart
-              data={stackedBarData}
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
-            >
-              <XAxis
-                type="number"
-                tick={{ fontSize: 11, fill: '#888' }}
-                tickFormatter={(value) => `${value}만`}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                tick={{ fontSize: 11, fill: '#888' }}
-                width={120}
-              />
-              <Tooltip
-                content={({ payload }) => {
-                  if (payload && payload.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <Card className="border-2 shadow-lg">
-                        <CardContent className="p-3 space-y-2">
-                          <p className="font-bold text-xs mb-2">{data.name}</p>
-                          <p className="text-xs font-bold text-primary">총 {data.total.toLocaleString()}만원</p>
-                          <div className="space-y-1 text-xs pt-1 border-t">
-                            {payload.map((entry: any) => (
-                              <div key={entry.name} className="flex items-center justify-between gap-3">
-                                <span className="flex items-center gap-1.5">
-                                  <span
-                                    className="w-2.5 h-2.5 rounded-sm"
-                                    style={{ backgroundColor: entry.fill }}
-                                  />
-                                  {entry.name}
-                                </span>
-                                <span className="font-semibold">{entry.value.toLocaleString()}만원</span>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Legend
-                wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }}
-                iconType="square"
-                iconSize={10}
-              />
-              <Bar dataKey="취득세" stackId="a" fill={colors.취득세} radius={[0, 4, 4, 0]} />
-              <Bar dataKey="자동차세" stackId="a" fill={colors.자동차세} />
-              <Bar dataKey="정비비" stackId="a" fill={colors.정비비} />
-              <Bar dataKey="감가상각" stackId="a" fill={colors.감가상각} />
-              <Bar dataKey="연료비" stackId="a" fill={colors.연료비} radius={[4, 0, 0, 4]} />
-            </BarChart>
-          </ResponsiveContainer>
         </div>
 
-        {/* ✅ 3개 비교 카드 (강화된 버전) */}
+        {/* 3대 비교 카드 그리드 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {vehiclesWithTCO.map((vehicle, index) => {
-            const tco = vehicle.tco!;
-            const isLowest = index === lowestTCOIndex;
-            const manufacturer = vehicle.manufacturer || vehicle.name.split(' ')[0] || '알 수 없음';
-            const model = vehicle.model || vehicle.name.split(' ').slice(1).join(' ') || '';
-
-            // vs 1위 차이 계산
-            const diffFrom1st = index === 0
-              ? 0
-              : Math.round((tco.total - vehiclesWithTCO[0].tco!.total) / 10000);
-            const percentDiffFrom1st = index === 0
-              ? 0
-              : ((tco.total - vehiclesWithTCO[0].tco!.total) / vehiclesWithTCO[0].tco!.total * 100);
-
-            // 핵심 강점 찾기 (가장 저렴한 비용 항목 2개)
-            const costItems = [
-              { name: '취득세', value: tco.breakdown.acquisitionTax },
-              { name: '자동차세', value: tco.breakdown.vehicleTax },
-              { name: '정비비', value: tco.breakdown.maintenance },
-              { name: '감가상각', value: tco.breakdown.depreciation },
-              { name: '연료비', value: tco.breakdown.fuelCost }
-            ].sort((a, b) => a.value - b.value);
-
-            return (
-              <Card
-                key={vehicle.id}
-                className={cn(
-                  "relative overflow-hidden transition-all duration-300 hover:shadow-lg",
-                  isLowest && "ring-2 ring-green-500 shadow-lg shadow-green-500/20"
-                )}
-              >
-                <CardContent className="p-5 space-y-4">
-                  {/* 순위 배지 */}
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      className={cn(
-                        "text-base font-bold px-3 py-1",
-                        index === 0 && "bg-yellow-500 text-yellow-900",
-                        index === 1 && "bg-blue-500 text-blue-900",
-                        index === 2 && "bg-red-500 text-red-900"
-                      )}
-                    >
-                      {rankLabels[index]}
-                    </Badge>
-                    {isLowest && (
-                      <Badge className="bg-green-500 text-white px-2 py-1">
-                        ✅ 최저
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* 차량명 */}
-                  <div>
-                    <p className="font-bold text-lg leading-tight">
-                      {manufacturer} {model}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {vehicle.year}년 • {vehicle.fuel}
-                    </p>
-                  </div>
-
-                  {/* 총 TCO - 더 크고 눈에 띄게 */}
-                  <div className="pt-3 pb-2 border-y border-border">
-                    <p className="text-xs text-muted-foreground mb-1.5">
-                      {tco.ownershipYears}년 총 소유비용
-                    </p>
-                    <div className="flex items-baseline gap-2">
-                      <p className={cn(
-                        "text-3xl font-extrabold",
-                        isLowest ? "text-green-600" : "text-primary"
-                      )}>
-                        {Math.round(tco.total / 10000).toLocaleString()}
-                      </p>
-                      <span className="text-sm font-medium text-muted-foreground">만원</span>
-                    </div>
-
-                    {/* vs 1위 차이 - 더 눈에 띄게 */}
-                    {index !== 0 && (
-                      <div className="mt-2 flex items-center gap-1.5">
-                        {diffFrom1st > 0 ? (
-                          <TrendingUp className="w-4 h-4 text-red-600" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 text-green-600" />
-                        )}
-                        <span className={cn(
-                          "text-sm font-bold",
-                          diffFrom1st > 0 ? "text-red-600" : "text-green-600"
-                        )}>
-                          1위 대비 {diffFrom1st > 0 ? '+' : ''}{diffFrom1st.toLocaleString()}만원
-                        </span>
-                      </div>
-                    )}
-
-                    {index === 0 && (
-                      <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-green-600 font-bold">
-                        <Award className="w-4 h-4" />
-                        <span>가장 경제적</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 핵심 강점 (가장 저렴한 항목 2개) */}
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-semibold text-muted-foreground">핵심 강점</p>
-                    <div className="space-y-1">
-                      {costItems.slice(0, 2).map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">✓ {item.name}</span>
-                          <span className="font-semibold text-green-600">
-                            {Math.round(item.value / 10000).toLocaleString()}만원
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {vehiclesWithTCO.map((vehicle, index) => renderVehicleCard(vehicle, index))}
         </div>
 
         {/* 법적 근거 */}
-        <div className="p-3 bg-muted/30 rounded-lg border border-border">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong>📖 계산 근거:</strong> 취득세(지방세법 제11조, 7%), 자동차세(지방세법 제127조, 차령 감액 적용),
-            정비비(DOE/ANL 88원/km), 감가상각(정률법 20%), 연료비(평균 연비 × 현재 유가)
-          </p>
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" />
+            <div className="text-xs text-slate-700">
+              <p className="font-semibold mb-1">📜 법적 근거</p>
+              <p>• 취득세 7%: 지방세법 제11조 제1항 제1호</p>
+              <p>• 자동차세: 지방세법 제127조 (차령별 경감)</p>
+              <p>• 정비비 88원/km: DOE/ANL Vehicle Ownership Cost Study</p>
+              <p>• 감가상각 정률법 20%: 법인세법 시행령 제26조</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

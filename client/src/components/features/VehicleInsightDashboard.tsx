@@ -559,12 +559,7 @@ export default function VehicleInsightDashboard({
                         icon={<CheckCircle />}
                         status={inspection.recallStatus === '완료' ? 'good' : inspection.recallStatus === '미완료' ? 'danger' : undefined}
                       />
-                      <InspectionCard
-                        label="사고 이력"
-                        value={inspection.accidentHistory || '-'}
-                        icon={<AlertCircle />}
-                        status={inspection.accidentHistory === '있음' ? 'danger' : 'good'}
-                      />
+                      {/* 🐛 Fix: 사고이력은 진단보고서에만 표시 (데이터 출처 단일화) */}
                       <InspectionCard
                         label="단순 수리"
                         value={inspection.simpleRepair || '-'}

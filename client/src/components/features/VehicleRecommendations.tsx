@@ -252,11 +252,11 @@ export default function VehicleRecommendations({
 
                 {/* 🆕 Phase 7: 실구매 데이터 검증 뱃지 */}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50 text-xs">
+                  <Badge variant="outline" className="text-green-700 border-green-700 bg-green-50 text-xs font-semibold">
                     <Shield className="w-3 h-3 mr-1" />
                     보험이력 검증
                   </Badge>
-                  <Badge variant="outline" className="text-blue-600 border-blue-600 bg-blue-50 text-xs">
+                  <Badge variant="outline" className="text-blue-700 border-blue-700 bg-blue-50 text-xs font-semibold">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     점검이력 확인
                   </Badge>
@@ -352,30 +352,43 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                {/* ✅ Phase 7: 버튼 확장 (차량 진단 보고서 추가) */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  {/* 1. 추천 근거 설명 버튼 */}
+                {/* ✅ 버튼 그리드 (3개) */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {/* 1. 추천 근거 */}
                   <Button
                     size="sm"
                     variant="outline"
-                    className="gap-1.5 text-xs h-9 border-primary/30 text-primary hover:bg-primary/10"
+                    className="gap-1 text-xs h-9 border-primary/30 text-primary hover:bg-primary/10"
                     onClick={() => handleViewReason(vehicle)}
                     data-testid={`button-reason-${vehicle.rank}`}
                   >
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    추천 근거
+                    <HelpCircle className="w-3 h-3" />
+                    근거
                   </Button>
 
-                  {/* 2. 🆕 Phase 7: 차량 진단 보고서 버튼 (실구매 데이터) */}
+                  {/* 2. 진단 보고서 */}
                   <Button
                     size="sm"
-                    className="gap-1.5 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    className="gap-1 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
                     onClick={() => handleViewDiagnostics(vehicle)}
                     data-testid={`button-diagnostics-${vehicle.rank}`}
                   >
-                    <FileText className="w-3.5 h-3.5" />
-                    진단 보고서
+                    <FileText className="w-3 h-3" />
+                    진단
                   </Button>
+
+                  {/* 3. 실매물 연결 */}
+                  {vehicle.detailUrl && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 text-xs h-9 border-blue-400 text-blue-700 hover:bg-blue-50"
+                      onClick={() => window.open(vehicle.detailUrl, '_blank')}
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      실매물
+                    </Button>
+                  )}
 
                   {/* 3. TCO 상세 버튼 - 강조 색상 */}
                   {vehicle.tco && (

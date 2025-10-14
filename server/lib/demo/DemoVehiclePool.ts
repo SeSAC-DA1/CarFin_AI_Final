@@ -287,13 +287,35 @@ export function createDemoVehiclePool(
     step6_5 = step6;
   }
 
+  // 🆕 무사고 필터 (safetyPriority가 true이거나 항상 시도)
+  let step6_6: Vehicle[];
+  const noAccidentVehicles = step6_5.filter(v =>
+    (v.myAccidentCost === 0 || v.myAccidentCost === null) &&
+    (v.otherAccidentCost === 0 || v.otherAccidentCost === null)
+  );
+
+  if (noAccidentVehicles.length >= 50) {
+    // 무사고 차량이 충분하면 무사고만 사용
+    console.log(`✅ [DemoPool] 무사고 필터 적용: ${noAccidentVehicles.length}대 (전체 ${step6_5.length}대 중 ${((noAccidentVehicles.length / step6_5.length) * 100).toFixed(1)}%)`);
+    step6_6 = noAccidentVehicles;
+  } else {
+    // 무사고 차량이 부족하면 경미한 사고만 허용
+    console.warn(`⚠️ [DemoPool] 무사고 차량 부족 (${noAccidentVehicles.length}대) → 경미한 사고 포함`);
+    const minorAccidentVehicles = step6_5.filter(v => {
+      const totalCost = (v.myAccidentCost || 0) + (v.otherAccidentCost || 0);
+      return totalCost <= 100; // 100만원 이하 경미한 사고만
+    });
+    step6_6 = minorAccidentVehicles.length >= 50 ? minorAccidentVehicles : step6_5;
+    console.log(`✅ [DemoPool] 경미한 사고 필터 적용: ${step6_6.length}대`);
+  }
+
   // 🔄 Phase 2: 모델 필터 추가 (재추천 시)
   let step7: Vehicle[];
   if (requestedModel) {
     console.log(`🔍 [DemoPool] 모델 필터 시작: "${requestedModel}"`);
-    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6_5.length}대`);
+    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6_6.length}대`);
 
-    step7 = step6_5.filter(v => {
+    step7 = step6_6.filter(v => {
       const modelLower = (v.model || '').toLowerCase();
       const requestedLower = requestedModel.toLowerCase();
 
@@ -313,7 +335,7 @@ export function createDemoVehiclePool(
 
       // 🔄 폴백: 비슷한 가격대의 인기 SUV 추천
       console.warn(`🔄 [DemoPool] 폴백: 비슷한 가격대 인기 SUV로 대체`);
-      step7 = step6_5
+      step7 = step6_6
         .sort((a, b) => {
           // 인기도 우선 정렬
           const scoreA = getPopularityScore(a);
@@ -328,7 +350,7 @@ export function createDemoVehiclePool(
       console.log(`✅ [DemoPool] 폴백 완료: ${step7.length}대 (인기 SUV)`);
     }
   } else {
-    step7 = step6_5;
+    step7 = step6_6;
   }
 
   // 🎯 재추천: 안전성 우선 필터 (무사고 차량만)

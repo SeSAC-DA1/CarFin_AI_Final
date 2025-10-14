@@ -111,12 +111,16 @@ export function useWebSocketChat() {
         console.log('📨 WebSocket 메시지 수신:', data.type, data);
 
         if (data.type === 'user_message' || data.type === 'agent_message') {
-          setMessages(prev => [...prev, {
-            type: data.type,
-            agent: data.agent,
-            content: data.content,
-            timestamp: new Date(data.timestamp),
-          }]);
+          // 🎨 UX 개선: delay가 있으면 순차 표시
+          const delay = data.delay || 0;
+          setTimeout(() => {
+            setMessages(prev => [...prev, {
+              type: data.type,
+              agent: data.agent,
+              content: data.content,
+              timestamp: new Date(data.timestamp),
+            }]);
+          }, delay);
         } else if (data.type === 'vehicles' || data.type === 'vehicles_recommended' || data.type === 'recommendations') {
           try {
             // 백엔드에서 오는 차량 데이터 형식에 맞춰 변환 (안전 처리)

@@ -118,7 +118,8 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "manager",
-      content: `🎯 작업 분해 완료\n• 예산: ${budgetText}\n• 용도: ${carTypeText}, ${usageText}\n• 중요도: ${importanceText}\n→ 4개 전문 Agent에 작업 분배`
+      content: `🎯 작업 분해 완료\n• 예산: ${budgetText}\n• 용도: ${carTypeText}, ${usageText}\n• 중요도: ${importanceText}\n→ 4개 전문 Agent에 작업 분배`,
+      delay: 0  // 즉시 표시
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -181,7 +182,8 @@ export class MultiAgentSystem {
         yield {
           type: "agent_response",
           agent: "user_analyst",
-          content: `👤 사용자 니즈 분석 완료\n• 핵심 니즈: ${budgetText}, ${carTypeText}, ${importanceKeys[0] || '균형'} 중요\n• 가중치 적용: ${topImportance.join(', ')}`
+          content: `👤 사용자 니즈 분석 완료\n• 핵심 니즈: ${budgetText}, ${carTypeText}, ${importanceKeys[0] || '균형'} 중요\n• 가중치 적용: ${topImportance.join(', ')}`,
+          delay: 3000  // 3초 후 표시
         };
       }
 
@@ -193,7 +195,8 @@ export class MultiAgentSystem {
         yield {
           type: "agent_response",
           agent: "searcher",
-          content: `🔍 실시간 매물 검색 완료\n• PostgreSQL DB 조회: ${vehicles.length.toLocaleString()}대\n• 조건 필터링: ${foundCount}대 후보 차량 발견\n• 데이터: AirFlow 매일 자동 업데이트`
+          content: `🔍 실시간 매물 검색 완료\n• PostgreSQL DB 조회: ${vehicles.length.toLocaleString()}대\n• 조건 필터링: ${foundCount}대 후보 차량 발견\n• 데이터: AirFlow 매일 자동 업데이트`,
+          delay: 6000  // 6초 후 표시
         };
       }
 
@@ -243,7 +246,8 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "manager",
-      content: `🏆 Alibaba 개인화 재정렬 완료\n• TOPSIS 점수 + 사용자 가중치 적용\n• Top 3 차량 선정 완료\n• 평균 추천 시간: ${consensus.processingTime || 28}초`
+      content: `🏆 Alibaba 개인화 재정렬 완료\n• TOPSIS 점수 + 사용자 가중치 적용\n• Top 3 차량 선정 완료\n• 평균 추천 시간: ${consensus.processingTime || 28}초`,
+      delay: 20000  // 20초 후 표시
     };
 
     const top3 = consensus.rankedVehicles.slice(0, 3);
@@ -259,7 +263,8 @@ export class MultiAgentSystem {
     yield {
       type: "agent_response",
       agent: "financial_advisor",
-      content: `💰 총 소유비용(TCO) 계산 완료\n• 취득세 7% (지방세법 제11조)\n• 자동차세 (지방세법 제127조, 차령별 감액)\n• 정비비 88원/km (DOE/ANL 기준)\n• 감가상각 정률법 20%\n• 연료비 현재 유가 반영`
+      content: `💰 총 소유비용(TCO) 계산 완료\n• 취득세 7% (지방세법 제11조)\n• 자동차세 (지방세법 제127조, 차령별 감액)\n• 정비비 88원/km (DOE/ANL 기준)\n• 감가상각 정률법 20%\n• 연료비 현재 유가 반영`,
+      delay: 23000  // 23초 후 표시
     };
 
     yield { type: "agent_working", agent: "concierge", content: "📝 추천 내용을 정리하고 있어요..." };

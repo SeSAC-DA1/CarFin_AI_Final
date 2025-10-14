@@ -145,6 +145,7 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     type: 'user_message',
     content: userMessage,
     timestamp: new Date(),
+    delay: 0  // 사용자 메시지는 즉시 표시
   });
 
   // 🔄 Phase 2: 재추천 감지 및 처리
@@ -609,7 +610,13 @@ async function handleMultiAgentRecommendation(
       if (step.type === 'agent_working') {
         sendMessage(session.ws, { type: 'progress', step: step.agent, message: step.content });
       } else if (step.type === 'agent_response') {
-        sendMessage(session.ws, { type: 'agent_message', agent: step.agent, content: step.content, timestamp: new Date() });
+        sendMessage(session.ws, {
+          type: 'agent_message',
+          agent: step.agent,
+          content: step.content,
+          timestamp: new Date(),
+          delay: (step as any).delay || 0  // 🎨 순차 표시를 위한 delay 전달
+        });
       } else if (step.type === 'recommendations' && step.data) {
         console.timeEnd('[STEP 3/5] MultiAgent Collaboration');
         console.time('[STEP 4/5] Vehicle Data Mapping');
