@@ -255,8 +255,33 @@ export function createDemoVehiclePool(
     console.log(`✅ [DemoPool] 인기 SUV 필터 후: ${step6_5.length}대`);
 
     if (step6_5.length === 0) {
-      console.warn(`⚠️ [DemoPool] 인기 SUV 필터 후 0대! 일반 SUV 풀로 폴백`);
-      step6_5 = step6;
+      console.error(`❌ [DemoPool] 인기 SUV 필터 후 0대! step6=${step6.length}대`);
+
+      // 🔄 폴백: 현대/기아 SUV 중 인기도 높은 순으로 선정
+      console.warn(`🔄 [DemoPool] 폴백: 현대/기아 SUV 중 인기도 높은 순으로 대체`);
+      step6_5 = step6
+        .filter(v => ['현대', '기아'].includes(v.brand || ''))
+        .sort((a, b) => {
+          // 인기도 우선 정렬
+          const scoreA = getPopularityScore(a);
+          const scoreB = getPopularityScore(b);
+          if (scoreA !== scoreB) return scoreB - scoreA;
+
+          // 최신 연식 우선
+          const yearDiff = (b.modelYear || 0) - (a.modelYear || 0);
+          if (yearDiff !== 0) return yearDiff;
+
+          // 낮은 가격 우선
+          return (a.price || 0) - (b.price || 0);
+        })
+        .slice(0, 100); // 상위 100대만
+
+      console.log(`✅ [DemoPool] 폴백 완료: ${step6_5.length}대 (현대/기아 SUV)`);
+
+      if (step6_5.length === 0) {
+        console.error(`❌❌ [DemoPool] 폴백 실패! 전체 SUV 사용 (최종 폴백)`);
+        step6_5 = step6; // 최종 폴백
+      }
     }
   } else {
     step6_5 = step6;
@@ -285,6 +310,22 @@ export function createDemoVehiclePool(
     if (step7.length === 0) {
       console.error(`❌ [DemoPool] 모델 필터 후 0대! requestedModel="${requestedModel}", step6_5=${step6_5.length}대`);
       console.error(`❌ [DemoPool] step6_5 샘플 모델들:`, step6_5.slice(0, 10).map(v => v.model));
+
+      // 🔄 폴백: 비슷한 가격대의 인기 SUV 추천
+      console.warn(`🔄 [DemoPool] 폴백: 비슷한 가격대 인기 SUV로 대체`);
+      step7 = step6_5
+        .sort((a, b) => {
+          // 인기도 우선 정렬
+          const scoreA = getPopularityScore(a);
+          const scoreB = getPopularityScore(b);
+          if (scoreA !== scoreB) return scoreB - scoreA;
+
+          // 최신 연식 우선
+          return (b.modelYear || 0) - (a.modelYear || 0);
+        })
+        .slice(0, 100); // 상위 100대만
+
+      console.log(`✅ [DemoPool] 폴백 완료: ${step7.length}대 (인기 SUV)`);
     }
   } else {
     step7 = step6_5;
