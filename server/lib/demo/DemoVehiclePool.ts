@@ -249,16 +249,15 @@ export function createDemoVehiclePool(
  * 🎬 시연 시나리오 A 전용 필터 (SUV, 3000만원 이하, 안전성 우선)
  */
 export function getDemoScenarioAPool(allVehicles: Vehicle[]): Vehicle[] {
-  return createDemoVehiclePool(
+  // 🐛 FIX: 추가 필터 제거 - createDemoVehiclePool 결과 그대로 반환
+  // 문제: topModels 필터가 너무 엄격해서 0대 반환
+  // 해결: 기본 필터링(가격, 연식, 주행거리, 링크)만 적용
+  const pool = createDemoVehiclePool(
     allVehicles,
     'SUV',
     [0, 3000]  // 3000만원 이하
-  ).filter(v => {
-    // ✅ 추가 안전성 필터: 무사고 차량만
-    const modelLower = (v.model || '').toLowerCase();
+  );
 
-    // 인기 SUV 모델만 (싼타페, 쏘렌토, 팰리세이드, 카니발, 스포티지, 투싼, 셀토스, 코나)
-    const topModels = ['싼타페', '쏘렌토', '팰리세이드', '카니발', '스포티지', '투싼', '셀토스', '코나'];
-    return topModels.some(model => modelLower.includes(model.toLowerCase()));
-  });
+  console.log(`🎯 [시나리오 A] SUV 3000만원 이하: ${pool.length}대`);
+  return pool;
 }
