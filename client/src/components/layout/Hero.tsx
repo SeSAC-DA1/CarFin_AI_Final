@@ -151,51 +151,18 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 bg-primary/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-primary/10">
                       <p className="text-xs text-primary mb-1">총괄 AI</p>
-                      <p className="text-sm leading-relaxed">"5개 AI에게 작업을 분배했어요"</p>
+                      <p className="text-sm leading-relaxed">"5개 AI 에이전트 협업 시작! AirFlow로 실시간 매물 분석 중..."</p>
                     </div>
                   </div>
 
-                  {/* 분석 AI */}
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-8 h-8 rounded-full bg-chart-2/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">👤</span>
-                    </div>
-                    <div className="flex-1 bg-chart-2/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-chart-2/10">
-                      <p className="text-xs text-chart-2 mb-1">분석 AI</p>
-                      <p className="text-sm leading-relaxed">"프로필 분석 완료: 예산 3000만원, 가족용 SUV, 연비·안전성 우선"</p>
-                    </div>
-                  </div>
-
-                  {/* 검색 AI */}
+                  {/* 검색·평가·금융 AI 팀 */}
                   <div className="flex gap-2.5 items-start">
                     <div className="w-8 h-8 rounded-full bg-chart-3/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-base">🔍</span>
                     </div>
                     <div className="flex-1 bg-chart-3/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-chart-3/10">
-                      <p className="text-xs text-chart-3 mb-1">검색 AI</p>
-                      <p className="text-sm leading-relaxed">"{isLoading ? '...' : vehicleCount.toLocaleString()}대 중 500대 발견!"</p>
-                    </div>
-                  </div>
-
-                  {/* 평가 AI */}
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">⭐</span>
-                    </div>
-                    <div className="flex-1 bg-amber-500/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-amber-500/10">
-                      <p className="text-xs text-amber-600 mb-1">평가 AI</p>
-                      <p className="text-sm leading-relaxed">"6가지 기준(가격·연비·안전성·브랜드·상태·옵션)으로 평가 중..."</p>
-                    </div>
-                  </div>
-
-                  {/* 금융 상담 AI */}
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-base">💰</span>
-                    </div>
-                    <div className="flex-1 bg-purple-500/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-purple-500/10">
-                      <p className="text-xs text-purple-600 mb-1">금융 상담 AI</p>
-                      <p className="text-sm leading-relaxed">"일시불·할부·리스 중 가장 유리한 방법을 분석 중이에요"</p>
+                      <p className="text-xs text-chart-3 mb-1">검색·평가·금융 AI 팀</p>
+                      <p className="text-sm leading-relaxed">"조건 부합 차량 발견 → TOPSIS 6가지 평가 → 금융 옵션 분석 완료"</p>
                     </div>
                   </div>
 

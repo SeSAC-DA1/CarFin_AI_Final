@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
-import { Wallet, Info, Award, TrendingDown, TrendingUp } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Wallet, Award, TrendingDown, TrendingUp } from "lucide-react";
 import { Vehicle } from "./VehicleRecommendations";
 import { cn } from "@/lib/utils";
 
@@ -88,33 +88,6 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
 
   const keyInsight = generateKeyInsight();
 
-  // 🆕 Line Chart 데이터: 시간별 누적 비용 비교
-  const lineChartData = (() => {
-    if (vehiclesWithTCO.length === 0 || !vehiclesWithTCO[0].tco?.timeline) return [];
-
-    const years = vehiclesWithTCO[0].tco.timeline.length;
-    const data: any[] = [];
-
-    for (let i = 0; i < years; i++) {
-      const yearData: any = { year: i };
-
-      vehiclesWithTCO.forEach((vehicle) => {
-        const timeline = vehicle.tco!.timeline!;
-        if (timeline[i]) {
-          const vehicleName = `${vehicle.rank}위 ${vehicle.manufacturer} ${vehicle.model?.substring(0, 8) || ''}`;
-          yearData[vehicleName] = Math.round(timeline[i].cumulative / 10000);
-        }
-      });
-
-      data.push(yearData);
-    }
-
-    return data;
-  })();
-
-  // Line Chart 색상 (1위: 초록, 2위: 파랑, 3위: 빨강)
-  const lineColors = ["#10B981", "#3B82F6", "#EF4444"];
-
   return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
@@ -145,82 +118,6 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                   주요 이유: <span className="font-semibold">{keyInsight.reason}</span>이 {keyInsight.reasonAmount.toLocaleString()}만원 낮기 때문
                 </p>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* 🆕 Line Chart: 시간별 누적 비용 비교 */}
-        {lineChartData.length > 0 && (
-          <div className="bg-background/50 p-4 rounded-lg border border-border">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              시간별 누적 비용 변화 ({vehiclesWithTCO[0].tco!.ownershipYears}년)
-            </h3>
-
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={lineChartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis
-                  dataKey="year"
-                  label={{ value: '연차', position: 'insideBottom', offset: -5, fontSize: 12 }}
-                  tick={{ fontSize: 11, fill: '#888' }}
-                />
-                <YAxis
-                  label={{ value: 'TCO (만원)', angle: -90, position: 'insideLeft', fontSize: 12 }}
-                  tick={{ fontSize: 11, fill: '#888' }}
-                  tickFormatter={(value) => `${value}만`}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <Card className="border-2 shadow-lg">
-                          <CardContent className="p-3 space-y-1">
-                            <p className="font-bold text-xs mb-2">{payload[0].payload.year}년차</p>
-                            {payload.map((entry: any, index: number) => (
-                              <p key={index} className="text-xs flex items-center justify-between gap-3">
-                                <span className="flex items-center gap-1.5">
-                                  <span
-                                    className="w-2.5 h-2.5 rounded-full"
-                                    style={{ backgroundColor: entry.color }}
-                                  />
-                                  {entry.name}
-                                </span>
-                                <span className="font-semibold">{entry.value.toLocaleString()}만원</span>
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{ fontSize: '11px' }}
-                  iconType="line"
-                />
-                {vehiclesWithTCO.map((vehicle, index) => {
-                  const vehicleName = `${vehicle.rank}위 ${vehicle.manufacturer} ${vehicle.model?.substring(0, 8) || ''}`;
-                  return (
-                    <Line
-                      key={vehicleName}
-                      type="monotone"
-                      dataKey={vehicleName}
-                      stroke={lineColors[index]}
-                      strokeWidth={index === 0 ? 3 : 2}
-                      dot={{ r: index === 0 ? 5 : 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-
-            {/* 추가 인사이트 (Line Chart 해석) */}
-            <div className="mt-3 text-xs text-muted-foreground space-y-1">
-              <p>📊 그래프에서 선이 낮을수록 비용이 저렴합니다</p>
-              <p>📈 시간이 지날수록 차이가 벌어지는 모습을 확인하세요</p>
             </div>
           </div>
         )}
