@@ -193,10 +193,10 @@ export default function VehicleInsightDashboard({
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">
-                차량 진단 대시보드
+                차량 상세분석
               </h2>
               <p className="text-sm text-muted-foreground">
-                {vehicleData.manufacturer} {vehicleData.model} ({vehicleData.modelYear || vehicleData.year}년) • 전체 데이터 분석
+                {vehicleData.manufacturer} {vehicleData.model} ({vehicleData.modelYear || vehicleData.year}년) • 6가지 평가 기준 + 실구매 데이터 분석
               </p>
             </div>
           </div>

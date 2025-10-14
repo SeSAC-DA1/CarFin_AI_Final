@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info, HelpCircle, Shield, CheckCircle, FileText } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, Wallet, TrendingDown, Info, HelpCircle, Shield, CheckCircle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import VehicleInsightDashboard from "./VehicleInsightDashboard";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
@@ -10,7 +10,6 @@ import TCODetailModal from "./TCODetailModal";
 import TCOComparisonChart from "./TCOComparisonChart";
 import RecommendationReasonModal from "./RecommendationReasonModal";
 import FinancingComparisonCard from "./FinancingComparisonCard";
-import FinancingOptionsModal from "./FinancingOptionsModal";
 import VehicleDiagnosticsModal from "./VehicleDiagnosticsModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
@@ -89,10 +88,6 @@ export default function VehicleRecommendations({
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [selectedVehicleForReason, setSelectedVehicleForReason] = useState<Vehicle | null>(null);
 
-  // 🆕 Phase 6-4: 금융 옵션 모달 상태
-  const [showFinancingModal, setShowFinancingModal] = useState(false);
-  const [selectedVehicleForFinancing, setSelectedVehicleForFinancing] = useState<Vehicle | null>(null);
-
   // 🆕 Phase 7: 차량 진단 보고서 모달 상태
   const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
   const [selectedVehicleForDiagnostics, setSelectedVehicleForDiagnostics] = useState<Vehicle | null>(null);
@@ -121,12 +116,6 @@ export default function VehicleRecommendations({
   const handleViewReason = (vehicle: Vehicle) => {
     setSelectedVehicleForReason(vehicle);
     setShowReasonModal(true);
-  };
-
-  // 🆕 Phase 6-4: 금융 옵션 모달 핸들러
-  const handleViewFinancing = (vehicle: Vehicle) => {
-    setSelectedVehicleForFinancing(vehicle);
-    setShowFinancingModal(true);
   };
 
   // 🆕 Phase 7: 차량 진단 보고서 모달 핸들러
@@ -388,32 +377,20 @@ export default function VehicleRecommendations({
                     진단 보고서
                   </Button>
 
-                  {/* 3. TCO 상세 버튼 */}
-                  {vehicle.tco ? (
+                  {/* 3. TCO 상세 버튼 - 강조 색상 */}
+                  {vehicle.tco && (
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950"
+                      className="gap-1.5 text-xs h-9 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                       onClick={() => handleViewTCO(vehicle)}
                       data-testid={`button-tco-${vehicle.rank}`}
                     >
                       <Wallet className="w-3.5 h-3.5" />
-                      TCO 상세
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9 border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950"
-                      onClick={() => handleFinanceConsultation(vehicle)}
-                      data-testid={`button-finance-${vehicle.rank}`}
-                    >
-                      <Wallet className="w-3.5 h-3.5" />
-                      금융 정보
+                      TCO 비교
                     </Button>
                   )}
 
-                  {/* 4. TOPSIS 분석 버튼 */}
+                  {/* 4. 차량 상세분석 버튼 (구 TOPSIS) */}
                   <Button
                     size="sm"
                     variant="outline"
@@ -423,64 +400,8 @@ export default function VehicleRecommendations({
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    {isLoadingAnalysis ? '분석 중...' : 'TOPSIS'}
+                    {isLoadingAnalysis ? '분석 중...' : '차량 상세분석'}
                   </Button>
-
-                  {/* 4. 🆕 Phase 6-4: 금융 옵션 버튼 (financingOptions 있을 때만 표시) */}
-                  {vehicle.financingOptions ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9 border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950"
-                      onClick={() => handleViewFinancing(vehicle)}
-                      data-testid={`button-financing-${vehicle.rank}`}
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      금융 옵션
-                    </Button>
-                  ) : (
-                    // 5. 실구매 링크 (금융 옵션 없을 때만 표시)
-                    vehicle.detailUrl ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1.5 text-xs h-9"
-                        asChild
-                        data-testid={`button-detail-url-${vehicle.rank}`}
-                      >
-                        <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          실구매
-                        </a>
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1.5 text-xs h-9"
-                        disabled
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        링크 없음
-                      </Button>
-                    )
-                  )}
-
-                  {/* 6. 실구매 링크 (금융 옵션 있을 때는 별도 행에 표시) */}
-                  {vehicle.financingOptions && vehicle.detailUrl && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9 col-span-2"
-                      asChild
-                      data-testid={`button-detail-url-${vehicle.rank}`}
-                    >
-                      <a href={vehicle.detailUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        실구매 링크 보기
-                      </a>
-                    </Button>
-                  )}
                 </div>
               </div>
             </Card>
@@ -573,20 +494,6 @@ export default function VehicleRecommendations({
           setSelectedVehicleForReason(null);
         }}
       />
-
-      {/* 🆕 Phase 6-4: 금융 옵션 모달 */}
-      {selectedVehicleForFinancing && selectedVehicleForFinancing.financingOptions && (
-        <FinancingOptionsModal
-          isOpen={showFinancingModal}
-          onClose={() => {
-            setShowFinancingModal(false);
-            setSelectedVehicleForFinancing(null);
-          }}
-          vehicleName={selectedVehicleForFinancing.name}
-          vehiclePrice={selectedVehicleForFinancing.price}
-          financingOptions={selectedVehicleForFinancing.financingOptions}
-        />
-      )}
 
       {/* 🆕 Phase 7: 차량 진단 보고서 모달 (AWS RDS 실구매 데이터) */}
       <VehicleDiagnosticsModal
