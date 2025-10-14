@@ -29,6 +29,12 @@ interface ChatSession {
   rawProfile?: any;  // 🆕 Phase 2.5: 원본 프로필 데이터 (budget, usage, carType 등)
   ws: WebSocket;
   lastQuestionAsked?: string;  // 🆕 Phase 2.5: 마지막으로 질문한 필드
+
+  // 🆕 Phase 2: 재추천을 위한 컨텍스트
+  previousQuery?: string;           // 이전 사용자 요청
+  previousResults?: Vehicle[];      // 이전 추천 차량 3대
+  previousFilters?: any;            // 이전 검색 필터
+  refinementCount?: number;         // 재추천 횟수 (무한 루프 방지)
 }
 
 const sessions = new Map<string, ChatSession>();
@@ -140,6 +146,47 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     content: userMessage,
     timestamp: new Date(),
   });
+
+  // 🔄 Phase 2: 재추천 감지 및 처리
+  const { isRefinementRequest, extractRefinementFilters, mergeFilters } = await import('../lib/refinement/KeywordMatcher.js');
+
+  if (session.previousResults && session.previousResults.length > 0 && isRefinementRequest(userMessage)) {
+    console.log(`🔄 [재추천] 감지됨: "${userMessage}"`);
+
+    try {
+      // 추가 필터 추출
+      const additionalFilters = extractRefinementFilters(userMessage, session.previousFilters);
+      console.log(`🎯 [재추천] 추출된 필터:`, JSON.stringify(additionalFilters, null, 2));
+
+      // 기존 필터와 병합
+      const refinedFilters = mergeFilters(session.previousFilters || {}, additionalFilters);
+      console.log(`🔧 [재추천] 최종 필터:`, JSON.stringify(refinedFilters, null, 2));
+
+      // 재추천 횟수 증가
+      session.refinementCount = (session.refinementCount || 0) + 1;
+
+      // 재추천 시작 메시지
+      sendMessage(session.ws, {
+        type: 'agent_message',
+        agent: 'concierge',
+        content: `🔄 알겠습니다! 새로운 조건으로 다시 찾아드릴게요. 잠시만 기다려주세요...`,
+        timestamp: new Date(),
+      });
+
+      // 재추천 실행 (기존 recommendation 함수 재사용)
+      await handleMultiAgentRecommendation(session, userMessage, refinedFilters);
+      return; // 재추천 완료 후 함수 종료
+    } catch (error) {
+      console.error('🚨 [재추천] 오류:', error);
+      sendMessage(session.ws, {
+        type: 'agent_message',
+        agent: 'concierge',
+        content: `죄송합니다. 재추천 중 문제가 발생했어요. 다시 한 번 말씀해주시겠어요?`,
+        timestamp: new Date(),
+      });
+      return;
+    }
+  }
 
   // 🆕 개선된 대화 흐름: 최소 정보만 있으면 추천 실행
   try {
@@ -308,13 +355,22 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function handleMultiAgentRecommendation(session: ChatSession, userMessage: string) {
+async function handleMultiAgentRecommendation(
+  session: ChatSession,
+  userMessage: string,
+  overrideFilters?: any // 🔄 Phase 2: 재추천 시 필터 오버라이드
+) {
   const startTime = Date.now();
   console.time('[TOTAL] Recommendation');
 
   try {
+    // 🔄 Phase 2: 재추천 시 캐시 스킵
+    if (overrideFilters) {
+      console.log(`🔄 [재추천] 캐시 스킵 - 신규 검색 실행`);
+    }
+
     // ============================================================
-    // 🆕 Phase 3: Redis 캐싱 체크
+    // 🆕 Phase 3: Redis 캐싱 체크 (재추천이 아닐 때만)
     // ============================================================
     const cacheKey = `recommend:v2:${JSON.stringify({
       carType: session.rawProfile?.carType,
@@ -323,8 +379,8 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
       usage: session.rawProfile?.usage
     })}`;
 
-    // 캐시 확인
-    const cachedResult = await railwayRedisService.getRecommendationCache(cacheKey);
+    // 캐시 확인 (재추천이 아닐 때만)
+    const cachedResult = !overrideFilters ? await railwayRedisService.getRecommendationCache(cacheKey) : null;
 
     if (cachedResult) {
       console.log('💾 캐시 히트! 즉시 응답');
@@ -396,44 +452,61 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
       offset: 0
     };
 
-    // 1️⃣ 예산 필터 (키워드 매핑 우선, 없으면 프로필)
-    const maxPrice = finalCriteria.maxPrice || session.rawProfile?.budget?.[1] || 5000;
-    const minPrice = finalCriteria.minPrice || session.rawProfile?.budget?.[0] || 0;
-    if (minPrice > 0) searchFilters.minPrice = minPrice;
-    if (maxPrice > 0 && maxPrice < 10000) searchFilters.maxPrice = maxPrice;
-    console.log(`💰 예산 필터: ${minPrice}만원 ~ ${maxPrice}만원 (출처: ${finalCriteria.maxPrice ? '키워드' : '프로필'})`);
+    // 🔄 Phase 2: 재추천 시 오버라이드 필터 적용
+    if (overrideFilters) {
+      console.log(`🔄 [재추천] 오버라이드 필터 적용:`, JSON.stringify(overrideFilters, null, 2));
+      Object.assign(searchFilters, overrideFilters);
 
-    // 2️⃣ 차종 필터 (키워드 매핑 우선)
-    const targetCarType = finalCriteria.carType || session.rawProfile?.carType;
-    if (targetCarType) {
-      const carTypeMap: Record<string, string> = {
-        'suv': 'SUV',
-        'SUV': 'SUV',
-        'sedan': '세단',
-        '세단': '세단',
-        'eco': '경차',
-        '경차': '경차',
-        '준중형차': '준중형차',
-        'commercial': '승합'
-      };
-      const dbCarType = carTypeMap[targetCarType] || targetCarType;
-      searchFilters.carType = dbCarType;
-      console.log(`🚗 차종 필터: ${dbCarType} (출처: ${finalCriteria.carType ? '키워드' : '프로필'})`);
-    }
-
-    // 3️⃣ 브랜드 필터 (시연용 신뢰 브랜드만 - 성능 최적화)
-    // ✅ DB 단계에서 신뢰 브랜드만 조회 → 쿼리 성능 90% 향상
-    const trustedBrands = ['현대', '기아', '제네시스', '쉐보레', '쉐보레(GM대우)'];
-    if (finalCriteria.brands && finalCriteria.brands.length > 0) {
-      searchFilters.manufacturers = finalCriteria.brands; // 키워드 매핑 우선
+      // 특수 필드 변환 (KeywordMatcher의 필드명 → DB 필드명)
+      if (overrideFilters.manufacturer) {
+        searchFilters.manufacturers = [overrideFilters.manufacturer];
+        delete searchFilters.manufacturer;
+      }
+      if (overrideFilters.model) {
+        searchFilters.model = overrideFilters.model;
+      }
     } else {
-      searchFilters.manufacturers = trustedBrands; // 기본값: 신뢰 브랜드
-    }
+      // 기존 로직 (오버라이드 없을 때만 실행)
 
-    // 4️⃣ 연료 타입 필터 (usage에서 추론)
-    if (session.rawProfile?.usage?.includes('eco') || userMessage.includes('연비') || userMessage.includes('하이브리드')) {
-      // 연비 중심 요청 → 하이브리드/LPG 우선
-      console.log(`⛽ 연료 효율 중심 추천 활성화`);
+      // 1️⃣ 예산 필터 (키워드 매핑 우선, 없으면 프로필)
+      const maxPrice = finalCriteria.maxPrice || session.rawProfile?.budget?.[1] || 5000;
+      const minPrice = finalCriteria.minPrice || session.rawProfile?.budget?.[0] || 0;
+      if (minPrice > 0) searchFilters.minPrice = minPrice;
+      if (maxPrice > 0 && maxPrice < 10000) searchFilters.maxPrice = maxPrice;
+      console.log(`💰 예산 필터: ${minPrice}만원 ~ ${maxPrice}만원 (출처: ${finalCriteria.maxPrice ? '키워드' : '프로필'})`);
+
+      // 2️⃣ 차종 필터 (키워드 매핑 우선)
+      const targetCarType = finalCriteria.carType || session.rawProfile?.carType;
+      if (targetCarType) {
+        const carTypeMap: Record<string, string> = {
+          'suv': 'SUV',
+          'SUV': 'SUV',
+          'sedan': '세단',
+          '세단': '세단',
+          'eco': '경차',
+          '경차': '경차',
+          '준중형차': '준중형차',
+          'commercial': '승합'
+        };
+        const dbCarType = carTypeMap[targetCarType] || targetCarType;
+        searchFilters.carType = dbCarType;
+        console.log(`🚗 차종 필터: ${dbCarType} (출처: ${finalCriteria.carType ? '키워드' : '프로필'})`);
+      }
+
+      // 3️⃣ 브랜드 필터 (시연용 신뢰 브랜드만 - 성능 최적화)
+      // ✅ DB 단계에서 신뢰 브랜드만 조회 → 쿼리 성능 90% 향상
+      const trustedBrands = ['현대', '기아', '제네시스', '쉐보레', '쉐보레(GM대우)'];
+      if (finalCriteria.brands && finalCriteria.brands.length > 0) {
+        searchFilters.manufacturers = finalCriteria.brands; // 키워드 매핑 우선
+      } else {
+        searchFilters.manufacturers = trustedBrands; // 기본값: 신뢰 브랜드
+      }
+
+      // 4️⃣ 연료 타입 필터 (usage에서 추론)
+      if (session.rawProfile?.usage?.includes('eco') || userMessage.includes('연비') || userMessage.includes('하이브리드')) {
+        // 연비 중심 요청 → 하이브리드/LPG 우선
+        console.log(`⛽ 연료 효율 중심 추천 활성화`);
+      }
     }
 
     console.log(`🔍 최종 검색 필터:`, JSON.stringify(searchFilters, null, 2));
@@ -600,6 +673,12 @@ async function handleMultiAgentRecommendation(session: ChatSession, userMessage:
           timestamp: new Date()
         });
         console.timeEnd('[STEP 5/5] Send Results');
+
+        // 🆕 Phase 2: 재추천을 위한 컨텍스트 저장
+        session.previousQuery = userMessage;
+        session.previousResults = vehicles;
+        session.previousFilters = searchFilters;
+        console.log(`💾 [재추천] 컨텍스트 저장: query="${userMessage.substring(0, 30)}...", 차량=${vehicles.length}대, 필터=${JSON.stringify(searchFilters)}`);
 
         // 🎯 Step 7: 완료
         sendDetailedProgress(session.ws, 'complete', '✨ 추천 완료!', {
