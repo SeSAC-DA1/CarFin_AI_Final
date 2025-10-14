@@ -68,7 +68,7 @@ export class MultiAgentSystem {
     vehicles: Vehicle[],
     reviews: HyundaiReview[] = [],
     rawProfile?: any  // 🐛 Fix: 누적 프로필 전달 (session.rawProfile)
-  ): AsyncGenerator<{ type: string; agent: string; content: string; data?: any }> {
+  ): AsyncGenerator<{ type: string; agent: string; content: string; data?: any; delay?: number }> {
     console.log(`🚀 MACRec Protocol 시작: ${vehicles.length}대 차량, ${userMessage.length}자 메시지`);
     console.log(`📊 누적 프로필:`, JSON.stringify(rawProfile, null, 2));
 

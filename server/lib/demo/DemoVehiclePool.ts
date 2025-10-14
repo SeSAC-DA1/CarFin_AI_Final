@@ -261,7 +261,7 @@ export function createDemoVehiclePool(
       // 🔄 폴백: 현대/기아 SUV 중 인기도 높은 순으로 선정
       console.warn(`🔄 [DemoPool] 폴백: 현대/기아 SUV 중 인기도 높은 순으로 대체`);
       step6_5 = step6
-        .filter(v => ['현대', '기아'].includes(v.brand || ''))
+        .filter(v => ['현대', '기아'].includes(v.manufacturer || ''))
         .sort((a, b) => {
           // 인기도 우선 정렬
           const scoreA = getPopularityScore(a);
@@ -322,7 +322,7 @@ export function createDemoVehiclePool(
 
       // 부분 매칭 (예: "셀토스", "더 뉴 셀토스" 모두 매칭)
       if (modelLower.includes(requestedLower)) {
-        console.log(`✅ 모델 매칭: ${v.model} (${v.brand}) - ${v.price}만원`);
+        console.log(`✅ 모델 매칭: ${v.model} (${v.manufacturer}) - ${v.price}만원`);
         return true;
       }
       return false;
@@ -365,7 +365,7 @@ export function createDemoVehiclePool(
       const isNoAccident = !v.myAccidentCost || v.myAccidentCost === 0;
 
       if (isNoAccident) {
-        console.log(`✅ 무사고 차량: ${v.model} (${v.brand}) - ${v.modelYear}년, ${v.price}만원`);
+        console.log(`✅ 무사고 차량: ${v.model} (${v.manufacturer}) - ${v.modelYear}년, ${v.price}만원`);
       }
 
       return isNoAccident;
