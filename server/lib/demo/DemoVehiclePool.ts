@@ -213,7 +213,14 @@ export function createDemoVehiclePool(
   // 단계별 필터링
   let step1 = allVehicles.filter(v => !isDummyPrice(v.price));
 
-  const effectiveMin = (budget && budget[0] > 0) ? budget[0] : DEMO_FILTERS.price.min;
+  // 🎯 시나리오 A 특별 처리: 가격 필터 최소값 상향 (품질 보장)
+  let effectiveMin: number;
+  if (requestedCarType === 'SUV' && budget && budget[1] <= 3000 && !requestedModel) {
+    effectiveMin = 1500; // 시나리오 A: 1500만원 이상 (경차급 제외, 품질 보장)
+    console.log(`🎯 [DemoPool] 시나리오 A: 최소 가격 ${effectiveMin}만원으로 상향 (품질 보장)`);
+  } else {
+    effectiveMin = (budget && budget[0] > 0) ? budget[0] : DEMO_FILTERS.price.min;
+  }
   const effectiveMax = budget ? budget[1] : DEMO_FILTERS.price.max;
   let step2 = step1.filter(v => v.price && v.price >= effectiveMin && v.price <= effectiveMax);
 
@@ -286,7 +293,7 @@ export function createDemoVehiclePool(
   // 🎯 재추천: 안전성 우선 필터 (무사고 차량만)
   let step8: Vehicle[];
   if (safetyPriority) {
-    console.log(`🛡️ [DemoPool] 안전성 우선 모드: 무사고 차량만 필터링`);
+    console.log(`��️ [DemoPool] 안전성 우선 모드: 무사고 차량만 필터링`);
     console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step7.length}대`);
 
     step8 = step7.filter(v => {
@@ -312,10 +319,10 @@ export function createDemoVehiclePool(
 
   const vetted = step8;
 
-  // 🏆 정렬 (안전성 우선 vs 인기 모델 우선)
-  if (safetyPriority) {
-    // 🛡️ 안전성 우선: 최신 연식 + 낮은 주행거리
-    console.log(`🛡️ [DemoPool] 안전성 우선 정렬: 최신 연식 + 낮은 주행거리`);
+  // 🏆 정렬 (재추천 vs 일반)
+  if (requestedModel) {
+    // 🔄 재추천: 최신 연식 + 낮은 주행거리 + 사고 비용 낮은 순
+    console.log(`🔄 [DemoPool] 재추천 정렬: 최신 연식 + 낮은 주행거리 + 사고 비용 낮은 순`);
     vetted.sort((a, b) => {
       // 1순위: 최신 연식
       const yearDiff = (b.modelYear || 0) - (a.modelYear || 0);
@@ -323,7 +330,14 @@ export function createDemoVehiclePool(
         return yearDiff;
       }
 
-      // 2순위: 낮은 주행거리
+      // 2순위: 사고 비용 낮은 순 (무사고 > 경미한 사고 > 사고 이력)
+      const costA = a.myAccidentCost || 0;
+      const costB = b.myAccidentCost || 0;
+      if (costA !== costB) {
+        return costA - costB;
+      }
+
+      // 3순위: 낮은 주행거리
       const distanceA = a.distance || 0;
       const distanceB = b.distance || 0;
       return distanceA - distanceB;
