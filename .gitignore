@@ -57,3 +57,6 @@ coverage/
 
 # Legacy/Unused directories
 backend-main/
+
+# Archive documents (historical records)
+archive_docs/
