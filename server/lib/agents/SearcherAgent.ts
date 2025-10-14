@@ -109,9 +109,15 @@ export class SearcherAgent {
     }
 
     // 2. normalizedCriteria.budget (프로필 예산)은 userMessage 예산이 없을 때만 사용
-    if (!messageBudgetOverride && normalizedCriteria.budget && Array.isArray(normalizedCriteria.budget)) {
-      minPrice = normalizedCriteria.budget[0] || 0;
-      maxPrice = normalizedCriteria.budget[1] || 3500; // 🔧 5000 → 3500 (데모 안정성)
+    if (!messageBudgetOverride && normalizedCriteria.budget) {
+      // 배열 형식 [500, 3000] 또는 객체 형식 { min: 500, max: 3000 } 모두 지원
+      if (Array.isArray(normalizedCriteria.budget)) {
+        minPrice = normalizedCriteria.budget[0] || 0;
+        maxPrice = normalizedCriteria.budget[1] || 3500;
+      } else if (typeof normalizedCriteria.budget === 'object') {
+        minPrice = normalizedCriteria.budget.min || 0;
+        maxPrice = normalizedCriteria.budget.max || 3500;
+      }
       console.log(`📍 프로필 예산 사용: ${minPrice}~${maxPrice}만원`);
     }
 
