@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, Wallet, TrendingDown, Info, HelpCircle, Shield, CheckCircle, FileText } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, Wallet, TrendingDown, Info, HelpCircle, Shield, CheckCircle, FileText, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
 import VehicleInsightDashboard from "./VehicleInsightDashboard";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
