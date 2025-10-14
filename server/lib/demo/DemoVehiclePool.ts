@@ -195,18 +195,20 @@ function getPopularityScore(vehicle: Vehicle): number {
  * @param allVehicles - DB에서 가져온 전체 차량 목록
  * @param requestedCarType - 요청된 차종 ('SUV', '세단' 등)
  * @param budget - 예산 [최소, 최대] (만원)
+ * @param requestedModel - 🔄 Phase 2: 재추천 시 모델 필터
  * @returns 300-500대의 검증된 차량 배열
  */
 export function createDemoVehiclePool(
   allVehicles: Vehicle[],
   requestedCarType?: string,
-  budget?: [number, number]
+  budget?: [number, number],
+  requestedModel?: string // 🔄 Phase 2: 재추천 시 모델 필터 추가
 ): Vehicle[] {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - DEMO_FILTERS.modelYear.maxAge;
 
   console.log(`🎯 [DemoPool] 시연용 차량 풀 생성 시작`);
-  console.log(`📊 입력: ${allVehicles.length}대, 차종: ${requestedCarType || '미지정'}, 예산: ${budget ? `${budget[0]}~${budget[1]}만원` : '미지정'}`);
+  console.log(`📊 입력: ${allVehicles.length}대, 차종: ${requestedCarType || '미지정'}, 예산: ${budget ? `${budget[0]}~${budget[1]}만원` : '미지정'}, 모델: ${requestedModel || '미지정'}`);
   // 단계별 필터링
   let step1 = allVehicles.filter(v => !isDummyPrice(v.price));
 
@@ -222,7 +224,20 @@ export function createDemoVehiclePool(
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
-  const vetted = step6;
+  // 🔄 Phase 2: 모델 필터 추가 (재추천 시)
+  let step7 = requestedModel ? step6.filter(v => {
+    const modelLower = (v.model || '').toLowerCase();
+    const requestedLower = requestedModel.toLowerCase();
+
+    // 부분 매칭 (예: "셀토스", "더 뉴 셀토스" 모두 매칭)
+    if (modelLower.includes(requestedLower)) {
+      console.log(`✅ 모델 매칭: ${v.model} (${v.brand})`);
+      return true;
+    }
+    return false;
+  }) : step6;
+
+  const vetted = step7;
 
   // 🏆 인기 모델 우선 정렬
   vetted.sort((a, b) => {

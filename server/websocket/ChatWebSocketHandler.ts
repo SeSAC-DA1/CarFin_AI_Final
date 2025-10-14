@@ -530,9 +530,13 @@ async function handleMultiAgentRecommendation(
     let allVehicles: Vehicle[];
 
     // 🗺️ 키워드 매핑 기반 시나리오 감지 (isScenarioA는 위에서 이미 선언됨)
+    // 🔄 Phase 2: 모델 필터 추출 (재추천 시)
+    const requestedModel = overrideFilters?.model || searchFilters.model;
+
     if (isScenarioA) {
       console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
-      allVehicles = getDemoScenarioAPool(rawVehicles);
+      // 🔄 Phase 2: 재추천 시 모델 필터 적용
+      allVehicles = createDemoVehiclePool(rawVehicles, 'SUV', [0, 3000], requestedModel);
     } else {
       // 일반 시연: 키워드 매핑 기준 사용
       const requestedCarType = finalCriteria.carType || session.rawProfile?.carType;
@@ -540,8 +544,8 @@ async function handleMultiAgentRecommendation(
         ? [finalCriteria.minPrice || 0, finalCriteria.maxPrice] as [number, number]
         : session.rawProfile?.budget as [number, number] | undefined;
 
-      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'} (출처: 키워드 매핑)`);
-      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget);
+      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}, 모델=${requestedModel || '미지정'} (출처: 키워드 매핑)`);
+      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget, requestedModel);
     }
 
     console.timeEnd('[STEP 1/5] Database Query');

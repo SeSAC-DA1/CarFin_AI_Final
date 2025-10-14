@@ -9,7 +9,14 @@
       "Bash(curl:*)",
       "Bash(node:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\n🎨 Phase 1: TCO 대시보드 단순화 (Line Chart 제거)\n\n## 변경 사항\n✅ Line Chart 완전 제거 (시간별 누적 비용)\n   - 오른쪽 증가 패턴만 보여줘서 인사이트 부족\n   - 92-226줄 삭제 (lineChartData 생성 + LineChart 렌더링)\n\n✅ Stacked Bar Chart 유지\n   - 5개 항목 비교 (취득세, 자동차세, 정비비, 감가상각, 연료비)\n   - 이미 충분히 명확하고 직관적\n\n✅ 핵심 인사이트 박스 유지\n   - \"1위가 X만원 더 저렴합니다\"\n   - \"주요 이유: 감가상각이 Y만원 낮기 때문\"\n\n## 빌드 결과\n- 686kB → 684kB (-2kB)\n- gzip: 182.36kB → 181.90kB (-0.46kB)\n\n## 다음 Phase\nPhase 2: 재추천 시나리오 구현\n\n🤖 Generated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(for i in {1..12})",
+      "Bash(do echo \"시도 $i/12...\")",
+      "Bash(if [ $? -eq 0 ])",
+      "Bash(then echo \"\\n✅ 배포 완료!\")",
+      "Bash(break)",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
