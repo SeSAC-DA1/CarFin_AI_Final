@@ -264,18 +264,9 @@ export default function VehicleInsightDashboard({
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* 차량 이미지 */}
-                  {vehicleData.photo && (
-                    <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
-                      <img
-                        src={vehicleData.photo}
-                        alt={`${vehicleData.manufacturer} ${vehicleData.model}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  {/* 🐛 Fix: 차량 사진 박스 제거 (이미지 깨짐 방지) */}
 
-                  {/* 기본 스펙 그리드 */}
+                  {/* 기본 스펙 그리드 - 다크 스타일 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <InfoCard icon={<Car />} label="제조사" value={vehicleData.manufacturer} />
                     <InfoCard icon={<Car />} label="모델" value={vehicleData.model} />
@@ -575,26 +566,26 @@ export default function VehicleInsightDashboard({
             <TabsContent value="price" className="mt-0">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* 가격 비교 카드 */}
-                  <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-blue-600" />
+                  {/* 가격 비교 카드 - 다크 스타일 */}
+                  <div className="p-6 bg-gradient-to-br from-blue-900/30 to-indigo-900/30 rounded-lg border-2 border-blue-700/50">
+                    <h3 className="text-lg font-semibold text-blue-100 mb-4 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-blue-400" />
                       가격 경쟁력
                     </h3>
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
-                        <span className="text-sm text-slate-700 font-medium">판매가</span>
-                        <span className="text-xl font-bold text-slate-900">{vehicleData.price.toLocaleString()}만원</span>
+                      <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <span className="text-sm text-slate-300 font-medium">판매가</span>
+                        <span className="text-xl font-bold text-white">{vehicleData.price.toLocaleString()}만원</span>
                       </div>
                       {vehicleData.originPrice && (
                         <>
-                          <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
-                            <span className="text-sm text-slate-700 font-medium">신차가</span>
-                            <span className="text-lg font-semibold text-slate-800">{vehicleData.originPrice.toLocaleString()}만원</span>
+                          <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                            <span className="text-sm text-slate-300 font-medium">신차가</span>
+                            <span className="text-lg font-semibold text-slate-200">{vehicleData.originPrice.toLocaleString()}만원</span>
                           </div>
-                          <div className="flex justify-between items-center p-3 bg-green-100 rounded-lg border border-green-300">
-                            <span className="text-sm text-green-800 font-semibold">할인율</span>
-                            <span className="text-2xl font-bold text-green-700">
+                          <div className="flex justify-between items-center p-3 bg-green-900/30 rounded-lg border border-green-700/50">
+                            <span className="text-sm text-green-300 font-semibold">할인율</span>
+                            <span className="text-2xl font-bold text-green-200">
                               {(((vehicleData.originPrice - vehicleData.price) / vehicleData.originPrice) * 100).toFixed(1)}%
                             </span>
                           </div>
@@ -874,15 +865,15 @@ export default function VehicleInsightDashboard({
   );
 }
 
-// 보조 컴포넌트
+// 보조 컴포넌트 - 다크 스타일
 function InfoCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="p-3 bg-muted/30 rounded-lg border border-border">
+    <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
       <div className="flex items-center gap-2 mb-1">
-        <div className="text-muted-foreground">{icon}</div>
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <div className="text-slate-400">{icon}</div>
+        <span className="text-xs text-slate-400">{label}</span>
       </div>
-      <div className="font-medium text-foreground">{value}</div>
+      <div className="font-medium text-slate-100">{value}</div>
     </div>
   );
 }

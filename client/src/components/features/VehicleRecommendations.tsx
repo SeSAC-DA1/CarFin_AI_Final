@@ -352,69 +352,69 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                {/* ✅ 버튼 그리드 (3개) */}
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  {/* 1. 추천 근거 */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1 text-xs h-9 border-primary/30 text-primary hover:bg-primary/10"
-                    onClick={() => handleViewReason(vehicle)}
-                    data-testid={`button-reason-${vehicle.rank}`}
-                  >
-                    <HelpCircle className="w-3 h-3" />
-                    근거
-                  </Button>
+                {/* ✅ 버튼 레이아웃 2-2-1 */}
+                <div className="space-y-2 pt-1">
+                  {/* 첫 번째 줄: 근거, 진단 */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => handleViewReason(vehicle)}
+                      data-testid={`button-reason-${vehicle.rank}`}
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      추천 근거
+                    </Button>
 
-                  {/* 2. 진단 보고서 */}
-                  <Button
-                    size="sm"
-                    className="gap-1 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
-                    onClick={() => handleViewDiagnostics(vehicle)}
-                    data-testid={`button-diagnostics-${vehicle.rank}`}
-                  >
-                    <FileText className="w-3 h-3" />
-                    진단
-                  </Button>
+                    <Button
+                      size="sm"
+                      className="gap-1.5 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                      onClick={() => handleViewDiagnostics(vehicle)}
+                      data-testid={`button-diagnostics-${vehicle.rank}`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      진단 보고서
+                    </Button>
+                  </div>
 
-                  {/* 3. 실매물 연결 */}
+                  {/* 두 번째 줄: TCO 비교, 차량 상세분석 */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {vehicle.tco && (
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs h-9 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                        onClick={() => handleViewTCO(vehicle)}
+                        data-testid={`button-tco-${vehicle.rank}`}
+                      >
+                        <Wallet className="w-3.5 h-3.5" />
+                        TCO 비교
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs h-9 border-slate-300 hover:bg-slate-50"
+                      onClick={() => handleViewDetails(vehicle)}
+                      data-testid={`button-details-${vehicle.rank}`}
+                    >
+                      <Car className="w-3.5 h-3.5" />
+                      차량 상세분석
+                    </Button>
+                  </div>
+
+                  {/* 세 번째 줄: 실매물 링크 (전체 너비) */}
                   {vehicle.detailUrl && (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1 text-xs h-9 border-blue-400 text-blue-700 hover:bg-blue-50"
+                      className="w-full gap-1.5 text-xs h-9 border-blue-500 text-blue-700 hover:bg-blue-50"
                       onClick={() => window.open(vehicle.detailUrl, '_blank')}
                     >
-                      <ExternalLink className="w-3 h-3" />
-                      실매물
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      실매물 연결 (새 창)
                     </Button>
                   )}
-
-                  {/* 3. TCO 상세 버튼 - 강조 색상 */}
-                  {vehicle.tco && (
-                    <Button
-                      size="sm"
-                      className="gap-1.5 text-xs h-9 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                      onClick={() => handleViewTCO(vehicle)}
-                      data-testid={`button-tco-${vehicle.rank}`}
-                    >
-                      <Wallet className="w-3.5 h-3.5" />
-                      TCO 비교
-                    </Button>
-                  )}
-
-                  {/* 4. 차량 상세분석 버튼 (구 TOPSIS) */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5 text-xs h-9"
-                    onClick={() => handleViewInsights(vehicle)}
-                    disabled={isLoadingAnalysis}
-                    data-testid={`button-view-insights-${vehicle.rank}`}
-                  >
-                    <BarChart className="w-3.5 h-3.5" />
-                    {isLoadingAnalysis ? '분석 중...' : '차량 상세분석'}
-                  </Button>
                 </div>
               </div>
             </Card>
