@@ -202,7 +202,8 @@ export function createDemoVehiclePool(
   allVehicles: Vehicle[],
   requestedCarType?: string,
   budget?: [number, number],
-  requestedModel?: string // 🔄 Phase 2: 재추천 시 모델 필터 추가
+  requestedModel?: string, // 🔄 Phase 2: 재추천 시 모델 필터 추가
+  safetyPriority?: boolean  // 🎯 재추천: 안전성 우선 (무사고 차량만)
 ): Vehicle[] {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - DEMO_FILTERS.modelYear.maxAge;
@@ -224,13 +225,43 @@ export function createDemoVehiclePool(
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
+  // 🎯 시나리오 A 특별 처리: 인기 SUV만 강제 필터링
+  let step6_5: Vehicle[];
+  if (requestedCarType === 'SUV' && budget && budget[1] <= 3000 && !requestedModel) {
+    // 시나리오 A 감지: SUV + 3000만원 이하 + 모델 지정 없음
+    console.log(`🎯 [DemoPool] 시나리오 A 감지: 인기 SUV만 필터링`);
+    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6.length}대`);
+
+    step6_5 = step6.filter(v => {
+      const modelLower = (v.model || '').toLowerCase();
+
+      // popularSUVs 리스트에 있는 모델만 허용
+      for (const suvModel of DEMO_FILTERS.popularSUVs) {
+        if (modelLower.includes(suvModel.toLowerCase())) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    console.log(`✅ [DemoPool] 인기 SUV 필터 후: ${step6_5.length}대`);
+
+    if (step6_5.length === 0) {
+      console.warn(`⚠️ [DemoPool] 인기 SUV 필터 후 0대! 일반 SUV 풀로 폴백`);
+      step6_5 = step6;
+    }
+  } else {
+    step6_5 = step6;
+  }
+
   // 🔄 Phase 2: 모델 필터 추가 (재추천 시)
   let step7: Vehicle[];
   if (requestedModel) {
     console.log(`🔍 [DemoPool] 모델 필터 시작: "${requestedModel}"`);
-    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6.length}대`);
+    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6_5.length}대`);
 
-    step7 = step6.filter(v => {
+    step7 = step6_5.filter(v => {
       const modelLower = (v.model || '').toLowerCase();
       const requestedLower = requestedModel.toLowerCase();
 
@@ -245,27 +276,72 @@ export function createDemoVehiclePool(
     console.log(`🔍 [DemoPool] 필터 후 차량 수: ${step7.length}대`);
 
     if (step7.length === 0) {
-      console.error(`❌ [DemoPool] 모델 필터 후 0대! requestedModel="${requestedModel}", step6=${step6.length}대`);
-      console.error(`❌ [DemoPool] step6 샘플 모델들:`, step6.slice(0, 10).map(v => v.model));
+      console.error(`❌ [DemoPool] 모델 필터 후 0대! requestedModel="${requestedModel}", step6_5=${step6_5.length}대`);
+      console.error(`❌ [DemoPool] step6_5 샘플 모델들:`, step6_5.slice(0, 10).map(v => v.model));
     }
   } else {
-    step7 = step6;
+    step7 = step6_5;
   }
 
-  const vetted = step7;
+  // 🎯 재추천: 안전성 우선 필터 (무사고 차량만)
+  let step8: Vehicle[];
+  if (safetyPriority) {
+    console.log(`🛡️ [DemoPool] 안전성 우선 모드: 무사고 차량만 필터링`);
+    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step7.length}대`);
 
-  // 🏆 인기 모델 우선 정렬
-  vetted.sort((a, b) => {
-    const scoreA = getPopularityScore(a);
-    const scoreB = getPopularityScore(b);
+    step8 = step7.filter(v => {
+      // 무사고 조건: myAccidentCost가 0이거나 undefined
+      const isNoAccident = !v.myAccidentCost || v.myAccidentCost === 0;
 
-    if (scoreA !== scoreB) {
-      return scoreB - scoreA; // 인기도 내림차순
+      if (isNoAccident) {
+        console.log(`✅ 무사고 차량: ${v.model} (${v.brand}) - ${v.modelYear}년, ${v.price}만원`);
+      }
+
+      return isNoAccident;
+    });
+
+    console.log(`✅ [DemoPool] 무사고 필터 후: ${step8.length}대`);
+
+    if (step8.length === 0) {
+      console.warn(`⚠️ [DemoPool] 무사고 필터 후 0대! 일반 차량 풀로 폴백`);
+      step8 = step7;
     }
+  } else {
+    step8 = step7;
+  }
 
-    // 인기도 동일하면 최신 연식 우선
-    return (b.modelYear || 0) - (a.modelYear || 0);
-  });
+  const vetted = step8;
+
+  // 🏆 정렬 (안전성 우선 vs 인기 모델 우선)
+  if (safetyPriority) {
+    // 🛡️ 안전성 우선: 최신 연식 + 낮은 주행거리
+    console.log(`🛡️ [DemoPool] 안전성 우선 정렬: 최신 연식 + 낮은 주행거리`);
+    vetted.sort((a, b) => {
+      // 1순위: 최신 연식
+      const yearDiff = (b.modelYear || 0) - (a.modelYear || 0);
+      if (yearDiff !== 0) {
+        return yearDiff;
+      }
+
+      // 2순위: 낮은 주행거리
+      const distanceA = a.distance || 0;
+      const distanceB = b.distance || 0;
+      return distanceA - distanceB;
+    });
+  } else {
+    // 🏆 일반: 인기 모델 우선
+    vetted.sort((a, b) => {
+      const scoreA = getPopularityScore(a);
+      const scoreB = getPopularityScore(b);
+
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // 인기도 내림차순
+      }
+
+      // 인기도 동일하면 최신 연식 우선
+      return (b.modelYear || 0) - (a.modelYear || 0);
+    });
+  }
 
   // 🎯 상위 500대로 제한 (너무 많으면 성능 저하)
   const finalPool = vetted.slice(0, 500);

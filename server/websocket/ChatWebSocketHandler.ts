@@ -539,11 +539,19 @@ async function handleMultiAgentRecommendation(
       finalRequestedModel: requestedModel
     });
 
+    // 🎯 재추천: 안전성 우선 키워드 감지
+    const safetyKeywords = ['무사고', '안전', '안정', '사고 없는', '사고없는', '깨끗한'];
+    const isSafetyPriority = safetyKeywords.some(keyword => userMessage.includes(keyword));
+
+    if (isSafetyPriority && requestedModel) {
+      console.log(`🛡️ [DemoPool] 안전성 우선 재추천: 무사고 ${requestedModel} 차량만`);
+    }
+
     if (isScenarioA) {
       console.log(`🎯 [DemoPool] 시나리오 A 감지: 3000만원 이하 인기 SUV 전용 풀`);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=SUV, budget=[0,3000], model=${requestedModel || 'undefined'}`);
-      // 🔄 Phase 2: 재추천 시 모델 필터 적용
-      allVehicles = createDemoVehiclePool(rawVehicles, 'SUV', [0, 3000], requestedModel);
+      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=SUV, budget=[0,3000], model=${requestedModel || 'undefined'}, safety=${isSafetyPriority}`);
+      // 🔄 Phase 2: 재추천 시 모델 필터 + 안전성 우선 적용
+      allVehicles = createDemoVehiclePool(rawVehicles, 'SUV', [0, 3000], requestedModel, isSafetyPriority);
       console.log(`🔍 [Phase 2] createDemoVehiclePool 결과: ${allVehicles.length}대`);
     } else {
       // 일반 시연: 키워드 매핑 기준 사용
@@ -552,9 +560,9 @@ async function handleMultiAgentRecommendation(
         ? [finalCriteria.minPrice || 0, finalCriteria.maxPrice] as [number, number]
         : session.rawProfile?.budget as [number, number] | undefined;
 
-      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}, 모델=${requestedModel || '미지정'} (출처: 키워드 매핑)`);
-      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=${requestedCarType}, budget=${JSON.stringify(budget)}, model=${requestedModel || 'undefined'}`);
-      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget, requestedModel);
+      console.log(`🎯 [DemoPool] 일반 시연 모드: 차종=${requestedCarType}, 예산=${budget ? `${budget[0]}~${budget[1]}` : '미지정'}, 모델=${requestedModel || '미지정'}, safety=${isSafetyPriority} (출처: 키워드 매핑)`);
+      console.log(`🔍 [Phase 2] createDemoVehiclePool 호출: rawVehicles=${rawVehicles.length}대, carType=${requestedCarType}, budget=${JSON.stringify(budget)}, model=${requestedModel || 'undefined'}, safety=${isSafetyPriority}`);
+      allVehicles = createDemoVehiclePool(rawVehicles, requestedCarType, budget, requestedModel, isSafetyPriority);
       console.log(`🔍 [Phase 2] createDemoVehiclePool 결과: ${allVehicles.length}대`);
     }
 
