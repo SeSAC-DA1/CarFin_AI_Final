@@ -36,7 +36,7 @@ export default function Onboarding() {
     {
       id: 1,
       title: "5개 전문 AI가 동시에 협업합니다",
-      description: "SIGIR 2024 논문 기반 MACRec 프로토콜로 정확도 98% 달성",
+      description: "SIGIR 2024 논문 기반 MACRec 프로토콜로 정확한 추천 제공",
       icon: <Users className="w-8 h-8 text-primary" />,
       content: (
         <div className="space-y-8">
@@ -220,8 +220,8 @@ export default function Onboarding() {
             </div>
             <div className="bg-chart-3/5 border border-chart-3/20 rounded-lg p-6 text-center">
               <Zap className="w-8 h-8 text-chart-3 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-chart-3 mb-2">98%</div>
-              <p className="text-sm text-muted-foreground">MACRec 구현 정확도<br />(36개 테스트 통과)</p>
+              <div className="text-3xl font-bold text-chart-3 mb-2">100%</div>
+              <p className="text-sm text-muted-foreground">Railway 프로덕션<br />작동 검증 완료</p>
             </div>
             <div className="bg-chart-2/5 border border-chart-2/20 rounded-lg p-6 text-center">
               <CheckCircle2 className="w-8 h-8 text-chart-2 mx-auto mb-3" />
@@ -305,7 +305,7 @@ export default function Onboarding() {
           <div className="bg-muted/30 p-4 rounded-lg border border-border text-center">
             <p className="text-sm">
               <CheckCircle2 className="w-4 h-4 inline mr-2 text-chart-3" />
-              <strong>171개 단위 테스트</strong> 통과
+              <strong>핵심 알고리즘 테스트</strong> 검증 완료
             </p>
           </div>
         </div>

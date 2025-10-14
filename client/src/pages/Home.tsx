@@ -2,7 +2,7 @@ import Navigation from "@/components/layout/Navigation";
 import Hero from "@/components/layout/Hero";
 import Stats from "@/components/layout/Stats";
 import Features from "@/components/layout/Features";
-import Process from "@/components/layout/Process";
+import PaperBasedWorkflow from "@/components/layout/PaperBasedWorkflow";
 import PapersSection from "@/components/layout/PapersSection";
 import Footer from "@/components/layout/Footer";
 
@@ -13,7 +13,7 @@ export default function Home() {
       <Hero />
       <Stats />
       <Features />
-      <Process />
+      <PaperBasedWorkflow />
       <PapersSection />
       <Footer />
     </div>

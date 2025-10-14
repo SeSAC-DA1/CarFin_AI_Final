@@ -96,7 +96,7 @@ const aiTeamStructure = {
 // 🎓 신뢰도 배지
 const trustBadges = [
   { icon: GraduationCap, text: "SIGIR 2024 논문", color: "blue" },
-  { icon: Award, text: "98% 구현 정확도", color: "green" },
+  { icon: Award, text: "논문 프로토콜 구현", color: "green" },
   { icon: Shield, text: "법적 근거 TCO", color: "purple" },
   { icon: Database, text: "실시간 데이터", color: "orange" }
 ];

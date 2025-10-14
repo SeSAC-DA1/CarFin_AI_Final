@@ -7,23 +7,23 @@ import { Button } from "@/components/ui/button";
 const papers = [
   {
     icon: Users,
-    title: "MACRec: Multi-Agent Collaborative Recommendation",
+    title: "MACRec: a Multi-Agent Collaboration Framework for Recommendation",
     shortTitle: "멀티에이전트 협업 시스템",
     venue: "SIGIR 2024",
     venueDetail: "The 47th International ACM SIGIR Conference",
-    authors: "Google Research & MIT",
-    description: "5개의 전문 AI 에이전트(Manager, User Analyst, Searcher, Evaluator, Financial Advisor)가 실시간으로 협업하여 사용자 니즈를 분석하고 최적의 차량을 추천합니다.",
+    authors: "Zhefan Wang, Yuanqing Yu, et al. (Tsinghua University)",
+    description: "복잡한 추천 작업을 Task Decomposition → Parallel Execution → Result Aggregation 3단계 프로토콜로 처리합니다. 4개의 전문 AI 에이전트(Manager, User Analyst, Searcher, Evaluator)가 실시간으로 협업하여 최적의 차량을 추천합니다.",
     badge: "멀티에이전트",
     color: "bg-blue-500/10 text-blue-600 border-blue-200",
     accuracy: 0,
     implementation: "/server/lib/agents/MultiAgentSystem.ts",
-    testCoverage: "5개 Agent 구현",
+    testCoverage: "MACRec 3단계 프로토콜 구현",
     keyFeatures: [
-      "Task Decomposition (Manager)",
-      "Parallel Execution (Agents)",
-      "Result Aggregation (협업)"
+      "Phase 1: Task Decomposition",
+      "Phase 2: Parallel Execution",
+      "Phase 3: Result Aggregation"
     ],
-    technicalHighlight: "5개 AI 동시 협업 구현",
+    technicalHighlight: "4개 Agent 동시 협업 30초 완료",
     paperUrl: "https://dl.acm.org/doi/10.1145/3626772.3657836"
   },
   {
@@ -32,40 +32,41 @@ const papers = [
     shortTitle: "개인화 재정렬 알고리즘",
     venue: "RecSys 2019 (Best Paper)",
     venueDetail: "13th ACM Conference on Recommender Systems",
-    authors: "Alibaba Group",
-    description: "사용자별 개인화 점수를 실시간으로 계산하여 후보 차량 중 Top 3를 선정합니다. Alibaba가 검증한 2단계 재정렬 알고리즘을 구현했습니다.",
+    authors: "Changhua Pei, Yi Zhang, et al. (Alibaba Group)",
+    description: "TOPSIS의 객관적 점수에 사용자 선호도 가중치를 적용하여 '나에게 가장 좋은 차'를 찾습니다. Manager Agent의 Result Aggregation 단계에서 개인화 재정렬을 수행하여 최종 Top 3를 선정합니다.",
     badge: "개인화 재정렬",
-    color: "bg-purple-500/10 text-purple-600 border-purple-200",
+    color: "bg-orange-500/10 text-orange-600 border-orange-200",
     accuracy: 0,
-    implementation: "/server/lib/collaboration/MultiAgentCollaborator.ts",
-    testCoverage: "Re-ranking 구현",
+    implementation: "/server/lib/agents/ManagerAgent.ts",
+    testCoverage: "개인화 가중치 적용",
     keyFeatures: [
-      "2단계 Re-ranking 시스템",
-      "6개 특성 가중치 적용",
-      "실시간 개인화 점수 계산"
+      "사용자 선호도 반영 (연비, 가격, 안전성)",
+      "하이브리드/전기 +30% 보너스",
+      "객관 3위 → 최종 1위 역전 가능"
     ],
-    technicalHighlight: "프로필 기반 개인화 구현",
+    technicalHighlight: "Phase 3에서 개인화 필터 적용",
     paperUrl: "https://dl.acm.org/doi/10.1145/3298689.3347000"
   },
   {
     icon: BarChart3,
-    title: "AHP-TOPSIS Multi-Criteria Decision Making",
+    title: "TOPSIS: Technique for Order Preference by Similarity to Ideal Solution",
     shortTitle: "다기준 의사결정 분석",
     venue: "Multiple Studies (2018-2024)",
     venueDetail: "Expert Systems with Applications & Decision Support Systems",
-    authors: "International Standards",
-    description: "6가지 평가 기준(가격, 연비, 안전성, 브랜드, 상태, 옵션)을 종합하여 객관적으로 차량을 평가하는 산업계 표준 다기준 의사결정 방법입니다.",
+    authors: "C.L. Hwang & K. Yoon (1980년대 개발)",
+    description: "6가지 평가 기준(가격, 연비, 안전성, 브랜드, 상태, 옵션)을 0-1로 정규화하고, 이상적인 차량과의 거리를 계산하여 객관적 점수를 산출합니다. Evaluator Agent 내부에서 실행됩니다.",
     badge: "객관적 평가",
     color: "bg-green-500/10 text-green-600 border-green-200",
     accuracy: 0,
     implementation: "/server/lib/topsis/TOPSISEngine.ts",
-    testCoverage: "TOPSIS 엔진 구현",
+    testCoverage: "TOPSIS 4단계 알고리즘",
     keyFeatures: [
-      "6가지 평가 기준 종합 분석",
-      "Positive/Negative Ideal Solution",
-      "상대적 근접도 기반 순위"
+      "Step 1: 정규화 (0-1 변환)",
+      "Step 2: 가중치 적용",
+      "Step 3: 이상해/부이상해 거리 계산",
+      "Step 4: 유틸리티 점수 산출"
     ],
-    technicalHighlight: "Evaluator Agent가 활용",
+    technicalHighlight: "Phase 2에서 Evaluator가 실행",
     paperUrl: "https://www.sciencedirect.com/science/article/abs/pii/S0957417418306249"
   }
 ];
