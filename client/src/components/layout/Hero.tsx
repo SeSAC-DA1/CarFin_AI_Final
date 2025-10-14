@@ -151,7 +151,7 @@ export default function Hero() {
                     </div>
                     <div className="flex-1 bg-primary/5 rounded-2xl rounded-tl-sm px-4 py-2.5 border border-primary/10">
                       <p className="text-xs text-primary mb-1">총괄 AI</p>
-                      <p className="text-sm leading-relaxed">"5개 AI 에이전트 협업 시작! AirFlow로 실시간 매물 분석 중..."</p>
+                      <p className="text-sm leading-relaxed">"멀티에이전트 협업 시작! 실시간 DB 검색 중..."</p>
                     </div>
                   </div>
 
