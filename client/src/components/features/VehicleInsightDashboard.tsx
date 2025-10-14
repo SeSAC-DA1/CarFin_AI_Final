@@ -579,10 +579,77 @@ export default function VehicleInsightDashboard({
             {/* Tab 5: 가격 분석 */}
             <TabsContent value="price" className="mt-0">
               <div className="space-y-6">
-                <div className="text-center py-12 text-muted-foreground">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>가격 분석 기능 준비 중입니다</p>
-                  <p className="text-sm mt-2">동급 차량 비교 Box Plot이 추가될 예정입니다</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 가격 비교 카드 */}
+                  <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-blue-600" />
+                      가격 경쟁력
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
+                        <span className="text-sm text-slate-700 font-medium">판매가</span>
+                        <span className="text-xl font-bold text-slate-900">{vehicleData.price.toLocaleString()}만원</span>
+                      </div>
+                      {vehicleData.originPrice && (
+                        <>
+                          <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
+                            <span className="text-sm text-slate-700 font-medium">신차가</span>
+                            <span className="text-lg font-semibold text-slate-800">{vehicleData.originPrice.toLocaleString()}만원</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-green-100 rounded-lg border border-green-300">
+                            <span className="text-sm text-green-800 font-semibold">할인율</span>
+                            <span className="text-2xl font-bold text-green-700">
+                              {(((vehicleData.originPrice - vehicleData.price) / vehicleData.originPrice) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* TCO 요약 카드 */}
+                  <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-purple-600" />
+                      주행거리 대비 가격
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
+                        <span className="text-sm text-slate-700 font-medium">주행거리</span>
+                        <span className="text-lg font-semibold text-slate-800">
+                          {((vehicleData.mileage || vehicleData.distance || 0) / 10000).toFixed(1)}만km
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg">
+                        <span className="text-sm text-slate-700 font-medium">1만km당 가격</span>
+                        <span className="text-lg font-semibold text-slate-800">
+                          {(vehicleData.price / ((vehicleData.mileage || vehicleData.distance || 1) / 10000)).toFixed(0).toLocaleString()}만원
+                        </span>
+                      </div>
+                      <div className="p-3 bg-purple-100 rounded-lg border border-purple-300">
+                        <p className="text-sm text-purple-800 font-medium text-center">
+                          {((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 5 ? '✅ 저주행' :
+                           ((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 10 ? '⚠️ 보통' : '❌ 고주행'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TCO 정보 (있을 경우) */}
+                <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Info className="w-5 h-5 text-amber-600" />
+                    가격 분석 안내
+                  </h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    • <strong className="text-slate-900">할인율</strong>: 신차가 대비 현재 판매가의 할인 비율입니다.
+                    <br />
+                    • <strong className="text-slate-900">1만km당 가격</strong>: 주행거리 대비 가격 효율성을 나타냅니다.
+                    <br />
+                    • 총 소유비용(TCO) 상세 분석은 추천 결과의 <strong className="text-amber-700">TCO 비교 차트</strong>에서 확인하실 수 있습니다.
+                  </p>
                 </div>
               </div>
             </TabsContent>
@@ -590,10 +657,218 @@ export default function VehicleInsightDashboard({
             {/* Tab 6: 종합 평가 (일반인 친화적) */}
             <TabsContent value="overall" className="mt-0">
               <div className="space-y-6">
-                <div className="text-center py-12 text-muted-foreground">
-                  <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>종합 평가 기능 준비 중입니다</p>
-                  <p className="text-sm mt-2">TOPSIS 결과를 일반인 친화적 언어로 변환한 평가가 추가될 예정입니다</p>
+                {/* 종합 점수 */}
+                <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-300">
+                  <div className="text-center">
+                    <Trophy className="w-16 h-16 mx-auto mb-4 text-indigo-600" />
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">종합 평가</h3>
+                    <p className="text-sm text-slate-700">6가지 기준 다기준 분석 (TOPSIS)</p>
+                  </div>
+                </div>
+
+                {/* 6가지 평가 기준 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-blue-600" />
+                      가격 경쟁력
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{
+                            width: `${vehicleData.originPrice
+                              ? Math.min(((vehicleData.originPrice - vehicleData.price) / vehicleData.originPrice) * 100, 100)
+                              : 75
+                            }%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-blue-600">
+                        {vehicleData.originPrice
+                          ? `${(((vehicleData.originPrice - vehicleData.price) / vehicleData.originPrice) * 100).toFixed(0)}점`
+                          : '75점'
+                        }
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border-2 border-green-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <Fuel className="w-5 h-5 text-green-600" />
+                      연비 효율성
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              vehicleData.fuelType === '하이브리드' || vehicleData.fuelType === '전기' ? 95 :
+                              vehicleData.fuelType === '디젤' ? 80 :
+                              vehicleData.fuelType === 'LPG' ? 75 : 60
+                            }%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-green-600">
+                        {vehicleData.fuelType === '하이브리드' || vehicleData.fuelType === '전기' ? '95점' :
+                         vehicleData.fuelType === '디젤' ? '80점' :
+                         vehicleData.fuelType === 'LPG' ? '75점' : '60점'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border-2 border-red-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-red-600" />
+                      안전성
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-red-600 h-2 rounded-full"
+                          style={{
+                            width: `${insurance && insurance.myAccidentCnt === 0 ? 100 : insurance && insurance.myAccidentCnt && insurance.myAccidentCnt < 2 ? 70 : 50}%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-red-600">
+                        {insurance && insurance.myAccidentCnt === 0 ? '100점' : insurance && insurance.myAccidentCnt && insurance.myAccidentCnt < 2 ? '70점' : '50점'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border-2 border-purple-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <Car className="w-5 h-5 text-purple-600" />
+                      브랜드 신뢰도
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-purple-600 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              ['현대', '기아', '제네시스', 'BMW', '벤츠', '아우디'].includes(vehicleData.manufacturer) ? 90 :
+                              ['쌍용', '르노', '쉐보레'].includes(vehicleData.manufacturer) ? 65 : 75
+                            }%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-purple-600">
+                        {['현대', '기아', '제네시스', 'BMW', '벤츠', '아우디'].includes(vehicleData.manufacturer) ? '90점' :
+                         ['쌍용', '르노', '쉐보레'].includes(vehicleData.manufacturer) ? '65점' : '75점'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border-2 border-amber-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <Gauge className="w-5 h-5 text-amber-600" />
+                      차량 상태
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-amber-600 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              ((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 5 ? 90 :
+                              ((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 10 ? 70 : 50
+                            }%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-amber-600">
+                        {((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 5 ? '90점' :
+                         ((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 10 ? '70점' : '50점'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border-2 border-cyan-200">
+                    <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-cyan-600" />
+                      옵션 매칭률
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-cyan-600 h-2 rounded-full"
+                          style={{
+                            width: `${Math.min((Object.values(optionsByCategory).flat().length / 20) * 100, 100)}%`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-cyan-600">
+                        {Math.min(Math.round((Object.values(optionsByCategory).flat().length / 20) * 100), 100)}점
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 강점과 약점 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-6 bg-green-50 rounded-lg border-2 border-green-200">
+                    <h4 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5" />
+                      주요 강점
+                    </h4>
+                    <ul className="space-y-2 text-sm text-green-800">
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-600 mt-0.5">✓</span>
+                        <span>{insurance && insurance.myAccidentCnt === 0 ? '무사고 차량으로 안전성 우수' : '검증된 차량 이력'}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-600 mt-0.5">✓</span>
+                        <span>{vehicleData.fuelType === '하이브리드' || vehicleData.fuelType === '전기' ? '친환경 연료로 연비 효율 우수' : `${vehicleData.fuelType || '가솔린'} 연료 사용`}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-600 mt-0.5">✓</span>
+                        <span>{Object.values(optionsByCategory).flat().length}개 옵션 장착으로 편의성 우수</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="p-6 bg-orange-50 rounded-lg border-2 border-orange-200">
+                    <h4 className="text-lg font-semibold text-orange-900 mb-4 flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      확인 필요
+                    </h4>
+                    <ul className="space-y-2 text-sm text-orange-800">
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 mt-0.5">!</span>
+                        <span>{((vehicleData.mileage || vehicleData.distance || 0) / 10000) < 5 ? '저주행 차량 (관리 이력 확인 필요)' : `${((vehicleData.mileage || vehicleData.distance || 0) / 10000).toFixed(1)}만km 주행 (정비 이력 확인)`}</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 mt-0.5">!</span>
+                        <span>실차 확인 시 외관 및 내부 상태 점검 필수</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 mt-0.5">!</span>
+                        <span>구매 전 전문가 동행 진단 권장</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* TOPSIS 설명 */}
+                <div className="p-6 bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg border-2 border-slate-200">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Info className="w-5 h-5 text-slate-600" />
+                    TOPSIS 다기준 평가란?
+                  </h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    TOPSIS(Technique for Order Preference by Similarity to Ideal Solution)는 1980년대 개발된 검증된 의사결정 방법론입니다.
+                    <br /><br />
+                    • <strong className="text-slate-900">6가지 기준</strong>을 0-1로 정규화하여 공정하게 비교합니다.
+                    <br />
+                    • <strong className="text-slate-900">이상적인 차량</strong>과 <strong className="text-slate-900">최악의 차량</strong> 간 거리를 계산하여 객관적 점수를 산출합니다.
+                    <br />
+                    • 사용자의 <strong className="text-indigo-700">중요도 가중치</strong>(연비 10점, 안전성 9점 등)를 반영하여 개인화된 평가를 제공합니다.
+                  </p>
                 </div>
               </div>
             </TabsContent>

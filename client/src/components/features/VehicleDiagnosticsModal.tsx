@@ -135,14 +135,19 @@ export default function VehicleDiagnosticsModal({
           </Alert>
         ) : data ? (
           <div className="space-y-6">
-            {/* 🎯 핵심 메시지 - 실구매 데이터 강조 */}
-            <Alert className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-600">
+            {/* 🎯 핵심 메시지 - 실제 매물 + 구매자 인사이트 */}
+            <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-600">
               <Database className="w-5 h-5 text-blue-700" />
-              <AlertDescription className="text-base text-gray-900">
-                <strong className="text-blue-700">💡 실구매 데이터 검증 완료</strong>
+              <AlertDescription className="text-base leading-relaxed">
+                <strong className="text-blue-800 font-semibold">💡 실제 매물 데이터 + 구매자 인사이트</strong>
                 <br />
-                아래 모든 정보는 <strong className="text-gray-900">겟차 실구매 데이터(AWS RDS)</strong>에서 실시간으로 조회한
-                실제 보험 이력, 점검 이력, 장착 옵션입니다. 일반 중고차 사이트에서는 제공하지 않는 투명한 정보입니다.
+                <span className="text-slate-800">
+                  • 차량 정보(가격, 사고이력, 옵션)는 <strong className="text-slate-900">실시간 중고차 매물 데이터</strong>입니다.
+                  <br />
+                  • 구매자 리뷰, 연령대별 인기도는 <strong className="text-slate-900">겟차 실구매 데이터(AWS RDS)</strong>를 분석한 인사이트입니다.
+                  <br />
+                  • 일반 중고차 사이트에서는 제공하지 않는 <strong className="text-indigo-700">실제 구매자들의 선택 패턴</strong>을 반영합니다.
+                </span>
               </AlertDescription>
             </Alert>
 
@@ -257,12 +262,12 @@ export default function VehicleDiagnosticsModal({
                 </div>
 
                 {/* 신뢰도 점수 */}
-                <Card className="p-6 bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-500">
+                <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-600">
                   <div className="flex items-center gap-3 mb-4">
                     <Award className="w-8 h-8 text-green-700" />
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900">신뢰도 평가</h3>
-                      <p className="text-sm text-gray-700">실구매 데이터 기반</p>
+                      <h3 className="font-semibold text-lg text-slate-900">신뢰도 평가</h3>
+                      <p className="text-sm text-slate-700 font-medium">실구매 데이터 기반</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -270,25 +275,25 @@ export default function VehicleDiagnosticsModal({
                       <div className="text-3xl font-bold text-green-600">
                         {data.insurance && data.insurance.total_accident_cnt === 0 ? '✅' : '⚠️'}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">무사고</p>
+                      <p className="text-xs text-slate-700 font-medium mt-1">무사고</p>
                     </div>
                     <div className="text-center">
                       <div className="text-3xl font-bold text-green-600">
                         {data.inspection && data.inspection.engine_check_ok ? '✅' : '⚠️'}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">엔진 정상</p>
+                      <p className="text-xs text-slate-700 font-medium mt-1">엔진 정상</p>
                     </div>
                     <div className="text-center">
                       <div className="text-3xl font-bold text-green-600">
                         {data.inspection && !data.inspection.waterlog ? '✅' : '⚠️'}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">침수 없음</p>
+                      <p className="text-xs text-slate-700 font-medium mt-1">침수 없음</p>
                     </div>
                     <div className="text-center">
                       <div className="text-3xl font-bold text-green-600">
                         {data.options.length >= 10 ? '✅' : '⚠️'}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">풀옵션</p>
+                      <p className="text-xs text-slate-700 font-medium mt-1">풀옵션</p>
                     </div>
                   </div>
                 </Card>
