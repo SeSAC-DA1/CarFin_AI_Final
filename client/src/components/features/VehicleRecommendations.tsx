@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info, HelpCircle } from "lucide-react";
+import { Calendar, Gauge, Fuel, Award, ExternalLink, BarChart, MapPin, Brain, Sparkles, CreditCard, Wallet, TrendingDown, Info, HelpCircle, Shield, CheckCircle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import VehicleInsightDashboard from "./VehicleInsightDashboard";
 import PersonalizationTransparencyDashboard from "./PersonalizationTransparencyDashboard";
@@ -11,6 +11,7 @@ import TCOComparisonChart from "./TCOComparisonChart";
 import RecommendationReasonModal from "./RecommendationReasonModal";
 import FinancingComparisonCard from "./FinancingComparisonCard";
 import FinancingOptionsModal from "./FinancingOptionsModal";
+import VehicleDiagnosticsModal from "./VehicleDiagnosticsModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -92,6 +93,10 @@ export default function VehicleRecommendations({
   const [showFinancingModal, setShowFinancingModal] = useState(false);
   const [selectedVehicleForFinancing, setSelectedVehicleForFinancing] = useState<Vehicle | null>(null);
 
+  // 🆕 Phase 7: 차량 진단 보고서 모달 상태
+  const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
+  const [selectedVehicleForDiagnostics, setSelectedVehicleForDiagnostics] = useState<Vehicle | null>(null);
+
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
@@ -122,6 +127,12 @@ export default function VehicleRecommendations({
   const handleViewFinancing = (vehicle: Vehicle) => {
     setSelectedVehicleForFinancing(vehicle);
     setShowFinancingModal(true);
+  };
+
+  // 🆕 Phase 7: 차량 진단 보고서 모달 핸들러
+  const handleViewDiagnostics = (vehicle: Vehicle) => {
+    setSelectedVehicleForDiagnostics(vehicle);
+    setShowDiagnosticsModal(true);
   };
 
   // 개인화 대시보드 자동 표시
@@ -250,6 +261,18 @@ export default function VehicleRecommendations({
                   )}
                 </div>
 
+                {/* 🆕 Phase 7: 실구매 데이터 검증 뱃지 */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50 text-xs">
+                    <Shield className="w-3 h-3 mr-1" />
+                    보험이력 검증
+                  </Badge>
+                  <Badge variant="outline" className="text-blue-600 border-blue-600 bg-blue-50 text-xs">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    점검이력 확인
+                  </Badge>
+                </div>
+
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">TOPSIS 점수</span>
@@ -340,7 +363,7 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                {/* ✅ Phase 6-4: 버튼 확장 (금융 옵션 추가) */}
+                {/* ✅ Phase 7: 버튼 확장 (차량 진단 보고서 추가) */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   {/* 1. 추천 근거 설명 버튼 */}
                   <Button
@@ -354,7 +377,18 @@ export default function VehicleRecommendations({
                     추천 근거
                   </Button>
 
-                  {/* 2. TCO 상세 버튼 */}
+                  {/* 2. 🆕 Phase 7: 차량 진단 보고서 버튼 (실구매 데이터) */}
+                  <Button
+                    size="sm"
+                    className="gap-1.5 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    onClick={() => handleViewDiagnostics(vehicle)}
+                    data-testid={`button-diagnostics-${vehicle.rank}`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    진단 보고서
+                  </Button>
+
+                  {/* 3. TCO 상세 버튼 */}
                   {vehicle.tco ? (
                     <Button
                       size="sm"
@@ -379,16 +413,17 @@ export default function VehicleRecommendations({
                     </Button>
                   )}
 
-                  {/* 3. 차량 진단 및 세부 옵션 버튼 */}
+                  {/* 4. TOPSIS 분석 버튼 */}
                   <Button
                     size="sm"
+                    variant="outline"
                     className="gap-1.5 text-xs h-9"
                     onClick={() => handleViewInsights(vehicle)}
                     disabled={isLoadingAnalysis}
                     data-testid={`button-view-insights-${vehicle.rank}`}
                   >
                     <BarChart className="w-3.5 h-3.5" />
-                    {isLoadingAnalysis ? '분석 중...' : '차량 진단'}
+                    {isLoadingAnalysis ? '분석 중...' : 'TOPSIS'}
                   </Button>
 
                   {/* 4. 🆕 Phase 6-4: 금융 옵션 버튼 (financingOptions 있을 때만 표시) */}
@@ -552,6 +587,14 @@ export default function VehicleRecommendations({
           financingOptions={selectedVehicleForFinancing.financingOptions}
         />
       )}
+
+      {/* 🆕 Phase 7: 차량 진단 보고서 모달 (AWS RDS 실구매 데이터) */}
+      <VehicleDiagnosticsModal
+        open={showDiagnosticsModal}
+        onOpenChange={setShowDiagnosticsModal}
+        vehicleId={selectedVehicleForDiagnostics?.id ?? null}
+        vehicleName={selectedVehicleForDiagnostics?.name ?? ''}
+      />
     </>
   );
 }
