@@ -510,6 +510,9 @@ async function handleMultiAgentRecommendation(
       }
     }
 
+    // 🐛 CRITICAL FIX: sellType 'all'로 설정 → 리스/렌트 매물 포함 (detailUrl 존재)
+    searchFilters.sellType = 'all';
+
     console.log(`🔍 최종 검색 필터:`, JSON.stringify(searchFilters, null, 2));
 
     // 🎯 Step 3: DB 검색 시작
