@@ -130,7 +130,7 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
                 {vehicle.manufacturer} {vehicle.model}
               </h3>
               <p className="text-xs text-slate-400">
-                {vehicle.modelYear}년 • {vehicle.fuelType}
+                {vehicle.year || vehicle.modelYear || 0}년 • {vehicle.fuel || vehicle.fuelType}
               </p>
             </div>
           </div>
@@ -222,16 +222,29 @@ export default function TCOComparisonChart({ vehicles }: TCOComparisonChartProps
             <TrendingDown className="w-5 h-5 text-emerald-400" />
             5개 비용 항목 비교 차트
           </h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={barChartData}>
-              <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} label={{ value: '(만원)', position: 'insideLeft', fill: '#94a3b8' }} />
+          <ResponsiveContainer width="100%" height={120 + vehiclesWithTCO.length * 40}>
+            <BarChart
+              data={barChartData}
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
+            >
+              <XAxis
+                type="number"
+                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                tickFormatter={(value) => `${value}만`}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                width={120}
+              />
               <Tooltip
                 contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
                 labelStyle={{ color: '#f1f5f9' }}
                 itemStyle={{ color: '#e2e8f0' }}
               />
-              <Legend wrapperStyle={{ color: '#94a3b8' }} />
+              <Legend wrapperStyle={{ color: '#94a3b8' }} iconType="square" iconSize={10} />
               <Bar dataKey="취득세" stackId="a" fill="#8B5CF6" />
               <Bar dataKey="자동차세" stackId="a" fill="#3B82F6" />
               <Bar dataKey="정비비" stackId="a" fill="#F59E0B" />
