@@ -8,7 +8,7 @@
 
 import WebSocket from 'ws';
 
-const PRODUCTION_WS_URL = 'wss://carfin-ai-clean-production.up.railway.app';
+const PRODUCTION_WS_URL = 'wss://carfinaifinal-production-15a8.up.railway.app/ws/chat';
 
 // 사용자 프로필 (ProfileSetup에서 자동 전송되는 형식)
 const userProfile = {

@@ -16,7 +16,11 @@
       "Bash(then echo \"\\n✅ 배포 완료!\")",
       "Bash(break)",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(python:*)",
+      "Bash(timeout 120 node:*)",
+      "Bash(timeout 150 node:*)",
+      "Bash(git commit -m \"🐛 CRITICAL DEBUG: 재추천 0대 버그 상세 로그 추가\n\n## 변경 사항\n- DemoVehiclePool: 모델 필터링 전후 차량 수 로그\n- DemoVehiclePool: 0대 반환 시 에러 로그 + 샘플 모델명 출력\n- ChatWebSocketHandler: requestedModel 추출 과정 상세 로그\n- ChatWebSocketHandler: createDemoVehiclePool 호출 전후 로그\n\n## 목적\nRailway 프로덕션에서 0대 반환되는 정확한 원인 파악\n\n## 예상 로그 (Railway)\n🔍 [Phase 2] requestedModel 추출: {...}\n🔍 [DemoPool] 모델 필터 시작: \"\"셀토스\"\"\n🔍 [DemoPool] 필터 전 차량 수: 500대\n✅ 모델 매칭: 셀토스 (기아) - 2080만원\n🔍 [DemoPool] 필터 후 차량 수: 426대\")"
     ],
     "deny": [],
     "ask": []

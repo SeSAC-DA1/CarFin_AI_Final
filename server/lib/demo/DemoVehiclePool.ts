@@ -225,17 +225,32 @@ export function createDemoVehiclePool(
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
   // 🔄 Phase 2: 모델 필터 추가 (재추천 시)
-  let step7 = requestedModel ? step6.filter(v => {
-    const modelLower = (v.model || '').toLowerCase();
-    const requestedLower = requestedModel.toLowerCase();
+  let step7: Vehicle[];
+  if (requestedModel) {
+    console.log(`🔍 [DemoPool] 모델 필터 시작: "${requestedModel}"`);
+    console.log(`🔍 [DemoPool] 필터 전 차량 수: ${step6.length}대`);
 
-    // 부분 매칭 (예: "셀토스", "더 뉴 셀토스" 모두 매칭)
-    if (modelLower.includes(requestedLower)) {
-      console.log(`✅ 모델 매칭: ${v.model} (${v.brand})`);
-      return true;
+    step7 = step6.filter(v => {
+      const modelLower = (v.model || '').toLowerCase();
+      const requestedLower = requestedModel.toLowerCase();
+
+      // 부분 매칭 (예: "셀토스", "더 뉴 셀토스" 모두 매칭)
+      if (modelLower.includes(requestedLower)) {
+        console.log(`✅ 모델 매칭: ${v.model} (${v.brand}) - ${v.price}만원`);
+        return true;
+      }
+      return false;
+    });
+
+    console.log(`🔍 [DemoPool] 필터 후 차량 수: ${step7.length}대`);
+
+    if (step7.length === 0) {
+      console.error(`❌ [DemoPool] 모델 필터 후 0대! requestedModel="${requestedModel}", step6=${step6.length}대`);
+      console.error(`❌ [DemoPool] step6 샘플 모델들:`, step6.slice(0, 10).map(v => v.model));
     }
-    return false;
-  }) : step6;
+  } else {
+    step7 = step6;
+  }
 
   const vetted = step7;
 
