@@ -136,12 +136,12 @@ export default function VehicleDiagnosticsModal({
         ) : data ? (
           <div className="space-y-6">
             {/* 🎯 핵심 메시지 - 실구매 데이터 강조 */}
-            <Alert className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-primary">
-              <Database className="w-5 h-5 text-primary" />
-              <AlertDescription className="text-base">
-                <strong className="text-primary">💡 실구매 데이터 검증 완료</strong>
+            <Alert className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-600">
+              <Database className="w-5 h-5 text-blue-700" />
+              <AlertDescription className="text-base text-gray-900">
+                <strong className="text-blue-700">💡 실구매 데이터 검증 완료</strong>
                 <br />
-                아래 모든 정보는 <strong>겟차 실구매 데이터(AWS RDS)</strong>에서 실시간으로 조회한
+                아래 모든 정보는 <strong className="text-gray-900">겟차 실구매 데이터(AWS RDS)</strong>에서 실시간으로 조회한
                 실제 보험 이력, 점검 이력, 장착 옵션입니다. 일반 중고차 사이트에서는 제공하지 않는 투명한 정보입니다.
               </AlertDescription>
             </Alert>
@@ -257,12 +257,12 @@ export default function VehicleDiagnosticsModal({
                 </div>
 
                 {/* 신뢰도 점수 */}
-                <Card className="p-6 bg-gradient-to-br from-green-50 to-blue-50">
+                <Card className="p-6 bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-500">
                   <div className="flex items-center gap-3 mb-4">
-                    <Award className="w-8 h-8 text-green-600" />
+                    <Award className="w-8 h-8 text-green-700" />
                     <div>
-                      <h3 className="font-semibold text-lg">신뢰도 평가</h3>
-                      <p className="text-sm text-muted-foreground">실구매 데이터 기반</p>
+                      <h3 className="font-semibold text-lg text-gray-900">신뢰도 평가</h3>
+                      <p className="text-sm text-gray-700">실구매 데이터 기반</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -350,35 +350,63 @@ export default function VehicleDiagnosticsModal({
                     </Card>
 
                     <Card className="p-6">
-                      <h3 className="font-semibold text-lg mb-4">특수 이력</h3>
+                      <h3 className="font-semibold text-lg mb-4">특수 이력 (부정적 요소 확인)</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {data.insurance.government ?
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" /> :
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">관용차</p>
+                          {data.insurance.government ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">관용차 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">관용차 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">관용 차량</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {data.insurance.business ?
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" /> :
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">영업용</p>
+                          {data.insurance.business ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">영업용 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">영업용 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">사업 차량</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {data.insurance.rental ?
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" /> :
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">렌터카</p>
+                          {data.insurance.rental ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">렌터카 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">렌터카 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">렌트 이력</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {data.insurance.loan ?
-                            <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" /> :
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">담보</p>
+                          {data.insurance.loan ? (
+                            <>
+                              <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                              <Badge variant="secondary" className="text-xs">담보 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">담보 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">대출 담보</p>
                         </div>
                       </div>
                     </Card>
@@ -455,35 +483,63 @@ export default function VehicleDiagnosticsModal({
                     </Card>
 
                     <Card className="p-6">
-                      <h3 className="font-semibold text-lg mb-4">사고/특이사항</h3>
+                      <h3 className="font-semibold text-lg mb-4">사고/특이사항 (부정적 요소 확인)</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {!data.inspection.accident_history ?
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" /> :
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">사고 이력</p>
+                          {data.inspection.accident_history ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">사고 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">사고 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">사고 이력</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {!data.inspection.waterlog ?
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" /> :
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">침수</p>
+                          {data.inspection.waterlog ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">침수 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">침수 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">침수 이력</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {!data.inspection.fire_history ?
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" /> :
-                            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">화재</p>
+                          {data.inspection.fire_history ? (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                              <Badge variant="destructive" className="text-xs">화재 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">화재 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">화재 이력</p>
                         </div>
                         <div className="text-center p-4 bg-muted rounded-lg">
-                          {!data.inspection.tuning_exist ?
-                            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" /> :
-                            <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                          }
-                          <p className="text-sm font-medium">튜닝</p>
+                          {data.inspection.tuning_exist ? (
+                            <>
+                              <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                              <Badge variant="secondary" className="text-xs">튜닝 O</Badge>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                              <Badge variant="outline" className="text-xs">튜닝 X</Badge>
+                            </>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">튜닝 이력</p>
                         </div>
                       </div>
                     </Card>
