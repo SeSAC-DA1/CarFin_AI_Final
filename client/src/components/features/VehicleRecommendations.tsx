@@ -10,7 +10,6 @@ import TCODetailModal from "./TCODetailModal";
 import TCOComparisonChart from "./TCOComparisonChart";
 import RecommendationReasonModal from "./RecommendationReasonModal";
 import FinancingComparisonCard from "./FinancingComparisonCard";
-import VehicleDiagnosticsModal from "./VehicleDiagnosticsModal";
 import { useState, useEffect } from "react";
 import { useWebSocketChat } from "@/hooks/useWebSocketChat";
 
@@ -88,10 +87,6 @@ export default function VehicleRecommendations({
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [selectedVehicleForReason, setSelectedVehicleForReason] = useState<Vehicle | null>(null);
 
-  // 🆕 Phase 7: 차량 진단 보고서 모달 상태
-  const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
-  const [selectedVehicleForDiagnostics, setSelectedVehicleForDiagnostics] = useState<Vehicle | null>(null);
-
   const handleViewInsights = async (vehicle: Vehicle) => {
     // TOPSIS 분석 모달 열기
     setIsLoadingAnalysis(true);
@@ -112,10 +107,9 @@ export default function VehicleRecommendations({
     setShowTCOModal(true);
   };
 
-  // 🆕 Phase 7: 차량 진단 보고서 핸들러
-  const handleViewDiagnostics = (vehicle: Vehicle) => {
-    setSelectedVehicleForDiagnostics(vehicle);
-    setShowDiagnosticsModal(true);
+  // 🆕 차량 상세분석 핸들러 (VehicleInsightDashboard 연결)
+  const handleViewDetails = (vehicle: Vehicle) => {
+    handleViewInsights(vehicle); // TOPSIS 분석 + 종합 대시보드
   };
 
   // 🆕 Phase 5: 추천 이유 모달 핸들러
@@ -352,9 +346,9 @@ export default function VehicleRecommendations({
                   </div>
                 )}
 
-                {/* ✅ 버튼 레이아웃 2-2-1 */}
+                {/* ✅ 버튼 레이아웃 2-1 (진단 보고서 제거) */}
                 <div className="space-y-2 pt-1">
-                  {/* 첫 번째 줄: 근거, 진단 */}
+                  {/* 첫 번째 줄: 추천 근거, 차량 상세분석 */}
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       size="sm"
@@ -370,31 +364,6 @@ export default function VehicleRecommendations({
                     <Button
                       size="sm"
                       className="gap-1.5 text-xs h-9 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
-                      onClick={() => handleViewDiagnostics(vehicle)}
-                      data-testid={`button-diagnostics-${vehicle.rank}`}
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      진단 보고서
-                    </Button>
-                  </div>
-
-                  {/* 두 번째 줄: TCO 비교, 차량 상세분석 */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {vehicle.tco && (
-                      <Button
-                        size="sm"
-                        className="gap-1.5 text-xs h-9 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                        onClick={() => handleViewTCO(vehicle)}
-                        data-testid={`button-tco-${vehicle.rank}`}
-                      >
-                        <Wallet className="w-3.5 h-3.5" />
-                        TCO 비교
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1.5 text-xs h-9 border-slate-300 hover:bg-slate-50"
                       onClick={() => handleViewDetails(vehicle)}
                       data-testid={`button-details-${vehicle.rank}`}
                     >
@@ -402,6 +371,19 @@ export default function VehicleRecommendations({
                       차량 상세분석
                     </Button>
                   </div>
+
+                  {/* 두 번째 줄: TCO 비교 (선택사항) */}
+                  {vehicle.tco && (
+                    <Button
+                      size="sm"
+                      className="gap-1.5 text-xs h-9 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                      onClick={() => handleViewTCO(vehicle)}
+                      data-testid={`button-tco-${vehicle.rank}`}
+                    >
+                      <Wallet className="w-3.5 h-3.5" />
+                      TCO 비교
+                    </Button>
+                  )}
 
                   {/* 세 번째 줄: 실매물 링크 (전체 너비) */}
                   {vehicle.detailUrl && (
@@ -506,14 +488,6 @@ export default function VehicleRecommendations({
           setShowReasonModal(false);
           setSelectedVehicleForReason(null);
         }}
-      />
-
-      {/* 🆕 Phase 7: 차량 진단 보고서 모달 (AWS RDS 실구매 데이터) */}
-      <VehicleDiagnosticsModal
-        open={showDiagnosticsModal}
-        onOpenChange={setShowDiagnosticsModal}
-        vehicleId={selectedVehicleForDiagnostics?.id ?? null}
-        vehicleName={selectedVehicleForDiagnostics?.name ?? ''}
       />
     </>
   );
