@@ -112,16 +112,16 @@ export default function VehicleRecommendations({
     setShowTCOModal(true);
   };
 
+  // 🆕 Phase 7: 차량 진단 보고서 핸들러
+  const handleViewDiagnostics = (vehicle: Vehicle) => {
+    setSelectedVehicleForDiagnostics(vehicle);
+    setShowDiagnosticsModal(true);
+  };
+
   // 🆕 Phase 5: 추천 이유 모달 핸들러
   const handleViewReason = (vehicle: Vehicle) => {
     setSelectedVehicleForReason(vehicle);
     setShowReasonModal(true);
-  };
-
-  // 🆕 Phase 7: 차량 진단 보고서 모달 핸들러
-  const handleViewDiagnostics = (vehicle: Vehicle) => {
-    setSelectedVehicleForDiagnostics(vehicle);
-    setShowDiagnosticsModal(true);
   };
 
   // 개인화 대시보드 자동 표시
