@@ -238,6 +238,31 @@ export function createDemoVehiclePool(
 
   let step6 = requestedCarType ? step5.filter(v => matchesCarType(v, requestedCarType)) : step5;
 
+  // 🔄 재추천: 모델 필터 적용 (최우선)
+  if (requestedModel) {
+    console.log(`🔄 [DemoPool] 모델 필터 적용: "${requestedModel}"`);
+    console.log(`🔍 [DemoPool] 모델 필터 전 차량 수: ${step6.length}대`);
+
+    step6 = step6.filter(v => {
+      const modelLower = (v.model || '').toLowerCase();
+      const requestedLower = requestedModel.toLowerCase();
+
+      const matched = modelLower.includes(requestedLower);
+      if (matched) {
+        console.log(`✅ 모델 매칭: ${v.model} (${v.manufacturer}) - ${v.price}만원`);
+      }
+      return matched;
+    });
+
+    console.log(`✅ [DemoPool] 모델 필터 후 차량 수: ${step6.length}대`);
+
+    if (step6.length === 0) {
+      console.error(`❌❌ [DemoPool] 모델 "${requestedModel}" 필터링 후 0대 반환!`);
+      console.error(`📋 [DemoPool] 가능한 모델명 샘플 (step5):`,
+        step5.slice(0, 10).map(v => v.model).join(', '));
+    }
+  }
+
   // 🎯 시나리오 A 특별 처리: 인기 SUV만 강제 필터링
   let step6_5: Vehicle[];
   if (requestedCarType === 'SUV' && budget && budget[1] <= 3000 && !requestedModel) {
