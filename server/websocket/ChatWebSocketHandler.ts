@@ -202,7 +202,38 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
     const hasMinimalInfo = true; // 🚨 긴급: 항상 true (100% 추천 실행)
 
     if (hasMinimalInfo || isDemoScenario) {
-      await handleMultiAgentRecommendation(session, userMessage);
+      // 🔄 재추천 감지: 사용자 메시지에서 차량 모델명 추출
+      const reRecommendationKeywords = ['다시', '재추천', '다른', '대신', '말고', '바꿔'];
+      const isReRecommendation = reRecommendationKeywords.some(kw => userMessage.includes(kw));
+
+      // 한국 인기 차량 모델명 매핑 (정규식 + 공백 무시)
+      const popularModels = [
+        '셀토스', '스포티지', '쏘렌토', '카니발', 'K3', 'K5', 'K7', 'K8', 'K9',
+        '아반떼', '쏘나타', '그랜저', '투싼', '싼타페', '팰리세이드', '코나', '캐스퍼',
+        'G70', 'G80', 'G90', 'GV70', 'GV80',
+        '트랙스', '말리부', '트레일블레이저', '타호', '콜로라도',
+        'QM6', 'SM6', 'XM3', '티볼리', '코란도', '레스톤', '토레스'
+      ];
+
+      let detectedModel: string | undefined;
+      for (const model of popularModels) {
+        // 공백 무시하고 모델명 감지 (예: "K 5" → "K5", "셀 토스" → "셀토스")
+        const modelRegex = new RegExp(model.split('').join('\\s*'), 'i');
+        if (modelRegex.test(userMessage)) {
+          detectedModel = model;
+          console.log(`🔍 [재추천] 모델명 감지: "${detectedModel}" (원문: "${userMessage}")`);
+          break;
+        }
+      }
+
+      // overrideFilters 구성
+      let overrideFilters: any = undefined;
+      if (isReRecommendation && detectedModel) {
+        overrideFilters = { model: detectedModel };
+        console.log(`🔄 [재추천] overrideFilters 적용:`, overrideFilters);
+      }
+
+      await handleMultiAgentRecommendation(session, userMessage, overrideFilters);
 
       // 🐛 FIX: 추천 결과 표시를 방해하지 않도록 추가 질문 비활성화
       // 사용자가 추천 결과를 보고 더 많은 정보를 제공하면 자연스럽게 다시 추천
