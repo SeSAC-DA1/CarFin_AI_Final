@@ -227,10 +227,12 @@ async function handleUserMessage(sessionId: string, userMessage: string, userPro
       }
 
       // overrideFilters 구성
+      // ✅ 수정: 모델명만 있어도 재추천 시도 (재추천 키워드 없어도 OK)
       let overrideFilters: any = undefined;
-      if (isReRecommendation && detectedModel) {
+      if (detectedModel) {
         overrideFilters = { model: detectedModel };
         console.log(`🔄 [재추천] overrideFilters 적용:`, overrideFilters);
+        console.log(`🎯 [재추천] "${detectedModel}" 모델로 필터링 시작`);
       }
 
       await handleMultiAgentRecommendation(session, userMessage, overrideFilters);
