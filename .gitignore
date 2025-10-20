@@ -58,5 +58,9 @@ coverage/
 # Legacy/Unused directories
 backend-main/
 
-# Archive documents (historical records)
+# Archive directory (포트폴리오 정리용)
+.archive/
 archive_docs/
+
+# Claude Code settings
+.claude/settings.local.json
